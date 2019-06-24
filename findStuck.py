@@ -48,7 +48,7 @@ def addPreviousRatingsToDict(row):
     predList = re.findall('[0-9]{4,7}',str(pred))
     URN = row['URN']
     if len(predList) >0:
-        for no in predList:
+        for int(no) in predList:
             # Remove URN entry from dictionary
             print(no)
             try:
@@ -69,9 +69,10 @@ def addPredRatings(currURN, oldURN):
     Just updates the currentRatingsDict dictionary
     '''
     print('addPredRatings',currURN,oldURN)
-    if oldURN in df0['URN']:
+    if len(df0[df0['URN']==int(oldURN)])>0:
         # Check not double counting as multiple rows will have same URN combo
         if (currURN,oldURN) not in oldURNs:
+            print('Add',currURN)
             currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0])
             for cat in range(1,5):
                 currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
