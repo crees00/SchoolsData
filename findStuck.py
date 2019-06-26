@@ -4,7 +4,7 @@ Spyder Editor
 
 This is a temporary script file.
 """
-
+import numpy as np
 import pandas as pd
 import re
 
@@ -38,7 +38,6 @@ def addRatingToDict(row):
     except:
         ratingsDict[URN][0].insert(0,row['Overall effectiveness'])
 
-
 def addPreviousRatingsToDict(row):
     '''Look up schools/academies that are currently open. See if they have
     any predecessors and add the predecessor scores to those of the current
@@ -50,6 +49,10 @@ def addPreviousRatingsToDict(row):
     if len(predList) >0:
         for no in predList:
             no=int(no)
+            
+            # Check current URN isn't listed as a predecessor
+            if no==row['URN']:
+                continue
             # Remove URN entry from dictionary as school is closed
 #            print(no, 'is in Predecessor School URN(s) col for',URN)
             try:
@@ -70,7 +73,7 @@ def addPredRatings(currURN, oldURN):
     Just updates the currentRatingsDict dictionary
     '''
     if currURN == oldURN:
-#        print('currURN == oldURN')
+        print('currURN == oldURN for', currURN)
         return
 #    print('addPredRatings',currURN,oldURN)
     
@@ -85,11 +88,11 @@ def addPredRatings(currURN, oldURN):
                 for cat in range(1,5):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
+                print('KeyError. currURN =',currURN,', oldURN =',oldURN)
                 subbedTheSub.append(currURN)
 #                print(currURN,'not in currentRatingsDict so must be closed')
-        else:
+#        else:
 #            print(currURN,oldURN,'already in oldURNs')
-            pass
             
     else:
         URNsNotIndf0.append(oldURN)
@@ -105,9 +108,26 @@ def stuckURN(URN, count, dictToUse):
             stuck.append(URN)
             
 def stuckDict(dictToUse, count):
-    '''applies stuckURN to each URN in the given dictionary'''
+    '''Applies stuckURN to each URN in the given dictionary'''
     for URN in dictToUse:
         stuckURN(URN, count, dictToUse)
+
+def addStuckCol(stuck, df, write=False):
+    '''Add a column called Stuck to the df
+    1 if the URN is in the 'stuck' list
+    0 if not stuck
+    If write != False then write to .csv
+    '''
+    df['Stuck'] = df.apply(lambda row: np.where(
+            (int(row['URN']) in stuck),1,0), axis=1)
+    if write != False:
+        if type(write) != str:
+            raise TypeError("Need string input 'filename.csv' to addStuckCol")
+        try:
+            print('Writing .csv file...')
+            df.to_csv(write)
+        except:
+            print("Couldn't write file - bad file name in addStuckCol()")
 
 print('Filling initial dictionary...')      
 df0.apply(addRatingToDict, axis=1)
@@ -117,7 +137,13 @@ print('Updating dictionary with predecessors...')
 df0.apply(addPreviousRatingsToDict, axis=1)
 print('Identifying stuck schools...')
 stuckDict(currentRatingsDict, count)
-print('Complete!')
+print('Adding/updating stuck column in df...')
+addStuckCol(stuck, df0, 'allDataWithStuck.csv')
+print('Complete!\n')
+print(len(stuck),'stuck schools')
+print(len(currentRatingsDict),'open schools with an inspection since 2005')
+
+
 
 #
 #110191
