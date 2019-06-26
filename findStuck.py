@@ -4,24 +4,29 @@ Spyder Editor
 
 This is a temporary script file.
 """
-
+import numpy as np
 import pandas as pd
 import re
 
-global df0
 folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\" 
-df0 = pd.read_csv(folderPath + 'bigDFnoDups1.csv')
-print('\nData loaded!')
 
-global ratingsDict
-global currentRatingsDict
-global oldURNs
-global URNsNotIndf0
-global count
-ratingsDict = {}
-currentRatingsDict = {}
-oldURNs, URNsNotIndf0, subbedTheSub, stuck = [],[],[],[]
-count = 0
+def initialiseVariables():
+    global ratingsDict
+    global currentRatingsDict
+    global oldURNs
+    global URNsNotIndf0
+    global count
+    global stuck
+    global subbedTheSub
+    global colCount
+    ratingsDict = {}
+    currentRatingsDict = {}
+    oldURNs, URNsNotIndf0, subbedTheSub, stuck = [],[],[],[]
+    count = 0
+    colCount=0
+def loadData(fileName):
+    global df0
+    df0 = pd.read_csv(folderPath + fileName)
 
 def addRatingToDict(row):
     ''' Look up overall effectiveness rating for that row.
@@ -47,14 +52,19 @@ def addPreviousRatingsToDict(row):
     '''
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
+#    print(len(currentRatingsDict))
     if len(predList) >0:
         for no in predList:
             no=int(no)
+            
+            # Check current URN isn't listed as a predecessor
+            if no==row['URN']:
+                continue
             # Remove URN entry from dictionary as school is closed
-#            print(no, 'is in Predecessor School URN(s) col for',URN)
+#            print(no, 'is in Predecessor School URN(s) col for',row['URN'])
             try:
                 currentRatingsDict.pop(no)
-#                print('popped')
+#                print('popped',no)
             except:
 #                print("couldn't pop - school already removed from currentRatingsDict")
                 pass
@@ -70,7 +80,7 @@ def addPredRatings(currURN, oldURN):
     Just updates the currentRatingsDict dictionary
     '''
     if currURN == oldURN:
-#        print('currURN == oldURN')
+        print('currURN == oldURN for', currURN)
         return
 #    print('addPredRatings',currURN,oldURN)
     
@@ -85,12 +95,11 @@ def addPredRatings(currURN, oldURN):
                 for cat in range(1,5):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
+#                print('KeyError. currURN =',currURN,', oldURN =',oldURN)
                 subbedTheSub.append(currURN)
 #                print(currURN,'not in currentRatingsDict so must be closed')
-        else:
+#        else:
 #            print(currURN,oldURN,'already in oldURNs')
-            pass
-            
     else:
         URNsNotIndf0.append(oldURN)
 #        print(oldURN,'Not in URN col')
@@ -105,20 +114,211 @@ def stuckURN(URN, count, dictToUse):
             stuck.append(URN)
             
 def stuckDict(dictToUse, count):
-    '''applies stuckURN to each URN in the given dictionary'''
+    '''Applies stuckURN to each URN in the given dictionary'''
     for URN in dictToUse:
         stuckURN(URN, count, dictToUse)
 
-print('Filling initial dictionary...')      
-df0.apply(addRatingToDict, axis=1)
-print('Filled first dictionary')
-currentRatingsDict = ratingsDict.copy()
-print('Updating dictionary with predecessors...')
-df0.apply(addPreviousRatingsToDict, axis=1)
-print('Identifying stuck schools...')
-stuckDict(currentRatingsDict, count)
-print('Complete!')
+def addStuckCol(stuck, df, write=False):
+    '''Add a column called Stuck to the df
+    1 if the URN is in the 'stuck' list
+    0 if not stuck
+    If write != False then write to .csv
+    '''
+    df['Stuck'] = df.apply(lambda row: np.where(
+            (int(row['URN']) in stuck),1,0), axis=1)
+    if write != False:
+        if type(write) != str:
+            raise TypeError("Need string input 'filename.csv' to addStuckCol")
+        try:
+            print('Writing .csv file...')
+            df.to_csv(write)
+        except:
+            print("Couldn't write file - bad file name in addStuckCol()")
 
+def dropCols(df):
+    '''Removes all the columns in the big list from the df'''
+    toDrop = ['Unnamed: 0',
+ 'Web link',
+ 'Inspection number',
+ 'Inspection type',
+ 'Academic year',
+ 'Inspection start date',
+ 'Inspection end date',
+ 'First published date',
+ 'Latest published date',
+ 'Overall effectiveness',
+ 'Sixth form provision',
+ 'Early years provision',
+ "Pupils' achievement (aggregated)",
+ 'Achievement of pupils',
+ 'How well do pupils achieve?',
+ 'Behaviour and safety of pupils',
+ 'Quality of teaching',
+ 'Leadership and management',
+ 'Overall effectiveness of residential experience (aggregated)',
+ 'The effectiveness of the boarding provision (pre Jan 2012)',
+ 'Overall effectiveness of residential experience (post Jan 2012)',
+ 'Outcomes for residential pupils (post Jan 2012)',
+ 'Quality of residential provision and care (post Jan 2012)',
+ 'Residential pupils safety (post Jan 2012)',
+ 'Leadership and management of the residential provision (post Jan 2012)',
+ 'The effectiveness of partnerships in promoting learning and well-being',
+ "The school's capacity for sustained improvement",
+ 'Outcomes for individuals and groups of pupils',
+ "Pupils' attainment",
+ "The quality of pupils' learning and their progress",
+ 'Outcomes for children in the Early Years Foundation Stage',
+ 'The quality of learning for pupils with special educational needs and/or disabilities and their progress',
+ 'Outcomes for students in the sixth form ',
+ "The extent of pupils' spiritual, moral, social and cultural development",
+ 'The extent to which pupils adopt healthy lifestyles',
+ 'The extent to which pupils feel safe',
+ "Pupils' attendance",
+ 'The extent to which pupils contribute to the school and wider community',
+ 'The extent to which pupils develop workplace and other skills that will contribute to their future economic well-being',
+ 'The quality of provision in the sixth form',
+ "The extent to which the curriculum meets pupils' needs, including, where relevant, through partnerships",
+ 'The effectiveness of care, guidance and support',
+ 'The use of assessment to support learning',
+ 'The quality of provision in the Early Years Foundation Stage',
+ 'The effectiveness of leadership and management of the Early Years Foundation Stage',
+ 'The effectiveness of leadership and management of the sixth form',
+ 'The effectiveness with which the school promotes equality of opportunity and tackles discrimination',
+ 'The effectiveness with which the school promotes community cohesion',
+ 'The effectiveness with which the school deploys resources to achieve value for money',
+ 'The effectiveness of the governing body in challenging and supporting the school so that weaknesses are tackled decisively...',
+ 'The effectiveness of safeguarding procedures',
+ "The effectiveness of the school's engagement with parents and carers",
+ 'The leadership and management of teaching and learning',
+ "Pilot_Does the school adequately promote the pupils' well-being?",
+ 'Pilot_Does the school adequately promote community cohesion?',
+ 'Pilot_Does the school provide value for money?',
+ 'Inspection number of the previous inspection',
+ 'Academic year of the previous inspection',
+ 'Inspection end date of the previous inspection',
+ 'Previous inspection - Overall effectiveness',
+ 'Previous inspection - Category',
+ 'Movement in overall effectiveness since previous inspection',
+ 'Time between inspections (months)',
+ 'Web Link',
+ 'Inspection type grouping',
+ 'Event type grouping',
+ 'Category of concern',
+ 'Outcomes for pupils',
+ 'Quality of teaching, learning and assessment',
+ 'Effectiveness of leadership and management',
+ 'Personal development, behaviour and welfare',
+ 'Early years provision (where applicable)',
+ '16 - 19 study programmes',
+ 'Previous inspection number',
+ 'Previous inspection start date',
+ 'Previous inspection end date',
+ 'Previous overall effectiveness',
+ 'Previous category of concern',
+ 'Previous outcomes for pupils',
+ 'Previous quality of teaching, learning and assessment',
+ 'Previous effectiveness of leadership and management',
+ 'Previous personal development, behaviour and welfare',
+ 'Previous early years provision (where applicable)',
+ 'Previous 16 - 19 study programmes',
+ 'Number of warning notices issued in 2016/17 academic year',
+ 'Publication date',
+ 'Previous publication date',
+ 'Outcomes for short inspections that did not convert',
+ 'Does the previous inspection relate to the school in its current form?',
+ 'URN at time of previous inspection',
+ 'LAESTAB at time of previous inspection',
+ 'School name at time of previous inspection',
+ 'School type at time of previous inspection',
+ 'Inspection type grouping (final)',
+ '16-19 study programmes',
+ 'Previous 16-19 study programmes',
+ 'Linked school type of education',
+ 'OB number on Roll',
+ 'conversion decision',
+ 'deemed flag',
+ 'Withdrawn date',
+ 'Previous withdrawn date']
+    df.drop(toDrop, axis=1,inplace=True)
+
+def fillNewestRowForURN(col):
+    '''Checks if any col in the row is empty.
+    To use with df.apply()
+    If row[col] is empty, looks to see if there are any non-empty values in 
+    a different row with the same URN and copies in.'''
+    global colCount
+    global rowCount
+    print()
+    print('colCount',colCount)
+    print()
+    print(col)
+    print(df0['URN'][colCount])
+#    if df0.iloc[colCount+1,'URN'] == row['URN']:
+#        print('\n\n')
+#        print(df0.iloc[colCount+1], row['URN'])
+#        print('\n\n')
+    colCount+=1
+#    print(row)
+#    print(row.shift(3))
+    a = col.isnull()
+    print('a:\n',a)
+    #b = df0.iloc[10000,:][a]
+#    print('All entries in the new row that are blank in the original row:\n',b)
+
+
+def generateDFs(df):
+    URNs = set(df['URN'])
+    df2 = pd.DataFrame()
+    for URN in URNs:
+        minidf = df[df['URN']==URN]
+        print(URN)
+        print(minidf)
+#        print(minidf.index[0])
+        
+        # Work through all rows with same URN
+#        for rowNo in range(minidf.index[0],minidf.index[0]+len(minidf)):
+        currRow = minidf.iloc[0,15:25]
+        print('currRow\n',currRow)
+        for rowNo in range(len(minidf)):
+            row = minidf.iloc[rowNo,15:25] 
+#            print('\nrow',rowNo)
+#            print(row)
+#            print(row.isnull())   
+            mask = ~row.isnull()
+            #print('masked bit:\n',currRow[mask])
+            currRow[mask] = row[mask]
+            print('\nNew currRow\n',currRow)
+                
+def fullSesh():
+    initialiseVariables()
+    loadData('bigDFnoDups1.csv')
+    print('\nData loaded!')
+    print('Filling initial dictionary...') 
+    global df0     
+    df0.apply(addRatingToDict, axis=1)
+    print('Filled first dictionary')
+    global currentRatingsDict 
+    currentRatingsDict= ratingsDict.copy()
+    print('Updating dictionary with predecessors...')
+    df0.apply(addPreviousRatingsToDict, axis=1)
+    print('Identifying stuck schools...')
+    stuckDict(currentRatingsDict, count)
+    print('Adding/updating stuck column in df...')
+    addStuckCol(stuck, df0, 'allDataWithStuck.csv')
+    print('Dropping unneeded cols...')
+    dropCols(df0)
+    print('Complete!\n')
+    print(len(stuck),'stuck schools')
+    print(len(currentRatingsDict),'open schools with an inspection since 2005')
+
+#global colCount, rowCount
+#colCount, rowCount = 0,0
+#df1 = df0.head()
+#df1.apply(fillNewestRowForURN, axis=0)
+
+generateDFs(df0.head(30))
+
+#fullSesh()
 #
 #110191
 #118328
