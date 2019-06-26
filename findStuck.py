@@ -18,12 +18,12 @@ def initialiseVariables():
     global count
     global stuck
     global subbedTheSub
-    global rowCount
+    global colCount
     ratingsDict = {}
     currentRatingsDict = {}
     oldURNs, URNsNotIndf0, subbedTheSub, stuck = [],[],[],[]
     count = 0
-    rowCount=0
+    colCount=0
 def loadData(fileName):
     global df0
     df0 = pd.read_csv(folderPath + fileName)
@@ -241,21 +241,54 @@ def dropCols(df):
  'Previous withdrawn date']
     df.drop(toDrop, axis=1,inplace=True)
 
-def fillNewestRowForURN(row):
+def fillNewestRowForURN(col):
     '''Checks if any col in the row is empty.
     To use with df.apply()
     If row[col] is empty, looks to see if there are any non-empty values in 
     a different row with the same URN and copies in.'''
-    
-    if df0.iloc[rowCount+1,'URN'] == row['URN']:
-        print(df0.iloc[rowCount+1], row['URN'])
+    global colCount
+    global rowCount
+    print()
+    print('colCount',colCount)
+    print()
+    print(col)
+    print(df0['URN'][colCount])
+#    if df0.iloc[colCount+1,'URN'] == row['URN']:
+#        print('\n\n')
+#        print(df0.iloc[colCount+1], row['URN'])
+#        print('\n\n')
+    colCount+=1
 #    print(row)
 #    print(row.shift(3))
-#    a = row.isnull()
-#    print(a)
-#    b = df0.iloc[10000,:][a]
+    a = col.isnull()
+    print('a:\n',a)
+    #b = df0.iloc[10000,:][a]
 #    print('All entries in the new row that are blank in the original row:\n',b)
 
+
+def generateDFs(df):
+    URNs = set(df['URN'])
+    df2 = pd.DataFrame()
+    for URN in URNs:
+        minidf = df[df['URN']==URN]
+        print(URN)
+        print(minidf)
+#        print(minidf.index[0])
+        
+        # Work through all rows with same URN
+#        for rowNo in range(minidf.index[0],minidf.index[0]+len(minidf)):
+        currRow = minidf.iloc[0,15:25]
+        print('currRow\n',currRow)
+        for rowNo in range(len(minidf)):
+            row = minidf.iloc[rowNo,15:25] 
+#            print('\nrow',rowNo)
+#            print(row)
+#            print(row.isnull())   
+            mask = ~row.isnull()
+            #print('masked bit:\n',currRow[mask])
+            currRow[mask] = row[mask]
+            print('\nNew currRow\n',currRow)
+                
 def fullSesh():
     initialiseVariables()
     loadData('bigDFnoDups1.csv')
@@ -277,6 +310,13 @@ def fullSesh():
     print('Complete!\n')
     print(len(stuck),'stuck schools')
     print(len(currentRatingsDict),'open schools with an inspection since 2005')
+
+#global colCount, rowCount
+#colCount, rowCount = 0,0
+#df1 = df0.head()
+#df1.apply(fillNewestRowForURN, axis=0)
+
+generateDFs(df0.head(30))
 
 #fullSesh()
 #
