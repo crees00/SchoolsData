@@ -38,6 +38,7 @@ def addRatingToDict(row):
     except:
         ratingsDict[URN][0].insert(0,row['Overall effectiveness'])
 
+
 def addPreviousRatingsToDict(row):
     '''Look up schools/academies that are currently open. See if they have
     any predecessors and add the predecessor scores to those of the current
@@ -93,7 +94,6 @@ def addPredRatings(currURN, oldURN):
 #                print(currURN,'not in currentRatingsDict so must be closed')
 #        else:
 #            print(currURN,oldURN,'already in oldURNs')
-            
     else:
         URNsNotIndf0.append(oldURN)
 #        print(oldURN,'Not in URN col')
