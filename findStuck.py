@@ -19,9 +19,11 @@ def initialiseVariables():
     global stuck
     global subbedTheSub
     global colCount
+    global allPreds, allParents
     ratingsDict = {}
     currentRatingsDict = {}
-    oldURNs, URNsNotIndf0, subbedTheSub, stuck = [],[],[],[]
+    oldURNs, URNsNotIndf0, subbedTheSub, stuck, allPreds = [],[],[],[],[]
+    allParents = []
     count = 0
     colCount=0
 def loadData(fileName):
@@ -52,6 +54,7 @@ def addPreviousRatingsToDict(row):
     '''
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
+    global allParents
 #    print(len(currentRatingsDict))
     if len(predList) >0:
         for no in predList:
@@ -60,18 +63,20 @@ def addPreviousRatingsToDict(row):
             # Check current URN isn't listed as a predecessor
             if no==row['URN']:
                 continue
-            # Remove URN entry from dictionary as school is closed
-#            print(no, 'is in Predecessor School URN(s) col for',row['URN'])
-            try:
-                currentRatingsDict.pop(no)
-#                print('popped',no)
-            except:
-#                print("couldn't pop - school already removed from currentRatingsDict")
-                pass
-            finally:
-                addPredRatings(row['URN'], no)
-                # Add to list of removed URNs so don't double count later
-                oldURNs.append((row['URN'],no))
+            allPreds.append(no)
+            allParents.append(row['URN'])
+#            # Remove URN entry from dictionary as school is closed
+##            print(no, 'is in Predecessor School URN(s) col for',row['URN'])
+#            try:
+#                currentRatingsDict.pop(no)
+##                print('popped',no)
+#            except:
+##                print("couldn't pop - school already removed from currentRatingsDict")
+#                pass
+#            finally:
+            addPredRatings(row['URN'], no)
+            # Add to list of removed URNs so don't double count later
+            oldURNs.append((row['URN'],no))
         
 
 def addPredRatings(currURN, oldURN):
@@ -126,14 +131,9 @@ def addStuckCol(stuck, df, write=False):
     '''
     df['Stuck'] = df.apply(lambda row: np.where(
             (int(row['URN']) in stuck),1,0), axis=1)
-    if write != False:
-        if type(write) != str:
-            raise TypeError("Need string input 'filename.csv' to addStuckCol")
-        try:
-            print('Writing .csv file...')
-            df.to_csv(write)
-        except:
-            print("Couldn't write file - bad file name in addStuckCol()")
+    if write:
+        print('Writing .csv file...')
+        df.to_csv('allDataWithStuck.csv')
 
 def dropCols(df):
     '''Removes all the columns in the big list from the df'''
@@ -269,6 +269,35 @@ def generateDFs(df, write=False):
         print('Writing .csv file...')
         dfByURN.to_csv('dfByURN.csv')
 
+def removeClosedSchools(df=False, write=False):
+    ''' Removes schools that don't have a URN in the edubase openSchools file.
+    Can either be sent a df or will default to reading in dfByURN.csv and 
+    returns the reduced df.
+    '''
+    if type(df)==bool:
+        df = pd.read_csv(folderPath + 'dfByURN.csv') # 2 because it's local but same thing
+    
+    openSchools = pd.read_csv(folderPath + 'edubaseallstatefunded20190627.csv',
+                              encoding='latin-1')
+    a,b = set(df['URN']), set(openSchools['URN'])
+    c = set(ratingsDict.keys())
+    print(len(a), 'dfByURN no of URNs')
+    print(len(b), 'openSchools no of URNs')
+    print(len(a-b),'schools in dfByURN that are not actually open')
+    print(len(b-a),'open schools that are not in dfByURN that should be\n\
+          or just have not been inspected in the time period')
+    print(len(b&a),'schools in dfByURN and openSchools so should appear in final df')
+    print(len(c&b), 'schools in ratingsDict and openSchools')
+    global dfOnlyOpen
+    dfOnlyOpen = df.merge(openSchools[['URN', 'HeadLastName']],
+                               how='inner', on='URN')
+    dfOnlyOpen.drop(['HeadLastName'], axis=1, inplace=True)
+    print(dfOnlyOpen.shape,'shape of dfOnlyOpen')
+    print(len(dfOnlyOpen['URN']),'schools in dfOnlyOpen')
+    if write:
+        dfOnlyOpen.to_csv('dfOnlyOpen')
+    return dfOnlyOpen
+
 def countBlanks(df, write=False):
     ''' Used to check if the generateDFs function has worked properly.
     For each URN, generates a row in a new df with true/false values.
@@ -292,13 +321,8 @@ def countBlanks(df, write=False):
         
         # count no of blanks in each col
         for col in (set(minidf.columns)-set(['URN'])):
-#            print()
-#            print(minidf[col])
-#            print(minidf[minidf[col].isnull()])
-            
             # True if all values are blank
             row[col] = (len(minidf) == len(minidf[minidf[col].isnull()]))
-#            print(len(minidf[minidf[col].isnull()]),'blanks')
         row['URN'] = URN
         rows.append(row.copy())
     global showBlanks
@@ -322,14 +346,20 @@ def fullSesh():
     print('Identifying stuck schools...')
     stuckDict(currentRatingsDict, count)
     print('Adding/updating stuck column in df...')
-    addStuckCol(stuck, df0, 'allDataWithStuck.csv')
+    addStuckCol(stuck, df0)
     print('Dropping unneeded cols...')
     dropCols(df0)
     print('Making df with a row for each school...')
-    generateDFs(df0, True)
+#    generateDFs(df0)
+    print('Removing closed schools...')
+    removeClosedSchools(dfByURN)
     print('Complete!\n')
-    print(len(stuck),'stuck schools')
-    print(len(currentRatingsDict),'open schools with an inspection since 2005')
+    print(len(dfOnlyOpen[dfOnlyOpen['Stuck']==1]),'stuck schools')
+    print(len(dfOnlyOpen),'open schools with an inspection since 2005')
 
 
-#fullSesh()
+fullSesh()
+
+allSchoolsPossible = set(allPreds) |set(ratingsDict.keys())
+print(len(allSchoolsPossible))
+set(allPreds) & set(allParents)
