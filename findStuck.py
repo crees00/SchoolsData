@@ -241,62 +241,43 @@ def dropCols(df):
  'Previous withdrawn date']
     df.drop(toDrop, axis=1,inplace=True)
 
-def fillNewestRowForURN(col):
-    '''Checks if any col in the row is empty.
-    To use with df.apply()
-    If row[col] is empty, looks to see if there are any non-empty values in 
-    a different row with the same URN and copies in.'''
-    global colCount
-    global rowCount
-    print()
-    print('colCount',colCount)
-    print()
-    print(col)
-    print(df0['URN'][colCount])
-#    if df0.iloc[colCount+1,'URN'] == row['URN']:
-#        print('\n\n')
-#        print(df0.iloc[colCount+1], row['URN'])
-#        print('\n\n')
-    colCount+=1
-#    print(row)
-#    print(row.shift(3))
-    a = col.isnull()
-    print('a:\n',a)
-    #b = df0.iloc[10000,:][a]
-#    print('All entries in the new row that are blank in the original row:\n',b)
 
-
-def generateDFs(df):
+def generateDFs(df, write=False):
+    ''' Takes a df and generates a new df with one row for each URN.
+    For each URN, finds the most recent (non-blank) data for each column
+    and puts this into the row for that URN. Then merges each row into 
+    a new df and outputs to .csv file.
+    '''
     URNs = set(df['URN'])
-    df2 = pd.DataFrame()
+    global listOfRows
+    listOfRows = []
     for URN in URNs:
-        minidf = df[df['URN']==URN]
-        print(URN)
-        print(minidf)
-#        print(minidf.index[0])
+        if (100*len(listOfRows)/len(URNs))%5 ==0:
+            print(100*len(listOfRows)/len(URNs),'% done')
+        minidf = df[df['URN']==URN].copy()
         
         # Work through all rows with same URN
-#        for rowNo in range(minidf.index[0],minidf.index[0]+len(minidf)):
-        currRow = minidf.iloc[0,15:25]
-        print('currRow\n',currRow)
+        currRow = minidf.iloc[0,:].copy()
         for rowNo in range(len(minidf)):
-            row = minidf.iloc[rowNo,15:25] 
-#            print('\nrow',rowNo)
-#            print(row)
-#            print(row.isnull())   
+            row = minidf.iloc[rowNo,:].copy()
             mask = ~row.isnull()
-            #print('masked bit:\n',currRow[mask])
             currRow[mask] = row[mask]
-            print('\nNew currRow\n',currRow)
-                
+        listOfRows.append(currRow)
+    global dfByURN
+    dfByURN = pd.DataFrame(listOfRows, columns=listOfRows[0].index)
+    if write:
+        print('Writing .csv file...')
+        dfByURN.to_csv('dfByURN.csv')
+
+
 def fullSesh():
+    ''' Run the code from start to finish'''
     initialiseVariables()
     loadData('bigDFnoDups1.csv')
     print('\nData loaded!')
     print('Filling initial dictionary...') 
     global df0     
     df0.apply(addRatingToDict, axis=1)
-    print('Filled first dictionary')
     global currentRatingsDict 
     currentRatingsDict= ratingsDict.copy()
     print('Updating dictionary with predecessors...')
@@ -307,20 +288,11 @@ def fullSesh():
     addStuckCol(stuck, df0, 'allDataWithStuck.csv')
     print('Dropping unneeded cols...')
     dropCols(df0)
+    print('Making df with a row for each school...')
+    generateDFs(df0, True)
     print('Complete!\n')
     print(len(stuck),'stuck schools')
     print(len(currentRatingsDict),'open schools with an inspection since 2005')
 
-#global colCount, rowCount
-#colCount, rowCount = 0,0
-#df1 = df0.head()
-#df1.apply(fillNewestRowForURN, axis=0)
-
-generateDFs(df0.head(30))
 
 #fullSesh()
-#
-#110191
-#118328
-#106780, 137524
-#106562, 106563, 134688, 138412
