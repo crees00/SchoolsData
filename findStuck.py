@@ -269,6 +269,43 @@ def generateDFs(df, write=False):
         print('Writing .csv file...')
         dfByURN.to_csv('dfByURN.csv')
 
+def countBlanks(df, write=False):
+    ''' Used to check if the generateDFs function has worked properly.
+    For each URN, generates a row in a new df with true/false values.
+    True: All values for that URN in that column are blank
+    False: There is at least one non-blank value for that URN in that column
+    
+    Can then compare with the dfbyURN.csv file - if there is a False where
+    there is a blank in the dfByURN.csv file, generateDFs hasn't picked up
+    the non-blank value
+    '''
+    URNs = set(df['URN'])
+    global rows
+    rows=[]
+    row = df.iloc[0,:].copy()
+    counter=5
+    for URN in URNs:
+        if (100*len(rows)/len(URNs)) > counter:
+            print((100*len(rows)/len(URNs))//1,'% done')
+            counter += 5
+        minidf = df[df['URN']==URN].copy()
+        
+        # count no of blanks in each col
+        for col in (set(minidf.columns)-set(['URN'])):
+#            print()
+#            print(minidf[col])
+#            print(minidf[minidf[col].isnull()])
+            
+            # True if all values are blank
+            row[col] = (len(minidf) == len(minidf[minidf[col].isnull()]))
+#            print(len(minidf[minidf[col].isnull()]),'blanks')
+        row['URN'] = URN
+        rows.append(row.copy())
+    global showBlanks
+    showBlanks = pd.DataFrame(rows, columns = rows[0].index)
+    print('Writing .csv file...')
+    showBlanks.to_csv('showBlanks.csv')
+#countBlanks(df0)
 
 def fullSesh():
     ''' Run the code from start to finish'''
