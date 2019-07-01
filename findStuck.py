@@ -63,7 +63,7 @@ def addPreviousRatingsToDict(row, params):
             # Check current URN isn't listed as a predecessor
             if no==row['URN']:
                 continue
-            allPreds.append(no)
+            params['allPreds'].append(no)
             params['allParents'].append(row['URN'])
             params = addPredRatings(row['URN'],no, params)
             # Add to list of removed URNs so don't double count later
@@ -105,7 +105,7 @@ def stuckURN(URN, dictToUse, params):
     if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
         if  ratings[1] + ratings[2] ==0:
             params['stuck'].append(URN)
-     return params['stuck']
+    return params['stuck']
         
 def stuckDict(dictToUse, params):
     '''Applies stuckURN to each URN in the given dictionary'''
@@ -123,10 +123,11 @@ def addStuckCol(df, params, write=False):
     '''
     print('Adding/updating stuck column in df...')
     df['Stuck'] = df.apply(lambda row: np.where(
-            (int(row['URN']) in stuck),1,0), axis=1)
+            (int(row['URN']) in params['stuck']),1,0), axis=1)
     if write:
         print('Writing .csv file...')
         df.to_csv('allDataWithStuck.csv')
+    return df
 
 def dropCols(df):
     '''Removes all the columns in the big list from the df'''
@@ -234,7 +235,7 @@ def dropCols(df):
  'Withdrawn date',
  'Previous withdrawn date']
     df.drop(toDrop, axis=1,inplace=True)
-
+    return df
 
 def generateDFs(df, write=False):
     ''' Takes a df and generates a new df with one row for each URN.
@@ -244,7 +245,6 @@ def generateDFs(df, write=False):
     '''
     print('Making df with a row for each school...')
     URNs = set(df['URN'])
-    global listOfRows
     listOfRows = []
     for URN in URNs:
         if (100*len(listOfRows)/len(URNs))%5 ==0:
@@ -258,25 +258,26 @@ def generateDFs(df, write=False):
             mask = ~row.isnull()
             currRow[mask] = row[mask]
         listOfRows.append(currRow)
-    global dfByURN
     dfByURN = pd.DataFrame(listOfRows, columns=listOfRows[0].index)
     if write:
         print('Writing .csv file...')
         dfByURN.to_csv('dfByURN.csv')
+    return dfByURN
 
-def removeClosedSchools(df=False, write=False):
+def removeClosedSchools(params, df=False, write=False):
     ''' Removes schools that don't have a URN in the edubase openSchools file.
     Can either be sent a df or will default to reading in dfByURN.csv and 
     returns the reduced df.
     '''
     print('Removing closed schools...')
     if type(df)==bool:
-        df = pd.read_csv(folderPath + 'dfByURN.csv') # 2 because it's local but same thing
-    global openSchools
-    openSchools = pd.read_csv(folderPath + 'edubaseallstatefunded20190627.csv',
+        df = pd.read_csv(folderPath + 'dfByURN.csv') 
+    openSchools = pd.read_csv(folderPath + 
+          'edubaseallstatefunded20190627.csv',
                               encoding='latin-1')
-    a,b = set(df['URN']), set(openSchools['URN'])
-    c = set(ratingsDict.keys())
+    a,params['openSchoolsSet'] = set(df['URN']), set(openSchools['URN'])
+    b = params['openSchoolsSet']
+    c = set(params['ratingsDict'].keys())
     print(len(a), 'dfByURN no of URNs')
     print(len(b), 'openSchools no of URNs')
     print(len(a-b),'schools in dfByURN that are not actually open')
@@ -284,7 +285,7 @@ def removeClosedSchools(df=False, write=False):
           or just have not been inspected in the time period')
     print(len(b&a),'schools in dfByURN and openSchools so should appear in final df')
     print(len(c&b), 'schools in ratingsDict and openSchools')
-    global dfOnlyOpen
+
     dfOnlyOpen = df.merge(openSchools[['URN', 'HeadLastName']],
                                how='inner', on='URN')
     dfOnlyOpen.drop(['HeadLastName'], axis=1, inplace=True)
@@ -292,7 +293,7 @@ def removeClosedSchools(df=False, write=False):
     print(len(dfOnlyOpen['URN']),'schools in dfOnlyOpen')
     if write:
         dfOnlyOpen.to_csv('dfOnlyOpen')
-    return dfOnlyOpen
+    return dfOnlyOpen, params
 
 def countBlanks(df, write=False):
     ''' Used to check if the generateDFs function has worked properly.
