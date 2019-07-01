@@ -15,47 +15,47 @@ def initialiseVariables():
     global currentRatingsDict
     global oldURNs
     global URNsNotIndf0
-    global count
     global stuck
     global subbedTheSub
-    global colCount
     global allPreds, allParents
-    ratingsDict = {}
-    currentRatingsDict = {}
-    oldURNs, URNsNotIndf0, subbedTheSub, stuck, allPreds = [],[],[],[],[]
     allParents = []
-    count = 0
-    colCount=0
+    dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
+                     'oldURNs':[], 'URNsNotIndf0':[], 'subbedTheSub':[],
+                     'stuck':[], 'allPreds':[], 'allParents':[]}
+    return dictsAndLists
+
 def loadData(fileName):
     global df0
     df0 = pd.read_csv(folderPath + fileName)
+    print('\nData loaded!')
+    return df0
 
-def addRatingToDict(row):
+def addRatingToDict(row, params):
     ''' Look up overall effectiveness rating for that row.
     Add it to the tally for that URN in the dictionary.
     If overall effectiveness is not 1-4, append it to list in position 0'''
+    dictToUse = params['ratingsDict']
     URN = row['URN']
     cat = row['Overall effectiveness']
     
-    if URN not in ratingsDict.keys():
-        ratingsDict[URN] = [[],0,0,0,0] # [random others, cat1, cat2, cat3, cat4]
-    
+    if URN not in dictToUse.keys():
+        dictToUse[URN] = [[],0,0,0,0] # [random others, cat1, cat2, cat3, cat4]
     try:
-        ratingsDict[URN][cat] += 1
+        dictToUse[URN][cat] += 1
     except:
-        ratingsDict[URN][0].insert(0,row['Overall effectiveness'])
+        dictToUse[URN][0].insert(0,row['Overall effectiveness'])
+    params['ratingsDict'] = dictToUse
 
-
-def addPreviousRatingsToDict(row):
+def addPreviousRatingsToDict(row, params):
     '''Look up schools/academies that are currently open. See if they have
     any predecessors and add the predecessor scores to those of the current
     school/academy.
-    Dictionary contains an entry for each school/academy that is currently open
+    Dictionary contains an entry for each school/academy that has been
+    inspected since 2005 - regardless of whether it is open or closed.
     '''
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
-    global allParents
-#    print(len(currentRatingsDict))
+    
     if len(predList) >0:
         for no in predList:
             no=int(no)
@@ -64,71 +64,64 @@ def addPreviousRatingsToDict(row):
             if no==row['URN']:
                 continue
             allPreds.append(no)
-            allParents.append(row['URN'])
-#            # Remove URN entry from dictionary as school is closed
-##            print(no, 'is in Predecessor School URN(s) col for',row['URN'])
-#            try:
-#                currentRatingsDict.pop(no)
-##                print('popped',no)
-#            except:
-##                print("couldn't pop - school already removed from currentRatingsDict")
-#                pass
-#            finally:
-            addPredRatings(row['URN'], no)
+            params['allParents'].append(row['URN'])
+            params = addPredRatings(row['URN'],no, params)
             # Add to list of removed URNs so don't double count later
-            oldURNs.append((row['URN'],no))
+            params['oldURNs'].append((row['URN'],no))
         
 
-def addPredRatings(currURN, oldURN):
+def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
     ratings for the current URN
     Just updates the currentRatingsDict dictionary
     '''
+    ratingsDict, currentRatingsDict = params['ratingsDict'], params['currentRatingsDict']
     if currURN == oldURN:
         print('currURN == oldURN for', currURN)
         return
-#    print('addPredRatings',currURN,oldURN)
     
     # Check oldURN is in the URN column
-    if len(df0[df0['URN']==int(oldURN)])>0:
+    if (int(oldURN) in ratingsDict.keys()):
         # Check not double counting as multiple rows will have same URN combo
-        if (currURN,oldURN) not in oldURNs:
+        if (currURN,oldURN) not in params['oldURNs']:
             try:
-#                print('Add',currURN)
                 if len(ratingsDict[oldURN][0])>0:
                     currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0])
                 for cat in range(1,5):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
-#                print('KeyError. currURN =',currURN,', oldURN =',oldURN)
-                subbedTheSub.append(currURN)
-#                print(currURN,'not in currentRatingsDict so must be closed')
-#        else:
-#            print(currURN,oldURN,'already in oldURNs')
+                params['subbedTheSub'].append(currURN)
     else:
-        URNsNotIndf0.append(oldURN)
-#        print(oldURN,'Not in URN col')
+        # If previous URN is not in df0 then assume that previous URN
+        # has not been inspected since 2005 so has nothing to add
+        params['URNsNotIndf0'].append(oldURN)
+    
+    return params
 
-def stuckURN(URN, count, dictToUse):
+def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
     whether the school is stuck and, if so, adds it to stuck list'''
     ratings = dictToUse[URN]
-    if ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
-        count += 1
+    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
         if  ratings[1] + ratings[2] ==0:
-            stuck.append(URN)
-            
-def stuckDict(dictToUse, count):
+            params['stuck'].append(URN)
+     return params['stuck']
+        
+def stuckDict(dictToUse, params):
     '''Applies stuckURN to each URN in the given dictionary'''
+    print('Identifying stuck schools...')
     for URN in dictToUse:
-        stuckURN(URN, count, dictToUse)
+        stuckURN(URN, dictToUse, params)
+    print(len(params['stuck']),'items in stuck')
+    return params['stuck']
 
-def addStuckCol(stuck, df, write=False):
+def addStuckCol(df, params, write=False):
     '''Add a column called Stuck to the df
     1 if the URN is in the 'stuck' list
     0 if not stuck
     If write != False then write to .csv
     '''
+    print('Adding/updating stuck column in df...')
     df['Stuck'] = df.apply(lambda row: np.where(
             (int(row['URN']) in stuck),1,0), axis=1)
     if write:
@@ -137,6 +130,7 @@ def addStuckCol(stuck, df, write=False):
 
 def dropCols(df):
     '''Removes all the columns in the big list from the df'''
+    print('Dropping unneeded cols...')
     toDrop = ['Unnamed: 0',
  'Web link',
  'Inspection number',
@@ -248,6 +242,7 @@ def generateDFs(df, write=False):
     and puts this into the row for that URN. Then merges each row into 
     a new df and outputs to .csv file.
     '''
+    print('Making df with a row for each school...')
     URNs = set(df['URN'])
     global listOfRows
     listOfRows = []
@@ -274,9 +269,10 @@ def removeClosedSchools(df=False, write=False):
     Can either be sent a df or will default to reading in dfByURN.csv and 
     returns the reduced df.
     '''
+    print('Removing closed schools...')
     if type(df)==bool:
         df = pd.read_csv(folderPath + 'dfByURN.csv') # 2 because it's local but same thing
-    
+    global openSchools
     openSchools = pd.read_csv(folderPath + 'edubaseallstatefunded20190627.csv',
                               encoding='latin-1')
     a,b = set(df['URN']), set(openSchools['URN'])
@@ -331,35 +327,3 @@ def countBlanks(df, write=False):
     showBlanks.to_csv('showBlanks.csv')
 #countBlanks(df0)
 
-def fullSesh():
-    ''' Run the code from start to finish'''
-    initialiseVariables()
-    loadData('bigDFnoDups1.csv')
-    print('\nData loaded!')
-    print('Filling initial dictionary...') 
-    global df0     
-    df0.apply(addRatingToDict, axis=1)
-    global currentRatingsDict 
-    currentRatingsDict= ratingsDict.copy()
-    print('Updating dictionary with predecessors...')
-    df0.apply(addPreviousRatingsToDict, axis=1)
-    print('Identifying stuck schools...')
-    stuckDict(currentRatingsDict, count)
-    print('Adding/updating stuck column in df...')
-    addStuckCol(stuck, df0)
-    print('Dropping unneeded cols...')
-    dropCols(df0)
-    print('Making df with a row for each school...')
-#    generateDFs(df0)
-    print('Removing closed schools...')
-    removeClosedSchools(dfByURN)
-    print('Complete!\n')
-    print(len(dfOnlyOpen[dfOnlyOpen['Stuck']==1]),'stuck schools')
-    print(len(dfOnlyOpen),'open schools with an inspection since 2005')
-
-
-fullSesh()
-
-allSchoolsPossible = set(allPreds) |set(ratingsDict.keys())
-print(len(allSchoolsPossible))
-set(allPreds) & set(allParents)
