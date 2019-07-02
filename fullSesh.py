@@ -5,9 +5,18 @@ Created on Mon Jul  1 13:03:11 2019
 @author: Chris
 """
 import findStuck
-import pandas as pd
+#import pandas as pd
+import sys
+
+orig_stdout = sys.stdout
+f = open('out.txt', 'w')
+sys.stdout = f
+
+
+
 
 params = findStuck.initialiseVariables()
+params['bla']=[]
 df0 = findStuck.loadData('bigDFnoDups1.csv')
 print('Filling initial dictionary...') 
 
@@ -16,13 +25,14 @@ params['currentRatingsDict']= params['ratingsDict'].copy()
 print('Updating dictionary with predecessors...')
 
 df0.apply(findStuck.addPreviousRatingsToDict, axis=1, args=(params,))
-params['stuck'] = findStuck.stuckDict(params['ratingsDict'], params)
-df0 = findStuck.addStuckCol(df0, params)
+params['stuck'] = findStuck.stuckDict(params['currentRatingsDict'], params)
+df0 = findStuck.addStuckCol(df0, params, write=True)
 df0 = findStuck.dropCols(df0)
-#df1 = findStuck.generateDFs(df0)
-df2, params = findStuck.removeClosedSchools(params)
+df1 = findStuck.generateDFs(df0, write=True)
+df2, params = findStuck.removeClosedSchools(params,df1, write=True)
 print('Complete!\n')
-print(len(df2[df2['Stuck']==1]),'stuck schools')
+print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
+print(len(params['openStuck']),'stuck schools from URN sets')
 print(len(params['openSchoolsSet']),'open schools with an inspection since 2005')
 
 
@@ -43,3 +53,8 @@ print(len(params['openSchoolsSet']),'open schools with an inspection since 2005'
 #dfnow = pd.read_csv('dfByURN.csv')
 #lostSchoolsdf = dfnow[dfnow['URN'].isin(list(lostSchools))]
 #lostSchoolsdf.to_csv('lostSchoolsdf.csv')
+
+
+
+sys.stdout = orig_stdout
+f.close()

@@ -11,17 +11,10 @@ import re
 folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\" 
 
 def initialiseVariables():
-    global ratingsDict
-    global currentRatingsDict
-    global oldURNs
-    global URNsNotIndf0
-    global stuck
-    global subbedTheSub
-    global allPreds, allParents
-    allParents = []
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
                      'oldURNs':[], 'URNsNotIndf0':[], 'subbedTheSub':[],
-                     'stuck':[], 'allPreds':[], 'allParents':[]}
+                     'stuck':[], 'allPreds':[], 'allParents':[],
+                     'inspectionCount':{1:0,2:0,3:0,4:0,9:0}}
     return dictsAndLists
 
 def loadData(fileName):
@@ -38,13 +31,36 @@ def addRatingToDict(row, params):
     URN = row['URN']
     cat = row['Overall effectiveness']
     
+    
     if URN not in dictToUse.keys():
         dictToUse[URN] = [[],0,0,0,0] # [random others, cat1, cat2, cat3, cat4]
     try:
         dictToUse[URN][cat] += 1
+        params['inspectionCount'][cat] += 1
     except:
         dictToUse[URN][0].insert(0,row['Overall effectiveness'])
+        params['inspectionCount'][9] += 1
     params['ratingsDict'] = dictToUse
+    
+    if len(params['bla'])<3:
+        params['bla'].append('addRatingToDict run')
+        
+def dictCheck(row, dictToUse, usedList):
+    ''' Counts number of each category in the df
+    but doesn't double count duplicate inspection numbers
+    inputs:
+        dictToUse = {1:0,2:0,3:0,4:0,9:0}, usedList = []
+        bigDF.apply(addRatingToDict, axis=1, args=(new,usedList))'''
+    cat = row['Overall effectiveness']
+    inspNo = row['Inspection number']
+    
+    if inspNo in usedList:
+        return
+    try:
+        dictToUse[cat] +=1
+    except:
+        dictToUse[9] +=1
+    usedList.append(inspNo)
 
 def addPreviousRatingsToDict(row, params):
     '''Look up schools/academies that are currently open. See if they have
@@ -68,7 +84,8 @@ def addPreviousRatingsToDict(row, params):
             params = addPredRatings(row['URN'],no, params)
             # Add to list of removed URNs so don't double count later
             params['oldURNs'].append((row['URN'],no))
-        
+    if len(params['bla'])<20:
+        params['bla'].append('addPreviousRatingsToDict run')
 
 def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
@@ -84,18 +101,23 @@ def addPredRatings(currURN, oldURN, params):
     if (int(oldURN) in ratingsDict.keys()):
         # Check not double counting as multiple rows will have same URN combo
         if (currURN,oldURN) not in params['oldURNs']:
+#            print('\ncurr',currURN,'old',oldURN)
+#            print(currentRatingsDict[currURN],'+', ratingsDict[oldURN])
             try:
                 if len(ratingsDict[oldURN][0])>0:
-                    currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0])
+                    for item in range(len(ratingsDict[oldURN][0])):
+                        currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0][item])
                 for cat in range(1,5):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
                 params['subbedTheSub'].append(currURN)
+            print(currentRatingsDict[currURN])
     else:
         # If previous URN is not in df0 then assume that previous URN
         # has not been inspected since 2005 so has nothing to add
         params['URNsNotIndf0'].append(oldURN)
-    
+    if len(params['bla'])<40:
+        params['bla'].append('addPredRatings run')
     return params
 
 def stuckURN(URN, dictToUse, params):
@@ -105,6 +127,10 @@ def stuckURN(URN, dictToUse, params):
     if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
         if  ratings[1] + ratings[2] ==0:
             params['stuck'].append(URN)
+            print('ratings',ratings)
+            if ratings != params['ratingsDict'][URN]:
+                print(URN)
+                print(params['ratingsDict'][URN],'\n')
     return params['stuck']
         
 def stuckDict(dictToUse, params):
@@ -275,7 +301,8 @@ def removeClosedSchools(params, df=False, write=False):
     openSchools = pd.read_csv(folderPath + 
           'edubaseallstatefunded20190627.csv',
                               encoding='latin-1')
-    a,params['openSchoolsSet'] = set(df['URN']), set(openSchools['URN'])
+    a = set(df['URN'])
+    params['openSchoolsSet'] = set(openSchools['URN'])
     b = params['openSchoolsSet']
     c = set(params['ratingsDict'].keys())
     print(len(a), 'dfByURN no of URNs')
@@ -292,7 +319,8 @@ def removeClosedSchools(params, df=False, write=False):
     print(dfOnlyOpen.shape,'shape of dfOnlyOpen')
     print(len(dfOnlyOpen['URN']),'schools in dfOnlyOpen')
     if write:
-        dfOnlyOpen.to_csv('dfOnlyOpen')
+        dfOnlyOpen.to_csv('dfOnlyOpen.csv')
+    params['openStuck'] = list(set(params['stuck']) & set(openSchools['URN']))
     return dfOnlyOpen, params
 
 def countBlanks(df, write=False):

@@ -46,3 +46,7 @@ openURNs = set(openSchools['URN'])
 print(len(openURNs),'open schools')
 openStuckURNs = allStuckURNs & openURNs
 print(len(openStuckURNs),'open stuck schools')
+
+
+    if len(params['bla'])<20:
+        params['bla'].append('addPreviousRatingsToDict run')

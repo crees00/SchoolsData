@@ -56,7 +56,7 @@ dfDict = {'0515':bigDF}
 
 for key in fileNames.keys():
     bigDF = appendDataFrameFromFile(bigDF, fileNames[key])
-
+print(len(set(bigDF['Inspection number'])),'unique inspection numbers in total')
 #bigDFchopped = df.copy()
 #dfDictChopped = {'0515':bigDFchopped}
 #
