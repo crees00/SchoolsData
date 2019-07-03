@@ -8,7 +8,11 @@ import numpy as np
 import pandas as pd
 import re
 
-folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\" 
+where = 'ONS'
+if where=='ONS':
+        folderPath = r"C:\Users\reesc1\Docs" + '\\'
+else:
+        folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
 
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
@@ -19,7 +23,8 @@ def initialiseVariables():
 
 def loadData(fileName):
     global df0
-    df0 = pd.read_csv(folderPath + fileName)
+    print('loading',fileName)
+    df0 = pd.read_csv(folderPath + fileName, encoding='Latin-1')
     print('\nData loaded!')
     return df0
 

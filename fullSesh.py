@@ -6,18 +6,18 @@ Created on Mon Jul  1 13:03:11 2019
 """
 import findStuck
 #import pandas as pd
-import sys
-
-orig_stdout = sys.stdout
-f = open('out.txt', 'w')
-sys.stdout = f
+#import sys
+#
+#orig_stdout = sys.stdout
+#f = open('out.txt', 'w')
+#sys.stdout = f
 
 
 
 
 params = findStuck.initialiseVariables()
 params['bla']=[]
-df0 = findStuck.loadData('bigDFnoDups1.csv')
+df0 = findStuck.loadData('\code/bigDFnoDups1.csv')
 print('Filling initial dictionary...') 
 
 df0.apply(findStuck.addRatingToDict, axis=1, args=(params,))
@@ -56,5 +56,5 @@ print(len(params['openSchoolsSet']),'open schools with an inspection since 2005'
 
 
 
-sys.stdout = orig_stdout
-f.close()
+#sys.stdout = orig_stdout
+#f.close()

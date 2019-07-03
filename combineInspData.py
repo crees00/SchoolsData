@@ -6,11 +6,45 @@ Created on Wed Jun 26 11:06:22 2019
 """
 
 import pandas as pd
+where='ONS'
+def openFile(fileName, sheet_name=None, header=None, skiprows=0):
+    print('openFile',fileName)
+    if where=='ONS':
+        folderPath = r"C:\Users\reesc1\Docs\Data\\"
+    else:
+        folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
+    
+    if fileName[-4:]=='.csv':
+        print('.csv file path given')
+        try:
+            return pd.read_csv(folderPath + fileName, encoding='Latin-1', 
+                               header=header, skiprows=skiprows)
+        except:
+            print(folderPath+fileName,'not found')
+    elif fileName[-5:]=='.xlsx':
+        print('.xlsx file path given')
+        if where!= 'ONS':
+            try:
+                return pd.read_excel(folderPath + fileName, 
+                                     skiprows=skiprows,
+                                     sheet_name=sheet_name)
+            except:
+                print(folderPath+fileName,'not found (not ONS)')
+        else:
+            try:
+                return pd.read_excel(folderPath + fileName,
+                                     sheetname=sheet_name,
+                                     header=header,
+                                     skiprows=skiprows)
+            except:
+                print(folderPath+fileName, 'not found (ONS)')
+    else:
+        print('file not opened as no file ending')
 
-folderPath = r"C:\Users\Chris\Documents\Documents\ONS"
-fileName = folderPath + r"\Ofsted Data\Copy of Management_information_-_schools_-_1_Sept_2005_to_31_August_2015.xlsx"
-df = pd.read_excel(fileName, sheet_name='2005-2015 Inspections', skiprows=0,header=1)
-
+fileName = r"Copy of Management_information_-_schools_-_1_Sept_2005_to_31_August_2015.csv"
+df = openFile(fileName, header=1)
+#print(df)
+print(df.shape)
 # Format: Filename, SheetName, skiprows, header
 fileNames = {
     'Aug16' : ['Ofsted_31_August_2016.xlsx', 'D1 Sep 15 to Aug 16', None, 0],
@@ -31,8 +65,10 @@ def appendDataFrameFromFile(df0, infoList, dropCols = False):
     listed in the 'toKeep' list 
     Returns new dataframe'''
     
-    fileName = folderPath + r"\Ofsted Data" + '\\' + infoList[0]
-    dfToAdd = pd.read_excel(fileName, 
+    fileName = infoList[0]
+#    if where=='ONS':
+#        fileName = fileName[:-4]+'csv'
+    dfToAdd = openFile(fileName,
                        sheet_name= infoList[1], 
                        skiprows= infoList[2],
                        header= infoList[3])
@@ -46,7 +82,7 @@ def appendDataFrameFromFile(df0, infoList, dropCols = False):
     dfDict[infoList[0][:-5]] = dfToAdd
     
     print('Appending',infoList[0],'with shape:',dfToAdd.shape, 'to df with shape:',df0.shape)
-    newDF = df0.append(dfToAdd, sort=False)
+    newDF = df0.append(dfToAdd)#, sort=False) **
     print('Output df has shape',newDF.shape)
     
     return newDF
@@ -70,8 +106,10 @@ bigDFsorted = bigDF.sort_values(by = ['URN','Inspection start date'], axis=0)
 bigDFnoDups = bigDFsorted.drop_duplicates('Inspection number')
 print(bigDFnoDups.shape)   
  
-URNchanges = pd.read_excel(folderPath + r"\Academies.xlsx", 
-                           sheet_name='Open', skiprows=9)   
+URNchanges = openFile(r"Academies.csv", 
+                           sheet_name='Open', 
+                           skiprows=9, 
+                           header=0)   
 
 # Add cols showing URN of predecessor school(s)
 
