@@ -17,24 +17,45 @@ import pandas as pd
 
 params = findStuck.initialiseVariables()
 params['where']='ONS'
-params['bla']=[]
-df0 = findStuck.loadData('\code/bigDFnoDups1.csv')
+df0 = findStuck.loadData('\code/bigDFnoDups1CutOffAtAug18.csv')
 print('Filling initial dictionary...') 
 
+print('ratingsDict')
+findStuck.countRatings(params['ratingsDict'])
+print('currentRatingsDict')
+findStuck.countRatings(params['currentRatingsDict'])
 df0.apply(findStuck.addRatingToDict, axis=1, args=(params,))
-params['currentRatingsDict']= params['ratingsDict'].copy()
-print('Updating dictionary with predecessors...')
 
+print('ratingsDict')
+findStuck.countRatings(params['ratingsDict'])
+print('currentRatingsDict')
+findStuck.countRatings(params['currentRatingsDict'])
+print('\ncopying dictionary')
+params['currentRatingsDict']= params['ratingsDict'].copy()
+params['ratingsDict'][199999] = [[9],1,1,1,1]
+print('added in something to ratingsDict')
+
+print('ratingsDict')
+findStuck.countRatings(params['ratingsDict'])
+print('currentRatingsDict')
+findStuck.countRatings(params['currentRatingsDict'])
+
+print('\nUpdating dictionary with predecessors...')
 df0.apply(findStuck.addPreviousRatingsToDict, axis=1, args=(params,))
-params['stuck'] = findStuck.stuckDict(params['currentRatingsDict'], params)
-df0 = findStuck.addStuckCol(df0, params, write=True)
-df0 = findStuck.dropCols(df0)
-df1 = findStuck.generateDFs(df0, write=True)
-df2, params = findStuck.removeClosedSchools(params,df1, write=True)
-print('Complete!\n')
-print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
-print(len(params['openStuck']),'stuck schools from URN sets')
-print(len(params['openSchoolsSet']),'open schools with an inspection since 2005')
+print('ratingsDict')
+findStuck.countRatings(params['ratingsDict'])
+print('currentRatingsDict')
+findStuck.countRatings(params['currentRatingsDict'])
+
+#params['stuck'] = findStuck.stuckDict(params['currentRatingsDict'], params)
+#df0 = findStuck.addStuckCol(df0, params, write=True)
+#df0 = findStuck.dropCols(df0)
+#df1 = findStuck.generateDFs(df0, write=True)
+#df2, params = findStuck.removeClosedSchools(params,df1, write=True)
+#print('Complete!\n')
+#print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
+#print(len(params['openStuck']),'stuck schools from URN sets')
+#print(len(params['openSchoolsSet']),'open schools with an inspection since 2005')
 
 
 #

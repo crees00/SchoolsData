@@ -47,8 +47,6 @@ def addRatingToDict(row, params):
         params['inspectionCount'][9] += 1
     params['ratingsDict'] = dictToUse
     
-    if len(params['bla'])<3:
-        params['bla'].append('addRatingToDict run')
         
 def dictCheck(row, dictToUse, usedList):
     ''' Counts number of each category in the df
@@ -74,6 +72,8 @@ def addPreviousRatingsToDict(row, params):
     Dictionary contains an entry for each school/academy that has been
     inspected since 2005 - regardless of whether it is open or closed.
     '''
+    lenRat = countRatings(params['ratingsDict'])
+    lenCur = countRatings(params['currentRatingsDict'])
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
     
@@ -89,15 +89,21 @@ def addPreviousRatingsToDict(row, params):
             params = addPredRatings(row['URN'],no, params)
             # Add to list of removed URNs so don't double count later
             params['oldURNs'].append((row['URN'],no))
-    if len(params['bla'])<20:
-        params['bla'].append('addPreviousRatingsToDict run')
+##    print('ratingsDict')
+#    countRatings(params['ratingsDict'])
+#    print('currentRatingsDict')
+#    countRatings(params['currentRatingsDict'])
+    if   countRatings(params['ratingsDict']) >   lenRat:
+        print(countRatings(params['ratingsDict']) ,   lenRat)
+
 
 def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
     ratings for the current URN
     Just updates the currentRatingsDict dictionary
     '''
-    ratingsDict, currentRatingsDict = params['ratingsDict'], params['currentRatingsDict']
+    ratingsDict = params['ratingsDict']
+    currentRatingsDict = params['currentRatingsDict']
     if currURN == oldURN:
         print('currURN == oldURN for', currURN)
         return
@@ -120,8 +126,7 @@ def addPredRatings(currURN, oldURN, params):
         # If previous URN is not in df0 then assume that previous URN
         # has not been inspected since 2005 so has nothing to add
         params['URNsNotIndf0'].append(oldURN)
-    if len(params['bla'])<40:
-        params['bla'].append('addPredRatings run')
+    params['currentRatingsDict'] = currentRatingsDict
     return params
 
 def stuckURN(URN, dictToUse, params):
@@ -299,10 +304,12 @@ def removeClosedSchools(params, df=False, write=False):
     print('Removing closed schools...')
     if type(df)==bool:
         df = pd.read_csv(folderPath + 'dfByURN.csv') 
-    if params['where']=='ONS':
-        file = 'Data\edubaseallstatefunded20190704.csv'
-    else:
-        file = 'edubaseallstatefunded20190627.csv'
+#    if params['where']=='ONS':
+#        file = 'Data\edubaseallstatefunded20190704.csv'
+#    else:
+#        file = 'edubaseallstatefunded20190627.csv'
+    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
+    
     openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
     a = set(df['URN'])
     params['openSchoolsSet'] = set(openSchools['URN'])
@@ -359,3 +366,11 @@ def countBlanks(df, write=False):
     showBlanks.to_csv('showBlanks.csv')
 #countBlanks(df0)
 
+def countRatings(dictToUse):
+    ratingsCount=0
+    for URN in dictToUse.keys():
+        ratings = dictToUse[URN]
+        ratingsCount += (len(ratings[0]) + ratings[1] + 
+              ratings[2] + ratings[3] + ratings[4])
+#    print(ratingsCount,'ratings in dict')
+    return ratingsCount
