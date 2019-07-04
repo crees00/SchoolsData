@@ -8,7 +8,11 @@ import numpy as np
 import pandas as pd
 import re
 
-folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\" 
+where = 'ONS'
+if where=='ONS':
+        folderPath = r"C:\Users\reesc1\Docs" + '\\'
+else:
+        folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
 
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
@@ -19,7 +23,8 @@ def initialiseVariables():
 
 def loadData(fileName):
     global df0
-    df0 = pd.read_csv(folderPath + fileName)
+    print('loading',fileName)
+    df0 = pd.read_csv(folderPath + fileName, encoding='Latin-1')
     print('\nData loaded!')
     return df0
 
@@ -29,7 +34,7 @@ def addRatingToDict(row, params):
     If overall effectiveness is not 1-4, append it to list in position 0'''
     dictToUse = params['ratingsDict']
     URN = row['URN']
-    cat = row['Overall effectiveness']
+    cat = int(row['Overall effectiveness'])
     
     
     if URN not in dictToUse.keys():
@@ -111,7 +116,6 @@ def addPredRatings(currURN, oldURN, params):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
                 params['subbedTheSub'].append(currURN)
-            print(currentRatingsDict[currURN])
     else:
         # If previous URN is not in df0 then assume that previous URN
         # has not been inspected since 2005 so has nothing to add
@@ -127,10 +131,7 @@ def stuckURN(URN, dictToUse, params):
     if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
         if  ratings[1] + ratings[2] ==0:
             params['stuck'].append(URN)
-            print('ratings',ratings)
-            if ratings != params['ratingsDict'][URN]:
-                print(URN)
-                print(params['ratingsDict'][URN],'\n')
+#            if ratings != params['ratingsDict'][URN]:
     return params['stuck']
         
 def stuckDict(dictToUse, params):
@@ -298,9 +299,11 @@ def removeClosedSchools(params, df=False, write=False):
     print('Removing closed schools...')
     if type(df)==bool:
         df = pd.read_csv(folderPath + 'dfByURN.csv') 
-    openSchools = pd.read_csv(folderPath + 
-          'edubaseallstatefunded20190627.csv',
-                              encoding='latin-1')
+    if params['where']=='ONS':
+        file = 'Data\edubaseallstatefunded20190704.csv'
+    else:
+        file = 'edubaseallstatefunded20190627.csv'
+    openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
     a = set(df['URN'])
     params['openSchoolsSet'] = set(openSchools['URN'])
     b = params['openSchoolsSet']

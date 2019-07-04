@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Jun 26 11:06:22 2019
-
 @author: Chris
 """
 
 import pandas as pd
 
-folderPath = r"C:\Users\Chris\Documents\Documents\ONS"
-fileName = folderPath + r"\Ofsted Data\Copy of Management_information_-_schools_-_1_Sept_2005_to_31_August_2015.xlsx"
+where = 'ONS'
+if where=='ONS':
+    folderPath = r"C:\Users\reesc1\Docs\Data\\"
+else:
+    folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
+    print('change from Academies2.xlsx to Academies.xlsx')
+
+fileName = folderPath + r"Ofsted Data\Copy of Management_information_-_schools_-_1_Sept_2005_to_31_August_2015.xlsx"
 df = pd.read_excel(fileName, sheet_name='2005-2015 Inspections', skiprows=0,header=1)
 
 # Format: Filename, SheetName, skiprows, header
@@ -70,7 +75,7 @@ bigDFsorted = bigDF.sort_values(by = ['URN','Inspection start date'], axis=0)
 bigDFnoDups = bigDFsorted.drop_duplicates('Inspection number')
 print(bigDFnoDups.shape)   
  
-URNchanges = pd.read_excel(folderPath + r"\Academies.xlsx", 
+URNchanges = pd.read_excel(folderPath + r"\Academies2.xlsx", 
                            sheet_name='Open', skiprows=9)   
 
 # Add cols showing URN of predecessor school(s)
@@ -80,5 +85,3 @@ toDrop = set(URNchanges.columns) - set(toKeep)
 bigDFnoDups1 = bigDFnoDups.merge(URNchanges, how='left', on='URN', indicator=True)
 bigDFnoDups1.drop(toDrop, axis=1, inplace=True)
 bigDFnoDups1.to_csv('bigDFnoDups1.csv')
-
-
