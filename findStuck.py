@@ -17,7 +17,7 @@ else:
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
                      'oldURNs':[], 'URNsNotIndf0':[], 'subbedTheSub':[],
-                     'stuck':[], 'allPreds':[], 'allParents':[],
+                     'stuck':[], 'allPreds':[], 'allParents':[],'countPreds':[],
                      'inspectionCount':{1:0,2:0,3:0,4:0,9:0}}
     return dictsAndLists
 
@@ -72,12 +72,13 @@ def addPreviousRatingsToDict(row, params):
     Dictionary contains an entry for each school/academy that has been
     inspected since 2005 - regardless of whether it is open or closed.
     '''
-    lenRat = countRatings(params['ratingsDict'])
-    lenCur = countRatings(params['currentRatingsDict'])
+#    lenRat = countRatings(params['ratingsDict'])
+#    lenCur = countRatings(params['currentRatingsDict'])
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
     
     if len(predList) >0:
+        params['countPreds'].append(row['URN'])
         for no in predList:
             no=int(no)
             
@@ -93,8 +94,8 @@ def addPreviousRatingsToDict(row, params):
 #    countRatings(params['ratingsDict'])
 #    print('currentRatingsDict')
 #    countRatings(params['currentRatingsDict'])
-    if   countRatings(params['ratingsDict']) >   lenRat:
-        print(countRatings(params['ratingsDict']) ,   lenRat)
+#    if   countRatings(params['ratingsDict']) >   lenRat:
+#        print(countRatings(params['ratingsDict']) ,   lenRat)
 
 
 def addPredRatings(currURN, oldURN, params):
@@ -122,6 +123,7 @@ def addPredRatings(currURN, oldURN, params):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
                 params['subbedTheSub'].append(currURN)
+                print(currURN,'not in dict')
     else:
         # If previous URN is not in df0 then assume that previous URN
         # has not been inspected since 2005 so has nothing to add
@@ -133,17 +135,21 @@ def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
     whether the school is stuck and, if so, adds it to stuck list'''
     ratings = dictToUse[URN]
-    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
-        if  ratings[1] + ratings[2] ==0:
-            params['stuck'].append(URN)
-#            if ratings != params['ratingsDict'][URN]:
-    return params['stuck']
-        
+#    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
+    if  ratings[1] + ratings[2] ==0:
+        return URN
+#            params['stuck'].append(URN)
+#    return params['stuck']
+    return None
+
 def stuckDict(dictToUse, params):
     '''Applies stuckURN to each URN in the given dictionary'''
     print('Identifying stuck schools...')
     for URN in dictToUse:
-        stuckURN(URN, dictToUse, params)
+#        params['stuck'] = stuckURN(URN,dictToUse,params)
+        isStuck = stuckURN(URN, dictToUse, params)
+        if isStuck != None:
+            params['stuck'].append(isStuck)
     print(len(params['stuck']),'items in stuck')
     return params['stuck']
 
@@ -304,11 +310,11 @@ def removeClosedSchools(params, df=False, write=False):
     print('Removing closed schools...')
     if type(df)==bool:
         df = pd.read_csv(folderPath + 'dfByURN.csv') 
-#    if params['where']=='ONS':
-#        file = 'Data\edubaseallstatefunded20190704.csv'
-#    else:
-#        file = 'edubaseallstatefunded20190627.csv'
-    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
+    if params['where']=='ONS':
+        file = 'Data\edubaseallstatefunded20190704.csv'
+    else:
+        file = 'edubaseallstatefunded20190627.csv'
+#    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
     
     openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
     a = set(df['URN'])

@@ -6,6 +6,7 @@ Created on Mon Jul  1 13:03:11 2019
 """
 import findStuck
 import pandas as pd
+import copy
 #import sys
 #
 #orig_stdout = sys.stdout
@@ -17,41 +18,37 @@ import pandas as pd
 
 params = findStuck.initialiseVariables()
 params['where']='ONS'
-df0 = findStuck.loadData('\code/bigDFnoDups1CutOffAtAug18.csv')
+df0 = findStuck.loadData('\code/bigDFnoDups1.csv')
+print(df0.shape)
 print('Filling initial dictionary...') 
 
-print('ratingsDict')
-findStuck.countRatings(params['ratingsDict'])
-print('currentRatingsDict')
-findStuck.countRatings(params['currentRatingsDict'])
+print('ratingsDict',findStuck.countRatings(params['ratingsDict']))
+print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
 df0.apply(findStuck.addRatingToDict, axis=1, args=(params,))
 
-print('ratingsDict')
-findStuck.countRatings(params['ratingsDict'])
-print('currentRatingsDict')
-findStuck.countRatings(params['currentRatingsDict'])
+print('ratingsDict',findStuck.countRatings(params['ratingsDict']))
+print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
+
 print('\ncopying dictionary')
-params['currentRatingsDict']= params['ratingsDict'].copy()
-params['ratingsDict'][199999] = [[9],1,1,1,1]
-print('added in something to ratingsDict')
-
-print('ratingsDict')
-findStuck.countRatings(params['ratingsDict'])
-print('currentRatingsDict')
-findStuck.countRatings(params['currentRatingsDict'])
-
-print('\nUpdating dictionary with predecessors...')
-df0.apply(findStuck.addPreviousRatingsToDict, axis=1, args=(params,))
-print('ratingsDict')
-findStuck.countRatings(params['ratingsDict'])
-print('currentRatingsDict')
-findStuck.countRatings(params['currentRatingsDict'])
-
+params['currentRatingsDict']= copy.deepcopy(params['ratingsDict'])
+copyOfRatingsDict = copy.deepcopy(params['ratingsDict'])
+#params['ratingsDict'][199999] = [[9],1,1,1,1]
+#print('added in something to ratingsDict')
+#
+#print('ratingsDict',findStuck.countRatings(params['ratingsDict']))
+#print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
+#print('length of ratingsDict',len(params['ratingsDict']))
+#print('\nUpdating dictionary with predecessors...')
+#df0.apply(findStuck.addPreviousRatingsToDict, axis=1, args=(params,))
+#print('ratingsDict',findStuck.countRatings(params['ratingsDict']))
+#print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
+#
 #params['stuck'] = findStuck.stuckDict(params['currentRatingsDict'], params)
+#
 #df0 = findStuck.addStuckCol(df0, params, write=True)
 #df0 = findStuck.dropCols(df0)
-#df1 = findStuck.generateDFs(df0, write=True)
-#df2, params = findStuck.removeClosedSchools(params,df1, write=True)
+##df1 = findStuck.generateDFs(df0, write=True)
+##df2, params = findStuck.removeClosedSchools(params,df1, write=True)
 #print('Complete!\n')
 #print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
 #print(len(params['openStuck']),'stuck schools from URN sets')

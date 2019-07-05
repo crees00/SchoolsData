@@ -82,6 +82,9 @@ URNchanges = pd.read_excel(folderPath + r"\Academies2.xlsx",
 
 toKeep = ['Academy Name','Open','Predecessor School URN(s)','URN']
 toDrop = set(URNchanges.columns) - set(toKeep)
+print('URNchanges:',URNchanges.shape, 'bigDFnoDups:',bigDFnoDups.shape)
 bigDFnoDups1 = bigDFnoDups.merge(URNchanges, how='left', on='URN', indicator=True)
+print('bigDFnoDups1',bigDFnoDups1.shape)
 bigDFnoDups1.drop(toDrop, axis=1, inplace=True)
+print('bigDFnoDups1',bigDFnoDups1.shape)
 bigDFnoDups1.to_csv('bigDFnoDups1.csv')
