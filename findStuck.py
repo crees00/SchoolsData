@@ -8,18 +8,23 @@ import numpy as np
 import pandas as pd
 import re
 
-folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\" 
+where = 'ONS'
+if where=='ONS':
+        folderPath = r"C:\Users\reesc1\Docs" + '\\'
+else:
+        folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
 
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
                      'oldURNs':[], 'URNsNotIndf0':[], 'subbedTheSub':[],
-                     'stuck':[], 'allPreds':[], 'allParents':[],
+                     'stuck':[], 'allPreds':[], 'allParents':[],'countPreds':[],
                      'inspectionCount':{1:0,2:0,3:0,4:0,9:0}}
     return dictsAndLists
 
 def loadData(fileName):
     global df0
-    df0 = pd.read_csv(folderPath + fileName)
+    print('loading',fileName)
+    df0 = pd.read_csv(folderPath + fileName, encoding='Latin-1')
     print('\nData loaded!')
     return df0
 
@@ -29,7 +34,7 @@ def addRatingToDict(row, params):
     If overall effectiveness is not 1-4, append it to list in position 0'''
     dictToUse = params['ratingsDict']
     URN = row['URN']
-    cat = row['Overall effectiveness']
+    cat = int(row['Overall effectiveness'])
     
     
     if URN not in dictToUse.keys():
@@ -42,8 +47,6 @@ def addRatingToDict(row, params):
         params['inspectionCount'][9] += 1
     params['ratingsDict'] = dictToUse
     
-    if len(params['bla'])<3:
-        params['bla'].append('addRatingToDict run')
         
 def dictCheck(row, dictToUse, usedList):
     ''' Counts number of each category in the df
@@ -69,10 +72,13 @@ def addPreviousRatingsToDict(row, params):
     Dictionary contains an entry for each school/academy that has been
     inspected since 2005 - regardless of whether it is open or closed.
     '''
+#    lenRat = countRatings(params['ratingsDict'])
+#    lenCur = countRatings(params['currentRatingsDict'])
     pred = row['Predecessor School URN(s)']
     predList = re.findall('[0-9]{4,7}',str(pred))
     
     if len(predList) >0:
+        params['countPreds'].append(row['URN'])
         for no in predList:
             no=int(no)
             
@@ -84,15 +90,21 @@ def addPreviousRatingsToDict(row, params):
             params = addPredRatings(row['URN'],no, params)
             # Add to list of removed URNs so don't double count later
             params['oldURNs'].append((row['URN'],no))
-    if len(params['bla'])<20:
-        params['bla'].append('addPreviousRatingsToDict run')
+##    print('ratingsDict')
+#    countRatings(params['ratingsDict'])
+#    print('currentRatingsDict')
+#    countRatings(params['currentRatingsDict'])
+#    if   countRatings(params['ratingsDict']) >   lenRat:
+#        print(countRatings(params['ratingsDict']) ,   lenRat)
+
 
 def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
     ratings for the current URN
     Just updates the currentRatingsDict dictionary
     '''
-    ratingsDict, currentRatingsDict = params['ratingsDict'], params['currentRatingsDict']
+    ratingsDict = params['ratingsDict']
+    currentRatingsDict = params['currentRatingsDict']
     if currURN == oldURN:
         print('currURN == oldURN for', currURN)
         return
@@ -111,33 +123,33 @@ def addPredRatings(currURN, oldURN, params):
                     currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             except KeyError:
                 params['subbedTheSub'].append(currURN)
-            print(currentRatingsDict[currURN])
+                print(currURN,'not in dict')
     else:
         # If previous URN is not in df0 then assume that previous URN
         # has not been inspected since 2005 so has nothing to add
         params['URNsNotIndf0'].append(oldURN)
-    if len(params['bla'])<40:
-        params['bla'].append('addPredRatings run')
+    params['currentRatingsDict'] = currentRatingsDict
     return params
 
 def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
     whether the school is stuck and, if so, adds it to stuck list'''
     ratings = dictToUse[URN]
-    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
-        if  ratings[1] + ratings[2] ==0:
-            params['stuck'].append(URN)
-            print('ratings',ratings)
-            if ratings != params['ratingsDict'][URN]:
-                print(URN)
-                print(params['ratingsDict'][URN],'\n')
-    return params['stuck']
-        
+#    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
+    if  ratings[1] + ratings[2] ==0:
+        return URN
+#            params['stuck'].append(URN)
+#    return params['stuck']
+    return None
+
 def stuckDict(dictToUse, params):
     '''Applies stuckURN to each URN in the given dictionary'''
     print('Identifying stuck schools...')
     for URN in dictToUse:
-        stuckURN(URN, dictToUse, params)
+#        params['stuck'] = stuckURN(URN,dictToUse,params)
+        isStuck = stuckURN(URN, dictToUse, params)
+        if isStuck != None:
+            params['stuck'].append(isStuck)
     print(len(params['stuck']),'items in stuck')
     return params['stuck']
 
@@ -298,9 +310,13 @@ def removeClosedSchools(params, df=False, write=False):
     print('Removing closed schools...')
     if type(df)==bool:
         df = pd.read_csv(folderPath + 'dfByURN.csv') 
-    openSchools = pd.read_csv(folderPath + 
-          'edubaseallstatefunded20190627.csv',
-                              encoding='latin-1')
+    if params['where']=='ONS':
+        file = 'Data\edubaseallstatefunded20190704.csv'
+    else:
+        file = 'edubaseallstatefunded20190627.csv'
+#    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
+    
+    openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
     a = set(df['URN'])
     params['openSchoolsSet'] = set(openSchools['URN'])
     b = params['openSchoolsSet']
@@ -356,3 +372,11 @@ def countBlanks(df, write=False):
     showBlanks.to_csv('showBlanks.csv')
 #countBlanks(df0)
 
+def countRatings(dictToUse):
+    ratingsCount=0
+    for URN in dictToUse.keys():
+        ratings = dictToUse[URN]
+        ratingsCount += (len(ratings[0]) + ratings[1] + 
+              ratings[2] + ratings[3] + ratings[4])
+#    print(ratingsCount,'ratings in dict')
+    return ratingsCount
