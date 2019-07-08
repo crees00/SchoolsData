@@ -135,9 +135,9 @@ def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
     whether the school is stuck and, if so, adds it to stuck list'''
     ratings = dictToUse[URN]
-#    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
-    if  ratings[1] + ratings[2] ==0:
-        return URN
+    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
+        if  ratings[1] + ratings[2] ==0:
+            return URN
 #            params['stuck'].append(URN)
 #    return params['stuck']
     return None
