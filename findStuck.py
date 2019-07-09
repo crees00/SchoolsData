@@ -135,9 +135,9 @@ def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
     whether the school is stuck and, if so, adds it to stuck list'''
     ratings = dictToUse[URN]
-#    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
-    if  ratings[1] + ratings[2] ==0:
-        return URN
+    if len(ratings[0]) + ratings[1] + ratings[2] + ratings[3] + ratings[4] >=4:
+        if  ratings[1] + ratings[2] ==0:
+            return URN
 #            params['stuck'].append(URN)
 #    return params['stuck']
     return None
@@ -152,6 +152,16 @@ def stuckDict(dictToUse, params):
             params['stuck'].append(isStuck)
     print(len(params['stuck']),'items in stuck')
     return params['stuck']
+
+def fixForDodgyData(df0):
+    a = df0.dropna(subset=['Overall effectiveness'])
+    if len(a)<len(df0):
+        print('dropping',len(df0)-len(a),'rows with NaN for Overall effectiveness')
+        df0 = df0.dropna(subset=['Overall effectiveness'])
+    toKeep = ['URN','Overall effectiveness', 'Predecessor School URN(s)','School name','Academy name']
+    toDrop = set(df0.columns) - set(toKeep)
+    df0.drop(toDrop, axis=1, inplace=True)
+    return df0
 
 def addStuckCol(df, params, write=False):
     '''Add a column called Stuck to the df
@@ -272,7 +282,11 @@ def dropCols(df):
  'deemed flag',
  'Withdrawn date',
  'Previous withdrawn date']
-    df.drop(toDrop, axis=1,inplace=True)
+    for col in toDrop:
+        try:
+            df.drop(col, axis=1,inplace=True)
+        except KeyError:
+            print(col,'not found to drop')
     return df
 
 def generateDFs(df, write=False):

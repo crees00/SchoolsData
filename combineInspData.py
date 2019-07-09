@@ -5,7 +5,9 @@ Created on Wed Jun 26 11:06:22 2019
 """
 
 import pandas as pd
-
+print('running combineInspData.py')
+print("If importing, ensure combineInspData.py script hasn't changed since last import")
+print('reading in data...')
 where = 'ONS'
 if where=='ONS':
     folderPath = r"C:\Users\reesc1\Docs\Data\\"
@@ -17,17 +19,31 @@ fileName = folderPath + r"Ofsted Data\Copy of Management_information_-_schools_-
 df = pd.read_excel(fileName, sheet_name='2005-2015 Inspections', skiprows=0,header=1)
 
 # Format: Filename, SheetName, skiprows, header
+#fileNames = {
+#    'Aug16' : ['Ofsted_31_August_2016.xlsx', 'D1 Sep 15 to Aug 16', None, 0],
+#    'Aug17' : ['Ofsted_31_August_2017.xlsx', 'D1 Sep 16 to Aug 17', None, 0],
+#    'Aug18' : ['Ofsted_31_August_2018.xlsx', '1 Sep 17 to 31 Aug 2018', None, 0],
+#    'Dec15' : ['Ofsted_31_December_2015.xlsx', 'D1 Sept to Dec 2015', None, 0],
+#    'Dec16' : ['Ofsted_31_December_2016.xlsx', 'D1 Sep 16 to Dec 16', None, 0],
+#    'Dec17' : ['Ofsted_31_December_2017.xlsx', 'D1 Sep 17 to Dec 17', None, 0],
+#    'Dec18' : ['Ofsted_31_December_2018.xlsx', '1 Sep 18 to 31 Dec 2018', None, 0],
+#    'Mar16' : ['Ofsted_31_March_2016.xlsx', 'D1 Sep 15 to Mar 16', None, 0],
+#    'Mar17' : ['Ofsted_31_March_2017.xlsx', 'D1 Sep 16 to Mar 17', None, 0],
+#    'Mar18' : ['Ofsted_31_March_2018.xlsx', '1 Sep 17 to 31 Mar 2018', None, 0]}
+
 fileNames = {
-    'Aug16' : ['Ofsted_31_August_2016.xlsx', 'D1 Sep 15 to Aug 16', None, 0],
-    'Aug17' : ['Ofsted_31_August_2017.xlsx', 'D1 Sep 16 to Aug 17', None, 0],
-    'Aug18' : ['Ofsted_31_August_2018.xlsx', '1 Sep 17 to 31 Aug 2018', None, 0],
-    'Dec15' : ['Ofsted_31_December_2015.xlsx', 'D1 Sept to Dec 2015', None, 0],
-    'Dec16' : ['Ofsted_31_December_2016.xlsx', 'D1 Sep 16 to Dec 16', None, 0],
-    'Dec17' : ['Ofsted_31_December_2017.xlsx', 'D1 Sep 17 to Dec 17', None, 0],
-    'Dec18' : ['Ofsted_31_December_2018.xlsx', '1 Sep 18 to 31 Dec 2018', None, 0],
-    'Mar16' : ['Ofsted_31_March_2016.xlsx', 'D1 Sep 15 to Mar 16', None, 0],
-    'Mar17' : ['Ofsted_31_March_2017.xlsx', 'D1 Sep 16 to Mar 17', None, 0],
-    'Mar18' : ['Ofsted_31_March_2018.xlsx', '1 Sep 17 to 31 Mar 2018', None, 0]}
+    'Aug16' : ['Ofsted_31_August_2016.xlsx', 'D2 All schools 31 Aug 2016', None, 0],
+    'Aug17' : ['Ofsted_31_August_2017.xlsx', 'All schools 31 Aug 2017', None, 0],
+    'Aug18' : ['Ofsted_31_August_2018.xlsx', 'All schools 31 Aug 2018', None, 0],
+    'Dec15' : ['Ofsted_31_December_2015.xlsx', 'D2 All schools 31 Dec 2015', None, 0],
+    'Dec16' : ['Ofsted_31_December_2016.xlsx', 'All schools 31 Dec 2016', None, 0],
+    'Dec17' : ['Ofsted_31_December_2017.xlsx', 'All schools 31 Dec 2017', None, 0],
+    'Dec18' : ['Ofsted_31_December_2018.xlsx', 'All schools 31 Dec 2018', None, 0],
+    'Mar16' : ['Ofsted_31_March_2016.xlsx', 'D2 All schools 31 Mar 2016', None, 0],
+    'Mar17' : ['Ofsted_31_March_2017.xlsx', 'All schools 31 Mar 2017', None, 0],
+    'Mar18' : ['Ofsted_31_March_2018.xlsx', 'All schools 31 Mar 2018', None, 0]}
+
+
 
 def appendDataFrameFromFile(df0, infoList, dropCols = False):
     '''Takes original dataframe df0 and appends a dataframe to the bottom of it
@@ -71,7 +87,7 @@ print(len(set(bigDF['Inspection number'])),'unique inspection numbers in total')
 #bigDFchopped.to_csv('bigMashchopped.csv')
 #bigDF = pd.read_csv('bigMash1.csv')
     
-bigDFsorted = bigDF.sort_values(by = ['URN','Inspection start date'], axis=0)
+bigDFsorted = bigDF#.sort_values(by = ['URN','Inspection start date'], axis=0)
 bigDFnoDups = bigDFsorted.drop_duplicates('Inspection number')
 print(bigDFnoDups.shape)   
  
