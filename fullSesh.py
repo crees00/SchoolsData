@@ -25,6 +25,9 @@ print('Filling initial dictionary...')
 
 print('ratingsDict',findStuck.countRatings(params['ratingsDict']))
 print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
+
+df0 = findStuck.fixForDodgyData(df0)
+    
 df0.apply(findStuck.addRatingToDict, axis=1, args=(params,))
 
 print('ratingsDict',findStuck.countRatings(params['ratingsDict']))

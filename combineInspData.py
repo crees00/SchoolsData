@@ -87,7 +87,7 @@ print(len(set(bigDF['Inspection number'])),'unique inspection numbers in total')
 #bigDFchopped.to_csv('bigMashchopped.csv')
 #bigDF = pd.read_csv('bigMash1.csv')
     
-bigDFsorted = bigDF.sort_values(by = ['URN','Inspection start date'], axis=0)
+bigDFsorted = bigDF#.sort_values(by = ['URN','Inspection start date'], axis=0)
 bigDFnoDups = bigDFsorted.drop_duplicates('Inspection number')
 print(bigDFnoDups.shape)   
  
