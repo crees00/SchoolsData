@@ -18,8 +18,8 @@ import copy
 
 
 params = findStuck.initialiseVariables()
-params['where']='ONS'
-df0 = findStuck.loadData('\code/bigDFnoDups1.csv')
+#params['where']='home'
+df0 = findStuck.loadData('bigDFnoDups1.csv')
 print(df0.shape)
 print('Filling initial dictionary...') 
 

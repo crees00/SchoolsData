@@ -8,7 +8,7 @@ import pandas as pd
 print('running combineInspData.py')
 print("If importing, ensure combineInspData.py script hasn't changed since last import")
 print('reading in data...')
-where = 'ONS'
+where = 'home'
 if where=='ONS':
     folderPath = r"C:\Users\reesc1\Docs\Data\\"
 else:
