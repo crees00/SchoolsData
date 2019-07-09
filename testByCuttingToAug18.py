@@ -29,10 +29,10 @@ df10= df0[['newInspEnd','Overall effectiveness']].assign(tot=df0['newInspEnd']).
 df11 = df10.count().reset_index()
 #print(df11)
 
-print('count of each category of inspection outcome vs time (inspection start date)')
-for cat in [1,2,3,4,9]:
-    dfSubset = df11[df11['Overall effectiveness']==cat]
-    plt.scatter(dfSubset['newInspEnd'],dfSubset['tot'], s=4)
-    plt.legend()
+#print('count of each category of inspection outcome vs time (inspection start date)')
+#for cat in [1,2,3,4,9]:
+#    dfSubset = df11[df11['Overall effectiveness']==cat]
+#    plt.scatter(dfSubset['newInspEnd'],dfSubset['tot'], s=4)
+#    plt.legend()
 
 #2018-12-19 00:00:00.000   

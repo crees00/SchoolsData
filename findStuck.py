@@ -84,7 +84,10 @@ def addPreviousRatingsToDict(row, params):
     if len(predList) >0:
         params['countPreds'].append(row['URN'])
         for no in predList:
+            
             no=int(no)
+            if no == 126502:
+                print('no=',no,'URN=',row['URN'])
             
             # Check current URN isn't listed as a predecessor
             if no==row['URN']:
