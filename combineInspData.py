@@ -91,11 +91,30 @@ bigDFsorted = bigDF#.sort_values(by = ['URN','Inspection start date'], axis=0)
 bigDFnoDups = bigDFsorted.drop_duplicates('Inspection number')
 print(bigDFnoDups.shape)   
  
-URNchanges = pd.read_excel(folderPath + r"\Academies2.xlsx", 
-                           sheet_name='Open', skiprows=9)   
+def addUninspectedSchoolRows(df):
+    ''' Add a row for each currently open, uninspected school. 
+    All other cols NaN
+    '''
+    if where=='ONS':
+        file = 'edubaseallstatefunded20190704.csv'
+    else:
+        file = 'edubaseallstatefunded20190627.csv'
+#    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
+    newDF = pd.DataFrame()
+    schoolsInDF = set(df['URN'])
+    openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
+    openSchoolsSet = set(openSchools['URN'])
+    for URN in openSchoolsSet:
+        if URN not in schoolsInDF:
+            newDF = newDF.append(pd.Series({'URN':URN}), ignore_index=True)
+    return df.append(newDF)
+
+bigDFnoDups = addUninspectedSchoolRows(bigDFnoDups)
 
 # Add cols showing URN of predecessor school(s)
 
+URNchanges = pd.read_excel(folderPath + r"\Academies2.xlsx", 
+                           sheet_name='Open', skiprows=9)   
 toKeep = ['Academy Name','Open','Predecessor School URN(s)','URN']
 toDrop = set(URNchanges.columns) - set(toKeep)
 print('URNchanges:',URNchanges.shape, 'bigDFnoDups:',bigDFnoDups.shape)

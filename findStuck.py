@@ -34,20 +34,24 @@ def addRatingToDict(row, params):
     If overall effectiveness is not 1-4, append it to list in position 0'''
     dictToUse = params['ratingsDict']
     URN = row['URN']
-    cat = int(row['Overall effectiveness'])
-    
     
     if URN not in dictToUse.keys():
         dictToUse[URN] = [[],0,0,0,0] # [random others, cat1, cat2, cat3, cat4]
+    cat = row['Overall effectiveness']
+
     try:
-        dictToUse[URN][cat] += 1
-        params['inspectionCount'][cat] += 1
+        cat=int(cat)
     except:
-        dictToUse[URN][0].insert(0,row['Overall effectiveness'])
-        params['inspectionCount'][9] += 1
-    params['ratingsDict'] = dictToUse
-    
-        
+        return
+    if cat in [1,2,3,4,9]:
+        try:
+            dictToUse[URN][cat] += 1
+            params['inspectionCount'][cat] += 1
+        except:
+            dictToUse[URN][0].insert(0,row['Overall effectiveness'])
+            params['inspectionCount'][9] += 1
+        params['ratingsDict'] = dictToUse
+      
 def dictCheck(row, dictToUse, usedList):
     ''' Counts number of each category in the df
     but doesn't double count duplicate inspection numbers
@@ -96,7 +100,8 @@ def addPreviousRatingsToDict(row, params):
 #    countRatings(params['currentRatingsDict'])
 #    if   countRatings(params['ratingsDict']) >   lenRat:
 #        print(countRatings(params['ratingsDict']) ,   lenRat)
-
+#    print(len(params['URNsNotIndf0']),'items in URNsNotIndf0 ie in predecessors col but not URN col')
+#    print(len(params['subbedTheSub']),'items in subbedTheSub')
 
 def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
@@ -154,10 +159,10 @@ def stuckDict(dictToUse, params):
     return params['stuck']
 
 def fixForDodgyData(df0):
-    a = df0.dropna(subset=['Overall effectiveness'])
-    if len(a)<len(df0):
-        print('dropping',len(df0)-len(a),'rows with NaN for Overall effectiveness')
-        df0 = df0.dropna(subset=['Overall effectiveness'])
+#    a = df0.dropna(subset=['Overall effectiveness'])
+#    if len(a)<len(df0):
+#        print('dropping',len(df0)-len(a),'rows with NaN for Overall effectiveness')
+#        df0 = df0.dropna(subset=['Overall effectiveness'])
     toKeep = ['URN','Overall effectiveness', 'Predecessor School URN(s)','School name','Academy name']
     toDrop = set(df0.columns) - set(toKeep)
     df0.drop(toDrop, axis=1, inplace=True)
@@ -286,7 +291,7 @@ def dropCols(df):
         try:
             df.drop(col, axis=1,inplace=True)
         except KeyError:
-            print(col,'not found to drop')
+            pass
     return df
 
 def generateDFs(df, write=False):
@@ -323,16 +328,16 @@ def removeClosedSchools(params, df=False, write=False):
     '''
     print('Removing closed schools...')
     if type(df)==bool:
-        df = pd.read_csv(folderPath + 'dfByURN.csv') 
+        df = pd.read_csv(folderPath + 'Code\dfByURN.csv') 
     if params['where']=='ONS':
         file = 'Data\edubaseallstatefunded20190704.csv'
     else:
         file = 'edubaseallstatefunded20190627.csv'
 #    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
-    
     openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
-    a = set(df['URN'])
     params['openSchoolsSet'] = set(openSchools['URN'])
+
+    a = set(df['URN'])
     b = params['openSchoolsSet']
     c = set(params['ratingsDict'].keys())
     print(len(a), 'dfByURN no of URNs')
