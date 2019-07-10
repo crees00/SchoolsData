@@ -18,8 +18,8 @@ import copy
 
 
 params = findStuck.initialiseVariables()
-params['where']='ONS'
-df0 = findStuck.loadData('\code/bigDFnoDups1.csv')
+#params['where']='home'
+df0 = findStuck.loadData('bigDFnoDups1.csv')
 print(df0.shape)
 print('Filling initial dictionary...') 
 
@@ -55,7 +55,7 @@ print('Complete!\n')
 print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
 print(len(params['openStuck']),'stuck schools from URN sets')
 print(len((params['openSchoolsSet']) & set(df0['URN'])),'open schools with an inspection since 2005')
-
+print('URNs in both allParents and allPreds:',set(params['allParents']) & set(params['allPreds']))
 
 #
 #allSchoolsPossible = set(allPreds) |set(ratingsDict.keys())

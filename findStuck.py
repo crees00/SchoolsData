@@ -8,17 +8,19 @@ import numpy as np
 import pandas as pd
 import re
 
-where = 'ONS'
+where='home'
 if where=='ONS':
-        folderPath = r"C:\Users\reesc1\Docs" + '\\'
+    folderPath = r"C:\Users\reesc1\Docs" + '\\'
 else:
-        folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
+    folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
+
 
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
                      'oldURNs':[], 'URNsNotIndf0':[], 'subbedTheSub':[],
                      'stuck':[], 'allPreds':[], 'allParents':[],'countPreds':[],
                      'inspectionCount':{1:0,2:0,3:0,4:0,9:0}}
+    
     return dictsAndLists
 
 def loadData(fileName):
@@ -26,6 +28,7 @@ def loadData(fileName):
     print('loading',fileName)
     df0 = pd.read_csv(folderPath + fileName, encoding='Latin-1')
     print('\nData loaded!')
+    df0 = df0.sort_values(by=['URN'], ascending=True)
     return df0
 
 def addRatingToDict(row, params):
@@ -34,20 +37,24 @@ def addRatingToDict(row, params):
     If overall effectiveness is not 1-4, append it to list in position 0'''
     dictToUse = params['ratingsDict']
     URN = row['URN']
-    cat = int(row['Overall effectiveness'])
-    
     
     if URN not in dictToUse.keys():
         dictToUse[URN] = [[],0,0,0,0] # [random others, cat1, cat2, cat3, cat4]
+    cat = row['Overall effectiveness']
+
     try:
-        dictToUse[URN][cat] += 1
-        params['inspectionCount'][cat] += 1
+        cat=int(cat)
     except:
-        dictToUse[URN][0].insert(0,row['Overall effectiveness'])
-        params['inspectionCount'][9] += 1
-    params['ratingsDict'] = dictToUse
-    
-        
+        return
+    if cat in [1,2,3,4,9]:
+        try:
+            dictToUse[URN][cat] += 1
+            params['inspectionCount'][cat] += 1
+        except:
+            dictToUse[URN][0].insert(0,row['Overall effectiveness'])
+            params['inspectionCount'][9] += 1
+        params['ratingsDict'] = dictToUse
+      
 def dictCheck(row, dictToUse, usedList):
     ''' Counts number of each category in the df
     but doesn't double count duplicate inspection numbers
@@ -69,8 +76,14 @@ def addPreviousRatingsToDict(row, params):
     '''Look up schools/academies that are currently open. See if they have
     any predecessors and add the predecessor scores to those of the current
     school/academy.
-    Dictionary contains an entry for each school/academy that has been
-    inspected since 2005 - regardless of whether it is open or closed.
+    Dictionary contains an entry for each school/academy that has been 
+    inspected since 2005 plus all schools that are open now.
+    
+    Assuming that the df is sorted in order of URN (and therefore oldest to 
+    newest) then this should work for schools which have multiple generations.
+    If this function acts on a newer school first before moving to a predecessor
+    (which itself has a predecessor) then it will not include the oldest
+    school's inspections in the latest school's entry in currentRatingsDict
     '''
 #    lenRat = countRatings(params['ratingsDict'])
 #    lenCur = countRatings(params['currentRatingsDict'])
@@ -80,7 +93,10 @@ def addPreviousRatingsToDict(row, params):
     if len(predList) >0:
         params['countPreds'].append(row['URN'])
         for no in predList:
+            
             no=int(no)
+            if no == 126502:
+                print('no=',no,'URN=',row['URN'])
             
             # Check current URN isn't listed as a predecessor
             if no==row['URN']:
@@ -96,7 +112,8 @@ def addPreviousRatingsToDict(row, params):
 #    countRatings(params['currentRatingsDict'])
 #    if   countRatings(params['ratingsDict']) >   lenRat:
 #        print(countRatings(params['ratingsDict']) ,   lenRat)
-
+#    print(len(params['URNsNotIndf0']),'items in URNsNotIndf0 ie in predecessors col but not URN col')
+#    print(len(params['subbedTheSub']),'items in subbedTheSub')
 
 def addPredRatings(currURN, oldURN, params):
     '''Add the inspection ratings under the old URN to the inspection
@@ -115,12 +132,19 @@ def addPredRatings(currURN, oldURN, params):
         if (currURN,oldURN) not in params['oldURNs']:
 #            print('\ncurr',currURN,'old',oldURN)
 #            print(currentRatingsDict[currURN],'+', ratingsDict[oldURN])
+#            try:
+#                if len(ratingsDict[oldURN][0])>0:
+#                    for item in range(len(ratingsDict[oldURN][0])):
+#                        currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0][item])
+#                for cat in range(1,5):
+#                    currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
             try:
-                if len(ratingsDict[oldURN][0])>0:
-                    for item in range(len(ratingsDict[oldURN][0])):
-                        currentRatingsDict[currURN][0].append(ratingsDict[oldURN][0][item])
+                if len(currentRatingsDict[oldURN][0])>0:
+                    for item in range(len(currentRatingsDict[oldURN][0])):
+                        currentRatingsDict[currURN][0].append(currentRatingsDict[oldURN][0][item])
                 for cat in range(1,5):
-                    currentRatingsDict[currURN][cat] += ratingsDict[oldURN][cat]
+                    currentRatingsDict[currURN][cat] += currentRatingsDict[oldURN][cat]
+
             except KeyError:
                 params['subbedTheSub'].append(currURN)
                 print(currURN,'not in dict')
@@ -130,6 +154,16 @@ def addPredRatings(currURN, oldURN, params):
         params['URNsNotIndf0'].append(oldURN)
     params['currentRatingsDict'] = currentRatingsDict
     return params
+
+def grandparentCorrection(params):
+    ''' 9x URNs have both parent and children i.e. they have succeeded a school(s)
+    but also have been succeeded themselves. 
+    ratingsDict will be accurate for the pre-predecessor.
+    currentRatingsDict will be accurate for the pre-predecessor and predecessor.
+    The latest school may be accurate, depending on the order
+    '''
+    for URN in (set(params['allParents']) & set(params['allPreds'])):
+        addPredRatings
 
 def stuckURN(URN, dictToUse, params):
     '''Looks up the given URN in the given dictionary, calculates
@@ -149,15 +183,15 @@ def stuckDict(dictToUse, params):
 #        params['stuck'] = stuckURN(URN,dictToUse,params)
         isStuck = stuckURN(URN, dictToUse, params)
         if isStuck != None:
-            params['stuck'].append(isStuck)
+            params['stuck'].append(int(isStuck))
     print(len(params['stuck']),'items in stuck')
     return params['stuck']
 
 def fixForDodgyData(df0):
-    a = df0.dropna(subset=['Overall effectiveness'])
-    if len(a)<len(df0):
-        print('dropping',len(df0)-len(a),'rows with NaN for Overall effectiveness')
-        df0 = df0.dropna(subset=['Overall effectiveness'])
+#    a = df0.dropna(subset=['Overall effectiveness'])
+#    if len(a)<len(df0):
+#        print('dropping',len(df0)-len(a),'rows with NaN for Overall effectiveness')
+#        df0 = df0.dropna(subset=['Overall effectiveness'])
     toKeep = ['URN','Overall effectiveness', 'Predecessor School URN(s)','School name','Academy name']
     toDrop = set(df0.columns) - set(toKeep)
     df0.drop(toDrop, axis=1, inplace=True)
@@ -286,7 +320,7 @@ def dropCols(df):
         try:
             df.drop(col, axis=1,inplace=True)
         except KeyError:
-            print(col,'not found to drop')
+            pass
     return df
 
 def generateDFs(df, write=False):
@@ -323,16 +357,16 @@ def removeClosedSchools(params, df=False, write=False):
     '''
     print('Removing closed schools...')
     if type(df)==bool:
-        df = pd.read_csv(folderPath + 'dfByURN.csv') 
-    if params['where']=='ONS':
+        df = pd.read_csv(folderPath + 'Code\dfByURN.csv') 
+    if where=='ONS':
         file = 'Data\edubaseallstatefunded20190704.csv'
     else:
         file = 'edubaseallstatefunded20190627.csv'
 #    file = 'Data\downloaded\GIAS Standard Extract - 11-01-2018.csv'
-    
     openSchools = pd.read_csv(folderPath + file, encoding='latin-1')
-    a = set(df['URN'])
     params['openSchoolsSet'] = set(openSchools['URN'])
+
+    a = set(df['URN'])
     b = params['openSchoolsSet']
     c = set(params['ratingsDict'].keys())
     print(len(a), 'dfByURN no of URNs')
@@ -351,6 +385,8 @@ def removeClosedSchools(params, df=False, write=False):
     if write:
         dfOnlyOpen.to_csv('dfOnlyOpen.csv')
     params['openStuck'] = list(set(params['stuck']) & set(openSchools['URN']))
+    with open('openStuck.txt','w') as f:
+        f.write('\n'.join([str(x) for x in params['openStuck']]))
     return dfOnlyOpen, params
 
 def countBlanks(df, write=False):
