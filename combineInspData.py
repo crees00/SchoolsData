@@ -3,17 +3,15 @@
 Created on Wed Jun 26 11:06:22 2019
 @author: Chris
 """
-
+import setFolder as sf
 import pandas as pd
 print('running combineInspData.py')
 print("If importing, ensure combineInspData.py script hasn't changed since last import")
 print('reading in data...')
-where = 'home'
+where = sf.where
+folderPath = sf.folderPath
 if where=='ONS':
-    folderPath = r"C:\Users\reesc1\Docs\Data\\"
-else:
-    folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
-    print('change from Academies2.xlsx to Academies.xlsx')
+    folderPath = r"Data\\" + folderPath
 
 fileName = folderPath + r"Ofsted Data\Copy of Management_information_-_schools_-_1_Sept_2005_to_31_August_2015.xlsx"
 df = pd.read_excel(fileName, sheet_name='2005-2015 Inspections', skiprows=0,header=1)

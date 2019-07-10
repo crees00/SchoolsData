@@ -7,13 +7,12 @@ This is a temporary script file.
 import numpy as np
 import pandas as pd
 import re
+import setFolder.py as sf
 
-where='home'
-if where=='ONS':
-    folderPath = r"C:\Users\reesc1\Docs" + '\\'
-else:
-    folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
 
+#sf.where='ONS'
+where = sf.where
+folderPath = sf.folderPath
 
 def initialiseVariables():
     dictsAndLists = {'ratingsDict':{}, 'currentRatingsDict':{},
@@ -26,6 +25,8 @@ def initialiseVariables():
 def loadData(fileName):
     global df0
     print('loading',fileName)
+    if where=='ONS':
+        fileName = 'Code\\' + fileName
     df0 = pd.read_csv(folderPath + fileName, encoding='Latin-1')
     print('\nData loaded!')
     df0 = df0.sort_values(by=['URN'], ascending=True)
@@ -34,7 +35,8 @@ def loadData(fileName):
 def addRatingToDict(row, params):
     ''' Look up overall effectiveness rating for that row.
     Add it to the tally for that URN in the dictionary.
-    If overall effectiveness is not 1-4, append it to list in position 0'''
+    If overall effectiveness is not 1-4, append it to list in position 0
+    If row is blank i.e. uninspected school, just put blank template entry'''
     dictToUse = params['ratingsDict']
     URN = row['URN']
     
@@ -95,8 +97,6 @@ def addPreviousRatingsToDict(row, params):
         for no in predList:
             
             no=int(no)
-            if no == 126502:
-                print('no=',no,'URN=',row['URN'])
             
             # Check current URN isn't listed as a predecessor
             if no==row['URN']:
@@ -195,6 +195,7 @@ def fixForDodgyData(df0):
     toKeep = ['URN','Overall effectiveness', 'Predecessor School URN(s)','School name','Academy name']
     toDrop = set(df0.columns) - set(toKeep)
     df0.drop(toDrop, axis=1, inplace=True)
+    print('shape after dropping cols:',df0.shape)
     return df0
 
 def addStuckCol(df, params, write=False):

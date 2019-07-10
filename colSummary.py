@@ -7,7 +7,7 @@ Created on Mon Jul  8 14:19:06 2019
 
 import pandas as pd
 file = 'dfOnlyOpen.csv'
-dfOnlyOpen = pd.read_csv('dfOnlyOpen.csv')
+dfOnlyOpen = pd.read_csv(file)
 
 print(file,'opened')
 for col in dfOnlyOpen.columns:

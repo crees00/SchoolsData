@@ -18,7 +18,6 @@ import copy
 
 
 params = findStuck.initialiseVariables()
-#params['where']='home'
 df0 = findStuck.loadData('bigDFnoDups1.csv')
 print(df0.shape)
 print('Filling initial dictionary...') 
@@ -47,14 +46,15 @@ print('currentRatingsDict',findStuck.countRatings(params['currentRatingsDict']))
 
 params['stuck'] = findStuck.stuckDict(params['currentRatingsDict'], params)
 
-df0 = findStuck.addStuckCol(df0, params)#, write=True)
+df0 = findStuck.addStuckCol(df0, params, write=True)
 df0 = findStuck.dropCols(df0)
-df1 = findStuck.generateDFs(df0)#, write=True)
-df2, params = findStuck.removeClosedSchools(params,df1)#, write=True)
+df1 = findStuck.generateDFs(df0, write=True)
+df2, params = findStuck.removeClosedSchools(params,df1, write=True)
 print('Complete!\n')
 print(len(df2[df2['Stuck']==1]),'stuck schools in final df')
+print(len(df2),'schools in final df')
 print(len(params['openStuck']),'stuck schools from URN sets')
-print(len((params['openSchoolsSet']) & set(df0['URN'])),'open schools with an inspection since 2005')
+print(len((params['openSchoolsSet']) & set(df2['URN'])),'open schools in final df')
 print('URNs in both allParents and allPreds:',set(params['allParents']) & set(params['allPreds']))
 
 #
