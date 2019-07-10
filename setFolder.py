@@ -22,3 +22,6 @@ else:
 
 # Spine data    
 spineFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\General School Information"
+
+# Balance data
+balanceFile = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Balance\LA_and_school_expenditure_2017-18_Tables.csv"
