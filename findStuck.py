@@ -7,7 +7,7 @@ This is a temporary script file.
 import numpy as np
 import pandas as pd
 import re
-import setFolder.py as sf
+import setFolder as sf
 
 
 # sf.where='ONS'

@@ -8,7 +8,7 @@ import findStuck
 import pandas as pd
 import copy
 
-# import combineInspData
+import combineInspData
 # import sys
 #
 # orig_stdout = sys.stdout

@@ -4,10 +4,7 @@ Created on Wed Jul 10 13:32:43 2019
 
 @author: reesc1
 """
-def setWhere(where='ONS'):
-    return where
-where = setWhere()
-
+where = 'home'
 # Folder
 if where=='ONS':
     folderPath = r"C:\Users\reesc1\Docs" + '\\'
@@ -21,7 +18,11 @@ else:
     ebFile = r'edubaseallstatefunded20190627.csv'
 
 # Spine data    
-spineFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\General School Information"
+spineFolder = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data\2017-2018\General School Information"
+if where == 'ONS':
+    spineFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\General School Information"
 
 # Balance data
-balanceFile = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Balance\LA_and_school_expenditure_2017-18_Tables.csv"
+balanceFile = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data\2017-2018\Balance\LA_and_school_expenditure_2017-18_Tables.csv"
+if where == 'ONS':
+    balanceFile = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Balance\LA_and_school_expenditure_2017-18_Tables.csv"
