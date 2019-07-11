@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import setFolder as sf
 import re
+import colNames as cn
 
 where = sf.where
 
@@ -31,7 +32,7 @@ def analyseCols(df, name=""):
     scoreDict = {"blank": [], "<10%": [], "90%+": [], "99%+": [], "full": []}
     for col in df.columns:
         print()
-        print(col)
+        print(f'{col}  (type: {df[col].dtype})')
         print(
             df[col].count(),
             "count,",
@@ -43,7 +44,7 @@ def analyseCols(df, name=""):
         if df[col].nunique() < 15:
             print(df[col].value_counts())
         else:
-            print(f'e.g.: {df.iloc[1,:][col]}')
+            print(f'e.g.: {df[col].loc[df[col].first_valid_index()]}')
         num = df[col].count()
         if num == 0:
             scoreDict["blank"].append(col)
@@ -55,11 +56,10 @@ def analyseCols(df, name=""):
                 scoreDict["99%+"].append(col)
                 if (num / len(df)) > 0.99999999:
                     scoreDict["full"].append(col)
-    if len(df.columns) > 20:
-        print("\n\nSummary:\n")
-        print(f"{len(df.columns)} cols")
-        for key in scoreDict.keys():
-            print(f"{len(scoreDict[key])} cols {key}")
+    print("\n\nSummary:\n")
+    print(f"{len(df.columns)} cols, {len(df)} rows")
+    for key in scoreDict.keys():
+        print(f"{len(scoreDict[key])} cols {key}")
 
 
 def dropColsFromList(df, toDrop):
@@ -91,26 +91,43 @@ def addCol(df, col1, col2, func):
     """ returns a new col to add to df"""
     return df.apply(func, args=((col1, col2)), axis=1)
 
-
+def p2f(x):
+    '''converts string percentage e.g. '56%'
+    to float e.g. 0.56 '''
+    if x != x:
+        return x
+    else:
+        try:
+            return float(x.strip('%'))/100
+        # some random text in the data so just delete it
+        except ValueError:
+            return np.nan
+        
 # Add edubase cols
-print("df0.shape", df0.shape)
-print("adding edubase cols..")
-df1 = df0.merge(ebDF, on="URN", how="left")
-print("df1.shape", df1.shape)
-toDrop = []
-for col in ebDF.columns:
-    if ebDF[col].count() < 20000:
-        toDrop.append(col)
-print("dropping cols..")
-df2 = dropColsFromList(df1, toDrop)
-print("df2.shape", df2.shape)
+def addEdubaseCols (df0):
+    print("df0.shape", df0.shape)
+    print("adding edubase cols..")
+    df1 = df0.merge(ebDF, on="URN", how="left")
+    print("df1.shape", df1.shape)
+    toDrop = []
+    for col in ebDF.columns:
+        if ebDF[col].count() < 20000:
+            toDrop.append(col)
+    print("dropping cols..")
+    df2 = dropColsFromList(df1, toDrop)
+    print("df2.shape", df2.shape)
+    
+    # Add LAESTAB col
+    print("adding LAESTAB col..")
+    df2["LAESTAB"] = df2.apply(
+        lambda row: int(str(row["LA (code)"]) + str(row["EstablishmentNumber"])), axis=1
+    )
+    print("df2.shape", df2.shape)
+    return df2
 
-# Add LAESTAB col
-print("adding LAESTAB col..")
-df2["LAESTAB"] = df2.apply(
-    lambda row: int(str(row["LA (code)"]) + str(row["EstablishmentNumber"])), axis=1
-)
-print("df2.shape", df2.shape)
+df2 = addEdubaseCols(df0)
+
+ 
 
 # Update balance cols
 print('adding balance calc cols to balanceDF..')
@@ -172,6 +189,14 @@ except NameError:
     df3 = df2
 print("df3.shape", df3.shape)
 
-# Drop some more cols
+# Drop some more cols from df
 df4 = dropColsFromList(df3,['SchoolWebsite','TelephoneNum','HeadTitle (name)','HeadFirstName','HeadLastName'])
 print('df4.shape',df4.shape)
+
+# Add performance data
+perfDF18ks2['URN'].astype(float)
+df5 = df4.merge(
+        perfDF18ks2,
+        on='URN',
+        how="left",
+)
