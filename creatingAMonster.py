@@ -14,16 +14,19 @@ import colNames as cn
 where = sf.where
 
 # Read in files
-print("Opening files..")
-df0 = pd.read_csv("dfOnlyOpen.csv")
-ebDF = pd.read_csv(sf.folderPath + sf.ebFile, encoding="latin-1")
-spineDF = pd.read_csv(sf.spineFolder + r"\england_spine.csv", encoding="latin-1")
-try:
-    balanceDF = pd.read_csv(sf.balanceFile, header=7, encoding="latin-1", skipfooter=8)
-except FileNotFoundError:
-    print("File not found:", sf.balanceFile, "\nmoving on without it..")
-
-print("Finished reading files")
+def readFiles():
+    print("Opening files..")
+    df0 = pd.read_csv("dfOnlyOpen.csv")
+    ebDF = pd.read_csv(sf.folderPath + sf.ebFile, encoding="latin-1")
+    spineDF = pd.read_csv(sf.spineFolder + r"\england_spine.csv", encoding="latin-1")
+    try:
+        balanceDF = pd.read_csv(
+            sf.balanceFile, header=7, encoding="latin-1", skipfooter=8
+        )
+    except FileNotFoundError:
+        print("File not found:", sf.balanceFile, "\nmoving on without it..")
+    print("Finished reading files")
+    return df0, ebDF, spineDF, balanceDF
 
 
 def analyseCols(df, name=""):
@@ -32,7 +35,7 @@ def analyseCols(df, name=""):
     scoreDict = {"blank": [], "<10%": [], "90%+": [], "99%+": [], "full": []}
     for col in df.columns:
         print()
-        print(f'{col}  (type: {df[col].dtype})')
+        print(f"{col}  (type: {df[col].dtype})")
         print(
             df[col].count(),
             "count,",
@@ -44,7 +47,7 @@ def analyseCols(df, name=""):
         if df[col].nunique() < 15:
             print(df[col].value_counts())
         else:
-            print(f'e.g.: {df[col].loc[df[col].first_valid_index()]}')
+            print(f"e.g.: {df[col].loc[df[col].first_valid_index()]}")
         num = df[col].count()
         if num == 0:
             scoreDict["blank"].append(col)
@@ -91,20 +94,22 @@ def addCol(df, col1, col2, func):
     """ returns a new col to add to df"""
     return df.apply(func, args=((col1, col2)), axis=1)
 
+
 def p2f(x):
-    '''converts string percentage e.g. '56%'
-    to float e.g. 0.56 '''
+    """converts string percentage e.g. '56%'
+    to float e.g. 0.56 """
     if x != x:
         return x
     else:
         try:
-            return float(x.strip('%'))/100
+            return float(x.strip("%")) / 100
         # some random text in the data so just delete it
         except ValueError:
             return np.nan
-        
+
+
 # Add edubase cols
-def addEdubaseCols (df0):
+def addEdubaseCols(df0):
     print("df0.shape", df0.shape)
     print("adding edubase cols..")
     df1 = df0.merge(ebDF, on="URN", how="left")
@@ -116,7 +121,7 @@ def addEdubaseCols (df0):
     print("dropping cols..")
     df2 = dropColsFromList(df1, toDrop)
     print("df2.shape", df2.shape)
-    
+
     # Add LAESTAB col
     print("adding LAESTAB col..")
     df2["LAESTAB"] = df2.apply(
@@ -125,78 +130,79 @@ def addEdubaseCols (df0):
     print("df2.shape", df2.shape)
     return df2
 
-df2 = addEdubaseCols(df0)
-
- 
 
 # Update balance cols
-print('adding balance calc cols to balanceDF..')
-# remove '..'s
-balanceDF.replace({"..": np.nan}, inplace=True)
-# change col types
-for col in balanceDF.columns:
-    if not any([("Gov" in col), ("Name" in col), ("Phase" in col)]):
-        balanceDF[col] = balanceDF[col].astype(float)
-# Add new cols
-balanceDF["TotalRevBalance Change 7yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2010-11",
-    "Total revenue balance (1) 2017-18",
-    absChange,
-)
-balanceDF["TotalRevBalance Change 4yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2013-14",
-    "Total revenue balance (1) 2017-18",
-    absChange,
-)
-balanceDF["TotalRevBalance Change 2yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2015-16",
-    "Total revenue balance (1) 2017-18",
-    absChange,
-)
-balanceDF["PctRevBalance Change 7yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2010-11",
-    "Total revenue balance (1) 2017-18",
-    pctChange,
-)
-balanceDF["PctRevBalance Change 4yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2013-14",
-    "Total revenue balance (1) 2017-18",
-    pctChange,
-)
-balanceDF["PctRevBalance Change 2yr"] = addCol(
-    balanceDF,
-    "Total revenue balance (1) 2015-16",
-    "Total revenue balance (1) 2017-18",
-    pctChange,
-)
-# Add balance data
-print("adding balance data..")
-try:
-    df3 = df2.merge(
+def updateBalanceCols(balanceDF):
+    """ Updates the cols in balanceDF """
+    print("adding balance calc cols to balanceDF..")
+    # remove '..'s
+    balanceDF.replace({"..": np.nan}, inplace=True)
+    # change col types
+    for col in balanceDF.columns:
+        if not any([("Gov" in col), ("Name" in col), ("Phase" in col)]):
+            balanceDF[col] = balanceDF[col].astype(float)
+    # Add new cols
+    balanceDF["TotalRevBalance Change 7yr"] = addCol(
         balanceDF,
-        left_on="LAESTAB",
-        right_on="LA/ESTAB number",
-        how="left",
-        indicator=True,
+        "Total revenue balance (1) 2010-11",
+        "Total revenue balance (1) 2017-18",
+        absChange,
     )
-except NameError:
-    print("balanceDF not defined - not adding")
-    df3 = df2
-print("df3.shape", df3.shape)
+    balanceDF["TotalRevBalance Change 4yr"] = addCol(
+        balanceDF,
+        "Total revenue balance (1) 2013-14",
+        "Total revenue balance (1) 2017-18",
+        absChange,
+    )
+    balanceDF["TotalRevBalance Change 2yr"] = addCol(
+        balanceDF,
+        "Total revenue balance (1) 2015-16",
+        "Total revenue balance (1) 2017-18",
+        absChange,
+    )
+    balanceDF["PctRevBalance Change 7yr"] = addCol(
+        balanceDF,
+        "Total revenue balance (1) 2010-11",
+        "Total revenue balance (1) 2017-18",
+        pctChange,
+    )
+    balanceDF["PctRevBalance Change 4yr"] = addCol(
+        balanceDF,
+        "Total revenue balance (1) 2013-14",
+        "Total revenue balance (1) 2017-18",
+        pctChange,
+    )
+    balanceDF["PctRevBalance Change 2yr"] = addCol(
+        balanceDF,
+        "Total revenue balance (1) 2015-16",
+        "Total revenue balance (1) 2017-18",
+        pctChange,
+    )
+    return balanceDF
 
-# Drop some more cols from df
-df4 = dropColsFromList(df3,['SchoolWebsite','TelephoneNum','HeadTitle (name)','HeadFirstName','HeadLastName'])
-print('df4.shape',df4.shape)
 
-# Add performance data
-perfDF18ks2['URN'].astype(float)
-df5 = df4.merge(
-        perfDF18ks2,
-        on='URN',
-        how="left",
-)
+# Add balance data
+def addBalanceData(balanceDF, df2):
+    """ adds balanceDF to main df  """
+    print("adding balance data..")
+    try:
+        df3 = df2.merge(
+            balanceDF,
+            left_on="LAESTAB",
+            right_on="LA/ESTAB number",
+            how="left",
+            indicator=True,
+        )
+    except NameError:
+        print("balanceDF not defined - not adding")
+        df3 = df2
+    print("df3.shape", df3.shape)
+    return df3
+
+
+# df0, ebDF, spineDF, balanceDF = readFiles()
+# df2 = addEdubaseCols(df0)
+# balanceDF = updateBalanceCols(balanceDF)
+# df3 = addBalanceData(balanceDF, df2)
+# df4 = dropColsFromList(df3,['SchoolWebsite','TelephoneNum','HeadTitle (name)','HeadFirstName','HeadLastName'])
+# print('df4.shape',df4.shape)
