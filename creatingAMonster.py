@@ -42,6 +42,8 @@ def analyseCols(df, name=""):
         )
         if df[col].nunique() < 15:
             print(df[col].value_counts())
+        else:
+            print(f'e.g.: {df.iloc[1,:][col]}')
         num = df[col].count()
         if num == 0:
             scoreDict["blank"].append(col)
@@ -72,6 +74,24 @@ def dropColsFromList(df, toDrop):
         return dropColsFromList(df, toDrop)
 
 
+def absChange(row, col1, col2):
+    """ Absolute change from col1 to col2"""
+    return row[col2] - row[col1]
+
+
+def pctChange(row, col1, col2):
+    """ Percentage change from col1 to col2"""
+    try:
+        return (row[col2] - row[col1]) / row[col1]
+    except ZeroDivisionError:
+        return np.nan
+
+
+def addCol(df, col1, col2, func):
+    """ returns a new col to add to df"""
+    return df.apply(func, args=((col1, col2)), axis=1)
+
+
 # Add edubase cols
 print("df0.shape", df0.shape)
 print("adding edubase cols..")
@@ -93,20 +113,50 @@ df2["LAESTAB"] = df2.apply(
 print("df2.shape", df2.shape)
 
 # Update balance cols
+print('adding balance calc cols to balanceDF..')
 # remove '..'s
 balanceDF.replace({"..": np.nan}, inplace=True)
 # change col types
 for col in balanceDF.columns:
-    print(col, balanceDF[col].dtype)
-    if ("Gov" in col) or ("Name" in col) or ("Phase" in col):
-        print(col)
-    elif "%" in col:
+    if not any([("Gov" in col), ("Name" in col), ("Phase" in col)]):
         balanceDF[col] = balanceDF[col].astype(float)
-    else:
-        balanceDF[col] = balanceDF[col].astype(float)
-    print(balanceDF[col].dtype)
-# balanceDF['TotalRevBalance Change 7yr'] = balanceDF.apply(lambda row: )
-
+# Add new cols
+balanceDF["TotalRevBalance Change 7yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2010-11",
+    "Total revenue balance (1) 2017-18",
+    absChange,
+)
+balanceDF["TotalRevBalance Change 4yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2013-14",
+    "Total revenue balance (1) 2017-18",
+    absChange,
+)
+balanceDF["TotalRevBalance Change 2yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2015-16",
+    "Total revenue balance (1) 2017-18",
+    absChange,
+)
+balanceDF["PctRevBalance Change 7yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2010-11",
+    "Total revenue balance (1) 2017-18",
+    pctChange,
+)
+balanceDF["PctRevBalance Change 4yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2013-14",
+    "Total revenue balance (1) 2017-18",
+    pctChange,
+)
+balanceDF["PctRevBalance Change 2yr"] = addCol(
+    balanceDF,
+    "Total revenue balance (1) 2015-16",
+    "Total revenue balance (1) 2017-18",
+    pctChange,
+)
 # Add balance data
 print("adding balance data..")
 try:
@@ -121,3 +171,7 @@ except NameError:
     print("balanceDF not defined - not adding")
     df3 = df2
 print("df3.shape", df3.shape)
+
+# Drop some more cols
+df4 = dropColsFromList(df3,['SchoolWebsite','TelephoneNum','HeadTitle (name)','HeadFirstName','HeadLastName'])
+print('df4.shape',df4.shape)
