@@ -109,10 +109,10 @@ perfDF14ks4 = allInOne(perfDF14ks4)
 
 # perfDF18ks2 = fixCols(tidyUp(allInOne(perfDF18ks2)))
 
-## Add performance data
-# perfDF18ks2['URN'].astype(float)
-# df5 = df4.merge(
-#        perfDF18ks2,
-#        on='URN',
-#        how="left",
-# )
+# Add performance data
+perfDF18ks2['URN'].astype(float)
+df5 = cam.df4.merge(
+       perfDF18ks2,
+       on='URN',
+       how="left",
+)

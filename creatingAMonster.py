@@ -37,12 +37,7 @@ def analyseCols(df, name=""):
         print()
         print(f"{col}  (type: {df[col].dtype})")
         print(
-            df[col].count(),
-            "count,",
-            len(df) - df[col].count(),
-            "missing,",
-            df[col].nunique(),
-            "unique.",
+            f"{df[col].count()} ({(10*df[col].count()/len(df))//0.1}%) count, {len(df) - df[col].count()} missing, {df[col].nunique()} unique."
         )
         if df[col].nunique() < 15:
             print(df[col].value_counts())
@@ -109,7 +104,7 @@ def p2f(x):
 
 
 # Add edubase cols
-def addEdubaseCols(df0):
+def addEdubaseCols(df0, ebDF):
     print("df0.shape", df0.shape)
     print("adding edubase cols..")
     df1 = df0.merge(ebDF, on="URN", how="left")
@@ -200,9 +195,23 @@ def addBalanceData(balanceDF, df2):
     return df3
 
 
-# df0, ebDF, spineDF, balanceDF = readFiles()
-# df2 = addEdubaseCols(df0)
-# balanceDF = updateBalanceCols(balanceDF)
-# df3 = addBalanceData(balanceDF, df2)
-# df4 = dropColsFromList(df3,['SchoolWebsite','TelephoneNum','HeadTitle (name)','HeadFirstName','HeadLastName'])
-# print('df4.shape',df4.shape)
+def runAll():
+    df0, ebDF, spineDF, balanceDF = readFiles()
+    df2 = addEdubaseCols(df0, ebDF)
+    balanceDF = updateBalanceCols(balanceDF)
+    df3 = addBalanceData(balanceDF, df2)
+    df4 = dropColsFromList(
+        df3,
+        [
+            "SchoolWebsite",
+            "TelephoneNum",
+            "HeadTitle (name)",
+            "HeadFirstName",
+            "HeadLastName",
+        ],
+    )
+    print("df4.shape", df4.shape)
+    return ebDF, spineDF, balanceDF, df0, df2, df3, df4
+
+
+ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll()
