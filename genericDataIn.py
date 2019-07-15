@@ -40,6 +40,9 @@ print("updating dfs..")
 def colChop(df, toKeep):
     nowKeep = []
     for listOfCols in toKeep:
+        if type(listOfCols)==str:
+            if listOfCols in df.columns:
+                nowKeep.append(listOfCols)
         for col in listOfCols:
             if col in df.columns:
                 nowKeep.append(col)
@@ -48,6 +51,7 @@ def colChop(df, toKeep):
     else:
         print(f"\nError - only {len(nowKeep)} of {len(toKeep)} cols found")
         print(f"nowKeep: {nowKeep}\ntoKeep: {toKeep}")
+        print(f'{set(toKeep)-set(nowKeep)} missing')
 
 
 def feedToColChop(dataDict):
@@ -67,6 +71,12 @@ def tidyUp(dataDict):
         if "TOTPUPS" in df.columns:
             df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
             df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
+        # get rid of text in cols that are being turned to floats
+        for col in dataDict[name]['toFloat']:
+            try:
+                df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
+            except:
+                pass
     return dataDict
 
 
@@ -76,12 +86,12 @@ def fixCols(dataDict):
             df = dataDict[name]["df"]
             for col in df.columns:
                 if col in dataDict[name]["toFloat"]:
-                    df[col] = df[col].astype(float)
-
-                #            try:
-                #                df[col] = df[col].astype(float)
-                #            except ValueError:
-                #                print(f'{col} in df not converting')
+#                    print(col)
+#                    df[col] = df[col].astype(float)
+                    try:
+                        df[col] = df[col].astype(float)
+                    except ValueError:
+                        print(f'{col} in {name} not converting')
                 elif col not in dataDict[name]["toPct"]:
                     df[col].astype(str)
                     df[col] = df[col].apply(cam.p2f)
@@ -124,6 +134,9 @@ def feedToMergeVertical(dataDict):
                     dataDict[name]["mergeName"],
                 )
             )
+    if len(outDFs)==0:
+        for name in dataDict.keys():
+            outDFs.append(dataDict[name]['df'])
     return outDFs
 
 

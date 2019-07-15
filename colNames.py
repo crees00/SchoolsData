@@ -38,6 +38,6 @@ CensusColsToKeep = [
         'URN',
         'LA',
         'ESTAB',
-        'NOR',
+        ['NOR','TOTPUPSENDN'],
         'PNUMEAL',
         'PNUMFSM']
