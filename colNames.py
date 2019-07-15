@@ -33,3 +33,11 @@ PerfColsToKeep = [['URN'],
  ['PTEALGRP2'],
  ['PTMOBN','PTNMOB'],
  ['PSENELSE','PSENELS','PSENSE4','PSENAPS4']]
+
+CensusColsToKeep = [
+        'URN',
+        'LA',
+        'ESTAB',
+        'NOR',
+        'PNUMEAL',
+        'PNUMFSM']

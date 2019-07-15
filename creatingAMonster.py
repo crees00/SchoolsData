@@ -196,7 +196,7 @@ def addBalanceData(balanceDF, df2):
     return df3
 
 
-def runAll():
+def runAll(write=False):
     df0, ebDF, spineDF, balanceDF = readFiles()
     df2 = addEdubaseCols(df0, ebDF)
     balanceDF = updateBalanceCols(balanceDF)
@@ -212,8 +212,10 @@ def runAll():
         ],
     )
     print("df4.shape", df4.shape)
+    if write:
+        df4.to_csv('df4.csv')
     return ebDF, spineDF, balanceDF, df0, df2, df3, df4
 
 
-#ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll()
+#ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll(True)
 print(f'monster created - took {datetime.datetime.now()-start}')
