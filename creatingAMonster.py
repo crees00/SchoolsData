@@ -10,9 +10,10 @@ import numpy as np
 import setFolder as sf
 import re
 import colNames as cn
-
+import datetime
 where = sf.where
-
+start = datetime.datetime.now()
+print(f'running creatingAMonster at {start}')
 # Read in files
 def readFiles():
     print("Opening files..")
@@ -37,7 +38,7 @@ def analyseCols(df, name=""):
         print()
         print(f"{col}  (type: {df[col].dtype})")
         print(
-            f"{df[col].count()} ({(10*df[col].count()/len(df))//0.1}%) count, {len(df) - df[col].count()} missing, {df[col].nunique()} unique."
+            f"{df[col].count()} ({(100*df[col].count()/len(df))//1}%) count, {len(df) - df[col].count()} missing, {df[col].nunique()} unique."
         )
         if df[col].nunique() < 15:
             print(df[col].value_counts())
@@ -214,4 +215,5 @@ def runAll():
     return ebDF, spineDF, balanceDF, df0, df2, df3, df4
 
 
-ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll()
+#ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll()
+print(f'monster created - took {datetime.datetime.now()-start}')

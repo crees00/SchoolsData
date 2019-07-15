@@ -5,14 +5,16 @@ Created on Wed Jun 26 11:06:22 2019
 """
 import setFolder as sf
 import pandas as pd
+import datetime
 
-print("running combineInspData.py")
+start = datetime.datetime.now()
+print(f"running combineInspData.py at {start}")
 print("If importing, ensure combineInspData.py script hasn't changed since last import")
 print("reading in data...")
 where = sf.where
 folderPath = sf.folderPath
 if where == "ONS":
-    folderPath = r"Data\\" + folderPath
+    folderPath = folderPath + r"Data\\"
 
 fileName = (
     folderPath
@@ -86,6 +88,7 @@ dfDict = {"0515": bigDF}
 
 for key in fileNames.keys():
     bigDF = appendDataFrameFromFile(bigDF, fileNames[key])
+print(f'all data loaded at {datetime.datetime.now().time()}')
 print(len(set(bigDF["Inspection number"])), "unique inspection numbers in total")
 # bigDFchopped = df.copy()
 # dfDictChopped = {'0515':bigDFchopped}
@@ -135,3 +138,4 @@ print("bigDFnoDups1", bigDFnoDups1.shape)
 bigDFnoDups1.drop(toDrop, axis=1, inplace=True)
 print("bigDFnoDups1", bigDFnoDups1.shape)
 bigDFnoDups1.to_csv("bigDFnoDups1.csv")
+print(f'finished combineInspData - took {datetime.datetime.now()-start}')

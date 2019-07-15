@@ -7,7 +7,7 @@ Created on Mon Jul  1 13:03:11 2019
 import findStuck
 import pandas as pd
 import copy
-
+import datetime
 import combineInspData
 
 # import sys
@@ -16,7 +16,7 @@ import combineInspData
 # f = open('out.txt', 'w')
 # sys.stdout = f
 
-
+start = datetime.datetime.now()
 params = findStuck.initialiseVariables()
 df0 = findStuck.loadData("bigDFnoDups1.csv")
 print(df0.shape)
@@ -59,7 +59,7 @@ print(
     "URNs in both allParents and allPreds:",
     set(params["allParents"]) & set(params["allPreds"]),
 )
-
+print(f'fullSesh complete - took {datetime.datetime.now()-start}')
 #
 # allSchoolsPossible = set(allPreds) |set(ratingsDict.keys())
 # print(len(allSchoolsPossible))

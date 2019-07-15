@@ -8,9 +8,8 @@ import numpy as np
 import pandas as pd
 import re
 import setFolder as sf
+import datetime
 
-
-# sf.where='ONS'
 where = sf.where
 folderPath = sf.folderPath
 
@@ -364,12 +363,16 @@ def generateDFs(df, write=False):
     and puts this into the row for that URN. Then merges each row into 
     a new df and outputs to .csv file.
     """
-    print("Making df with a row for each school...")
+    print(f"Making df with a row for each school at {datetime.datetime.now().time()}...")
     URNs = set(df["URN"])
+    # remove nan values if row doesn't have a URN
+    URNs = {URN for URN in URNs if URN==URN}
     listOfRows = []
+    prog = 25
     for URN in URNs:
-        if (100 * len(listOfRows) / len(URNs)) % 5 == 0:
-            print(100 * len(listOfRows) / len(URNs), "% done")
+        if (100 * len(listOfRows) / len(URNs)) > prog:
+            print(prog, "% done")
+            prog +=25
         minidf = df[df["URN"] == URN].copy()
 
         # Work through all rows with same URN

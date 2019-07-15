@@ -28,11 +28,12 @@ if where == 'ONS':
     balanceFile = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Balance\LA_and_school_expenditure_2017-18_Tables.csv"
     
 # Performance data
-#perfFolder18 = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data\2017-2018\Performance"
+#homeFolder18 = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data\2017-2018\Performance"
 #if where == 'ONS':
-#    perfFolder18 = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Performance"
+#    homeFolder18 = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data\2017-2018\Performance"
     
     
-perfFolder = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data"
+homeFolder = r"C:\Users\Chris\Documents\Documents\ONS\DfE Data"
 if where == 'ONS':
-    perfFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data"
+    homeFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data"
+
