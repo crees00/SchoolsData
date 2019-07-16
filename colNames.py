@@ -59,3 +59,10 @@ SpineColsToKeep = [
         'AGEH',
         'GENDER'
         ]
+
+swfColsToKeep = [
+        ["URN"],
+        ['Pupil:     Teacher Ratio', 'RATPUPTEA'],
+        ['Mean Gross FTE Salary of All Teachers (£s)','Mean Gross FTE Salary of All Teachers (£s)',
+         'Mean Gross FTE Salary of All Teachers (Â£s)', 'Mean Gross FTE Salary of All Teachers','SALARY']
+        ]

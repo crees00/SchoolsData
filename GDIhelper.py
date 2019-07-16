@@ -137,3 +137,32 @@ for i, name in enumerate(spineNames):
     ad["toFloat"] = ["URN",'AGEL','AGEH','ISPRIMARY','ISSECONDARY','ISPOST16']
     ad["toPct"] = []
     ad["mergeName"] = "_" + name[1:3]
+
+### SWF DATA #################################################################
+swfNames = []
+swfDict = {}
+for y in ["y18", "y16", "y14"]:
+    swfNames.append(y)
+    swfDict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+    }
+
+swfPaths = [
+        r"\2017-2018\Workforce and Finance\england_swf.csv",
+        r"\2015-2016\Workforce and Finance\england_swf.csv",
+        r"\2013-2014\Workforce and Finance\england_swf.csv"
+        ]
+for i, name in enumerate(swfNames):
+    ad = swfDict[name]
+    ad["path"] = swfPaths[i]
+    ad["toKeep"] = cn.swfColsToKeep
+    ad["toFloat"] = ["URN",'Pupil:     Teacher Ratio','Mean Gross FTE Salary of All Teachers (£s)']
+    ad["toPct"] = []
+    ad["mergeName"] = "_" + name[1:3]

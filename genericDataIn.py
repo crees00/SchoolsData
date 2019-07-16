@@ -29,6 +29,8 @@ perfDict = GDIh.perfDict
 censusDict = GDIh.censusDict
 absDict = GDIh.absDict
 spineDict = GDIh.spineDict
+swfDict = GDIh.swfDict
+
 
 def readData(dataDict):
     startReading = datetime.datetime.now()
@@ -36,15 +38,19 @@ def readData(dataDict):
         dataDict[name]["df"] = pd.read_csv(
             sf.homeFolder + dataDict[name]["path"], encoding="latin-1"
         )
+#        print(dataDict[name]["df"].columns)
     print(f"data loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
+
 print("updating dfs..")
+
 
 def colChop(df, toKeep):
     nowKeep = []
+#    print(df.columns)
     for listOfCols in toKeep:
-        if type(listOfCols)==str:
+        if type(listOfCols) == str:
             if listOfCols in df.columns:
                 nowKeep.append(listOfCols)
         for col in listOfCols:
@@ -55,7 +61,9 @@ def colChop(df, toKeep):
     else:
         print(f"\nError - only {len(nowKeep)} of {len(toKeep)} cols found")
         print(f"nowKeep: {nowKeep}\ntoKeep: {toKeep}")
-        print(f'{set(toKeep)-set(nowKeep)} missing')
+
+
+#        print(f"{set(toKeep)-set(nowKeep)} missing")
 
 
 def feedToColChop(dataDict):
@@ -70,23 +78,25 @@ def feedToColChop(dataDict):
 
 def tidyUp(dataDict):
     for name in dataDict.keys():
-        if dataDict[name]['ignore'] == True:
+        if dataDict[name]["ignore"] == True:
             continue
         df = dataDict[name]["df"]
         for column in df.columns:
-            if column not in (set(dataDict[name]['toFloat']) | set(dataDict[name]['toPct'])):
+            if column not in (
+                set(dataDict[name]["toFloat"]) | set(dataDict[name]["toPct"])
+            ):
                 try:
                     df[column].replace({" ": np.nan}, inplace=True)
                 except TypeError:
                     print(f'{column} in {name} not replacing " "')
-#            if "TOTPUPS" in df.columns:
-#                df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
-#                df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
-        # get rid of text in cols that are being turned to floats
-#        for col in dataDict[name]['toFloat']:
-#            df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
-#            except:
-#                pass
+    #            if "TOTPUPS" in df.columns:
+    #                df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
+    #                df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
+    # get rid of text in cols that are being turned to floats
+    #        for col in dataDict[name]['toFloat']:
+    #            df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
+    #            except:
+    #                pass
     return dataDict
 
 
@@ -96,12 +106,12 @@ def fixCols(dataDict):
             df = dataDict[name]["df"]
             for col in df.columns:
                 if col in dataDict[name]["toFloat"]:
-#                    print(col)
-#                    df[col] = df[col].astype(float)
+                    #                    print(col)
+                    #                    df[col] = df[col].astype(float)
                     try:
-                        df[col] = pd.to_numeric(df[col], errors='coerce')
+                        df[col] = pd.to_numeric(df[col], errors="coerce")
                     except ValueError:
-                        print(f'{col} in {name} not converting')
+                        print(f"{col} in {name} not converting")
                 elif col in dataDict[name]["toPct"]:
                     df[col].astype(str)
                     df[col] = df[col].apply(cam.p2f)
@@ -112,7 +122,7 @@ def allInOne(dataDict):
     return tidyUp(fixCols(feedToColChop(readData(dataDict))))
 
 
-#perfDict = allInOne(perfDict)
+# perfDict = allInOne(perfDict)
 
 
 def mergeVertical(ks2df, ks4df, year):
@@ -143,9 +153,9 @@ def feedToMergeVertical(dataDict):
                     dataDict[name]["mergeName"],
                 )
             )
-    if len(outDFs)==0:
+    if len(outDFs) == 0:
         for name in dataDict.keys():
-            if dataDict[name]['ignore']==False:
+            if dataDict[name]["ignore"] == False:
                 outDFs.append(name)
     return outDFs
 
@@ -154,49 +164,50 @@ def addToMainDF(dfToAddTo, dataDict, write=False):
     listOfDFs = feedToMergeVertical(dataDict)
     dfNew = dfToAddTo
     for dfOrName in listOfDFs:
-        if type(dfOrName)==str:
-            dfNew = dfNew.merge(dataDict[dfOrName]['df'], on="URN", how="left", 
-                            sort=True, suffixes = ("",dataDict[dfOrName]['mergeName']))
+        URNs = set(dfNew["URN"])
+        if type(dfOrName) == str:
+            df = dataDict[dfOrName]["df"]
+            dfSubset = df.drop_duplicates(subset=["URN"])
+            dfNew = dfNew.merge(
+                dfSubset,
+                on="URN",
+                how="left",
+                sort=True,
+                suffixes=("", dataDict[dfOrName]["mergeName"]),
+            )
+            print(f"{len(set(dfSubset['URN']))} to {len(set(dfNew['URN']))}")
+            print(
+                f"after adding {dfOrName} with shape {dataDict[dfOrName]['df'].shape} has shape {dfNew.shape}"
+            )
+
         else:
-            dfNew = dfNew.merge(dfOrName, on='URN', how='left', sort=True)
+            df = dfOrName
+            dfSubset = df.drop_duplicates(subset=["URN"])
+            dfNew = dfNew.merge(dfSubset, on="URN", how="left", sort=True)
+            print(f"{len(set(dfOrName['URN']))} to {len(set(dfNew['URN']))}")
+            print(f"after adding {dfOrName.shape} has shape {dfNew.shape}")
+
     #    df5 = df5.sort_values(by='URN', axis=1)
-        print(f'after adding {dfOrName} has shape {dfNew.shape}')
     if write:
         dfNew.to_csv("df5.csv")
-        
+
     return dfNew
 
 
 def runAll(dataDict, dfToAddTo, write=False):
+    startOfRunAll = datetime.datetime.now()
     dataDict = allInOne(dataDict)
-    return addToMainDF(dfToAddTo,dataDict, write)
+    df = addToMainDF(dfToAddTo, dataDict, write)
+    print(f"runAll took {datetime.datetime.now()-startOfRunAll}")
+    return df
+
 
 
 df4 = pd.read_csv("df4.csv")
-df5 = runAll(perfDict,df4, True )
-df6 = runAll(censusDict,df5,True)
-df7 = runAll(absDict,df6,True)
-df8 = runAll(spineDict, df7, True)
-#    perfDF18ks2, perfDF18ks4, perfDF18ks5, perfDF16ks2, perfDF16ks4, perfDF16ks5, perfDF14ks2, perfDF14ks4, perfDF14ks5 = (
-#        readPerfData()
-#    )
-#    perfDF18ks2 = allInOne(perfDF18ks2)
-#    perfDF16ks2 = allInOne(perfDF16ks2)
-#    perfDF14ks2 = allInOne(perfDF14ks2)
-#    perfDF18ks4 = allInOne(perfDF18ks4)
-#    perfDF16ks4 = allInOne(perfDF16ks4)
-#    perfDF14ks4 = allInOne(perfDF14ks4)
-#
-#    perfDF18 = findStuck.generateDFs(mergeVertical(perfDF18ks2, perfDF18ks4, 18))
-#    perfDF16 = findStuck.generateDFs(mergeVertical(perfDF16ks2, perfDF16ks4, 16))
-#    perfDF14 = findStuck.generateDFs(mergeVertical(perfDF14ks2, perfDF14ks4, 14))
-
-#    return addPerfData([perfDF18, perfDF16, perfDF14], write)
-
-
-# df5 = addPerfData([perfDF18, perfDF16, perfDF14], True)
-# runAllPerf(True)
-# Add performance data
-# perfDF18ks2['URN'].astype(float)
+# df5 = runAll(perfDict, df4, True)
+# df6 = runAll(censusDict, df5, True)
+# df7 = runAll(absDict, df6, True)
+# df8 = runAll(spineDict, df7, True)
+df9 = runAll(swfDict, df4, True)
 
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")
