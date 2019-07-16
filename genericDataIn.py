@@ -24,8 +24,11 @@ import GDIhelper as GDIh
 
 start = datetime.datetime.now()
 print(f"running genericDataIn at {start}")
+# Load dictionaries giving all the needed info
 perfDict = GDIh.perfDict
 censusDict = GDIh.censusDict
+absDict = GDIh.absDict
+spineDict = GDIh.spineDict
 
 def readData(dataDict):
     for name in dataDict.keys():
@@ -67,7 +70,10 @@ def feedToColChop(dataDict):
 def tidyUp(dataDict):
     for name in dataDict.keys():
         df = dataDict[name]["df"]
-        df.replace({" ": np.nan}, inplace=True)
+        for column in df.columns:
+            if df[column].dtype not in [np.float64, np.int64]:
+                print(column, df[column].dtype)
+                df[column].replace({" ": np.nan}, inplace=True)
         if "TOTPUPS" in df.columns:
             df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
             df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
@@ -92,7 +98,7 @@ def fixCols(dataDict):
                         df[col] = df[col].astype(float)
                     except ValueError:
                         print(f'{col} in {name} not converting')
-                elif col not in dataDict[name]["toPct"]:
+                elif col in dataDict[name]["toPct"]:
                     df[col].astype(str)
                     df[col] = df[col].apply(cam.p2f)
     return dataDict
@@ -102,7 +108,7 @@ def allInOne(dataDict):
     return fixCols(tidyUp(feedToColChop(readData(dataDict))))
 
 
-perfDict = allInOne(perfDict)
+#perfDict = allInOne(perfDict)
 
 
 def mergeVertical(ks2df, ks4df, year):
@@ -160,7 +166,7 @@ def runAll(dataDict, dfToAddTo, write=False):
 
 
 df4 = pd.read_csv("df4.csv")
-df5 = runAll(censusDict, df4, True)
+df5 = runAll(spineDict, df4, True)
 #    perfDF18ks2, perfDF18ks4, perfDF18ks5, perfDF16ks2, perfDF16ks4, perfDF16ks5, perfDF14ks2, perfDF14ks4, perfDF14ks5 = (
 #        readPerfData()
 #    )

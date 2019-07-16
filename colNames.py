@@ -41,3 +41,21 @@ CensusColsToKeep = [
         ['NOR','TOTPUPSENDN'],
         'PNUMEAL',
         'PNUMFSM']
+
+AbsenceColsToKeep = [
+        'URN',
+        'PERCTOT',
+  #      'PPERSABS10'
+        ]
+
+SpineColsToKeep = [
+        'URN',
+        'MINORGROUP',
+        'NFTYPE',
+        'ISPRIMARY',
+        'ISSECONDARY',
+        'ISPOST16',
+        'AGEL',
+        'AGEH',
+        'GENDER'
+        ]

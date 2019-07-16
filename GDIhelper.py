@@ -39,7 +39,7 @@ for i, name in enumerate(perfNames):
     perfDict[name]["path"] = perfPaths[i]
     perfDict[name]["toKeep"] = cn.PerfColsToKeep
     perfDict[name]["toFloat"] = ["URN", "TOTPUPS"]
-    perfDict[name]["toPct"] = ["RELDENOM", "AGERANGE"]
+    perfDict[name]["toPct"] = set([item for sublist in cn.PerfColsToKeep for item in sublist])-{"RELDENOM", "AGERANGE",'URN','TOTPUPS'}
     perfDict[name]["mergeName"] = "_" + name[1:3]
     if name[-1] == "5":
         perfDict[name]["ignore"] = True
@@ -77,3 +77,63 @@ for i, name in enumerate(censusNames):
     cd["toFloat"] = ["URN",'LA','ESTAB','NOR']
     cd["toPct"] = []
     cd["mergeName"] = "_" + name[1:3]
+
+
+### ABSENCE DATA #############################################################
+absNames = []
+absDict = {}
+for y in ["y18", "y16", "y14"]:
+    absNames.append(y)
+    absDict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+    }
+
+absPaths = [
+        r"\2017-2018\Absence and Pupil Population\england_abs.csv",
+        r"\2015-2016\Absence and Pupil Population\england_abs.csv",
+        r"\2013-2014\Absence and Pupil Population\england_abs.csv"
+        ]
+for i, name in enumerate(absNames):
+    ad = absDict[name]
+    ad["path"] = absPaths[i]
+    ad["toKeep"] = cn.AbsenceColsToKeep
+    ad["toFloat"] = ["URN"]
+    ad["toPct"] = []#,'PERCTOT','PPERSABS10']
+    ad["mergeName"] = "_" + name[1:3]
+
+
+### SPINE DATA ###############################################################
+spineNames = []
+spineDict = {}
+for y in ["y18", "y16", "y14"]:
+    spineNames.append(y)
+    spineDict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+    }
+
+spinePaths = [
+        r"\2017-2018\General School Information\england_spine.csv",
+        r"\2015-2016\General School Information\england_spine.csv",
+        r"\2013-2014\General School Information\england_spine.csv"
+        ]
+for i, name in enumerate(spineNames):
+    ad = spineDict[name]
+    ad["path"] = spinePaths[i]
+    ad["toKeep"] = cn.SpineColsToKeep
+    ad["toFloat"] = ["URN",'AGEL','AGEH']
+    ad["toPct"] = []
+    ad["mergeName"] = "_" + name[1:3]
