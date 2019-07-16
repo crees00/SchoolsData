@@ -136,14 +136,18 @@ def feedToMergeVertical(dataDict):
             )
     if len(outDFs)==0:
         for name in dataDict.keys():
-            outDFs.append(dataDict[name]['df'])
+            outDFs.append(name)
     return outDFs
 
 
-def addToMainDF(listOfDFs, dfToAddTo, write=False):
+def addToMainDF(listOfDFs, dfToAddTo, dataDict, write=False):
     df5 = dfToAddTo  # .copy.deepcopy()
-    for df in listOfDFs:
-        df5 = df5.merge(df, on="URN", how="left", sort=True)
+    for dfOrName in listOfDFs:
+        if type(dfOrName)==str:
+            df5 = df5.merge(dataDict[dfOrName]['df'], on="URN", how="left", 
+                            sort=True, suffixes = ("",dataDict[dfOrName]['mergeName']))
+        else:
+            df5 = df5.merge(dfOrName, on='URN', how='left', sort=True)
     #    df5 = df5.sort_values(by='URN', axis=1)
     if write:
         df5.to_csv("df5.csv")
@@ -152,7 +156,7 @@ def addToMainDF(listOfDFs, dfToAddTo, write=False):
 
 def runAll(dataDict, dfToAddTo, write=False):
     dataDict = allInOne(dataDict)
-    return addToMainDF(feedToMergeVertical(dataDict), dfToAddTo, write)
+    return addToMainDF(feedToMergeVertical(dataDict), dfToAddTo,dataDict, write)
 
 
 df4 = pd.read_csv("df4.csv")
@@ -179,4 +183,4 @@ df5 = runAll(censusDict, df4, True)
 # Add performance data
 # perfDF18ks2['URN'].astype(float)
 
-print(f"perfData complete - took {datetime.datetime.now()-start}")
+print(f"genericDataIn complete - took {datetime.datetime.now()-start}")
