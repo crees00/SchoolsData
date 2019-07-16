@@ -74,7 +74,7 @@ for i, name in enumerate(censusNames):
     cd = censusDict[name]
     cd["path"] = censusPaths[i]
     cd["toKeep"] = cn.CensusColsToKeep
-    cd["toFloat"] = ["URN",'LA','ESTAB','NOR']
+    cd["toFloat"] = ["URN",'LA','ESTAB','NOR','TOTPUPSENDN','PNUMEAL','PNUMFSM']
     cd["toPct"] = []
     cd["mergeName"] = "_" + name[1:3]
 
@@ -104,7 +104,7 @@ for i, name in enumerate(absNames):
     ad = absDict[name]
     ad["path"] = absPaths[i]
     ad["toKeep"] = cn.AbsenceColsToKeep
-    ad["toFloat"] = ["URN"]
+    ad["toFloat"] = ["URN",'PERCTOT']
     ad["toPct"] = []#,'PERCTOT','PPERSABS10']
     ad["mergeName"] = "_" + name[1:3]
 
@@ -134,6 +134,6 @@ for i, name in enumerate(spineNames):
     ad = spineDict[name]
     ad["path"] = spinePaths[i]
     ad["toKeep"] = cn.SpineColsToKeep
-    ad["toFloat"] = ["URN",'AGEL','AGEH']
+    ad["toFloat"] = ["URN",'AGEL','AGEH','ISPRIMARY','ISSECONDARY','ISPOST16']
     ad["toPct"] = []
     ad["mergeName"] = "_" + name[1:3]

@@ -31,11 +31,12 @@ absDict = GDIh.absDict
 spineDict = GDIh.spineDict
 
 def readData(dataDict):
+    startReading = datetime.datetime.now()
     for name in dataDict.keys():
         dataDict[name]["df"] = pd.read_csv(
             sf.homeFolder + dataDict[name]["path"], encoding="latin-1"
         )
-    print(f"data loaded - took {datetime.datetime.now()-start}")
+    print(f"data loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
 print("updating dfs..")
@@ -69,20 +70,23 @@ def feedToColChop(dataDict):
 
 def tidyUp(dataDict):
     for name in dataDict.keys():
+        if dataDict[name]['ignore'] == True:
+            continue
         df = dataDict[name]["df"]
         for column in df.columns:
-            if df[column].dtype not in [np.float64, np.int64]:
-                print(column, df[column].dtype)
-                df[column].replace({" ": np.nan}, inplace=True)
-        if "TOTPUPS" in df.columns:
-            df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
-            df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
+            if column not in (set(dataDict[name]['toFloat']) | set(dataDict[name]['toPct'])):
+                try:
+                    df[column].replace({" ": np.nan}, inplace=True)
+                except TypeError:
+                    print(f'{column} in {name} not replacing " "')
+#            if "TOTPUPS" in df.columns:
+#                df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
+#                df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
         # get rid of text in cols that are being turned to floats
-        for col in dataDict[name]['toFloat']:
-            try:
-                df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
-            except:
-                pass
+#        for col in dataDict[name]['toFloat']:
+#            df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
+#            except:
+#                pass
     return dataDict
 
 
@@ -95,7 +99,7 @@ def fixCols(dataDict):
 #                    print(col)
 #                    df[col] = df[col].astype(float)
                     try:
-                        df[col] = df[col].astype(float)
+                        df[col] = pd.to_numeric(df[col], errors='coerce')
                     except ValueError:
                         print(f'{col} in {name} not converting')
                 elif col in dataDict[name]["toPct"]:
@@ -105,7 +109,7 @@ def fixCols(dataDict):
 
 
 def allInOne(dataDict):
-    return fixCols(tidyUp(feedToColChop(readData(dataDict))))
+    return tidyUp(fixCols(feedToColChop(readData(dataDict))))
 
 
 #perfDict = allInOne(perfDict)
@@ -125,7 +129,6 @@ def mergeVertical(ks2df, ks4df, year):
     finColDict = dict(zip(stackedDF.columns, finColNames))
     stackedDF = stackedDF.rename(columns=finColDict)
     stackedDF["URN"].astype(float)
-    cam.analyseCols(stackedDF)
     return stackedDF
 
 
@@ -142,31 +145,38 @@ def feedToMergeVertical(dataDict):
             )
     if len(outDFs)==0:
         for name in dataDict.keys():
-            outDFs.append(name)
+            if dataDict[name]['ignore']==False:
+                outDFs.append(name)
     return outDFs
 
 
-def addToMainDF(listOfDFs, dfToAddTo, dataDict, write=False):
-    df5 = dfToAddTo  # .copy.deepcopy()
+def addToMainDF(dfToAddTo, dataDict, write=False):
+    listOfDFs = feedToMergeVertical(dataDict)
+    dfNew = dfToAddTo
     for dfOrName in listOfDFs:
         if type(dfOrName)==str:
-            df5 = df5.merge(dataDict[dfOrName]['df'], on="URN", how="left", 
+            dfNew = dfNew.merge(dataDict[dfOrName]['df'], on="URN", how="left", 
                             sort=True, suffixes = ("",dataDict[dfOrName]['mergeName']))
         else:
-            df5 = df5.merge(dfOrName, on='URN', how='left', sort=True)
+            dfNew = dfNew.merge(dfOrName, on='URN', how='left', sort=True)
     #    df5 = df5.sort_values(by='URN', axis=1)
+        print(f'after adding {dfOrName} has shape {dfNew.shape}')
     if write:
-        df5.to_csv("df5.csv")
-    return df5
+        dfNew.to_csv("df5.csv")
+        
+    return dfNew
 
 
 def runAll(dataDict, dfToAddTo, write=False):
     dataDict = allInOne(dataDict)
-    return addToMainDF(feedToMergeVertical(dataDict), dfToAddTo,dataDict, write)
+    return addToMainDF(dfToAddTo,dataDict, write)
 
 
 df4 = pd.read_csv("df4.csv")
-df5 = runAll(spineDict, df4, True)
+df5 = runAll(perfDict,df4, True )
+df6 = runAll(censusDict,df5,True)
+df7 = runAll(absDict,df6,True)
+df8 = runAll(spineDict, df7, True)
 #    perfDF18ks2, perfDF18ks4, perfDF18ks5, perfDF16ks2, perfDF16ks4, perfDF16ks5, perfDF14ks2, perfDF14ks4, perfDF14ks5 = (
 #        readPerfData()
 #    )
