@@ -103,6 +103,16 @@ def p2f(x):
         except ValueError:
             return np.nan
 
+def c2f(x):
+    """ converts currency string e.g. £4,122,222.01
+    to float e.g. 4122222.01 """
+    if x!=x:
+        return x
+    else:
+        try:
+            return float(re.sub(r'[^\d.]',"",x))
+        except ValueError:
+            return np.nan
 
 # Add edubase cols
 def addEdubaseCols(df0, ebDF):

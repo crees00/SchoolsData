@@ -30,7 +30,7 @@ censusDict = GDIh.censusDict
 absDict = GDIh.absDict
 spineDict = GDIh.spineDict
 swfDict = GDIh.swfDict
-
+cfrDict = GDIh.cfrDict
 
 def readData(dataDict):
     startReading = datetime.datetime.now()
@@ -38,7 +38,10 @@ def readData(dataDict):
         dataDict[name]["df"] = pd.read_csv(
             sf.homeFolder + dataDict[name]["path"], encoding="latin-1"
         )
-#        print(dataDict[name]["df"].columns)
+    #        print(dataDict[name]["df"].columns)
+#        for col in dataDict[name]['df'].columns:
+#            print([col])
+        #cam.analyseCols(dataDict[name]['df'][dataDict[name]['df'].isin([item for sublist in dataDict[name]['toKeep'] for item in sublist])])
     print(f"data loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
@@ -48,7 +51,7 @@ print("updating dfs..")
 
 def colChop(df, toKeep):
     nowKeep = []
-#    print(df.columns)
+    #    print(df.columns)
     for listOfCols in toKeep:
         if type(listOfCols) == str:
             if listOfCols in df.columns:
@@ -83,7 +86,9 @@ def tidyUp(dataDict):
         df = dataDict[name]["df"]
         for column in df.columns:
             if column not in (
-                set(dataDict[name]["toFloat"]) | set(dataDict[name]["toPct"])
+                set(dataDict[name]["toFloat"])
+                | set(dataDict[name]["toPct"])
+                | set(dataDict[name]["toCurr"])
             ):
                 try:
                     df[column].replace({" ": np.nan}, inplace=True)
@@ -115,6 +120,11 @@ def fixCols(dataDict):
                 elif col in dataDict[name]["toPct"]:
                     df[col].astype(str)
                     df[col] = df[col].apply(cam.p2f)
+                elif col in dataDict[name]["toCurr"]:
+                    df[col].astype(str)
+                    df[col] = df[col].apply(cam.c2f)
+                else:
+                    df[col].astype(str)
     return dataDict
 
 
@@ -128,14 +138,14 @@ def allInOne(dataDict):
 def mergeVertical(ks2df, ks4df, year):
     """ take ks2 and ks4 rows for the same year and stack them. 
     For schools which have both ks2 and ks4, take the line from ks4 """
-    print(f"ks2dfcols:\n{ks2df.columns}")
-    print(f"ks4dfcols:\n{ks4df.columns}")
+#    print(f"ks2dfcols:\n{ks2df.columns}")
+#    print(f"ks4dfcols:\n{ks4df.columns}")
     newColDict = dict(zip(ks4df.columns, ks2df.columns))
-    print(f"newColDict:\n{newColDict}")
+#    print(f"newColDict:\n{newColDict}")
     stackedDF = pd.concat([ks2df, ks4df.rename(columns=newColDict)], ignore_index=True)
     finColNames = [x + "_" + str(year) for x in stackedDF.columns if x != "URN"]
     finColNames.insert(0, "URN")
-    print(finColNames)
+#    print(finColNames)
     finColDict = dict(zip(stackedDF.columns, finColNames))
     stackedDF = stackedDF.rename(columns=finColDict)
     stackedDF["URN"].astype(float)
@@ -202,12 +212,12 @@ def runAll(dataDict, dfToAddTo, write=False):
     return df
 
 
-
 df4 = pd.read_csv("df4.csv")
-# df5 = runAll(perfDict, df4, True)
-# df6 = runAll(censusDict, df5, True)
-# df7 = runAll(absDict, df6, True)
-# df8 = runAll(spineDict, df7, True)
-df9 = runAll(swfDict, df4, True)
+df5 = runAll(perfDict, df4, True)
+df6 = runAll(censusDict, df5, True)
+df7 = runAll(absDict, df6, True)
+df8 = runAll(spineDict, df7, True)
+df9 = runAll(swfDict, df8, True)
+df10 = runAll(cfrDict,df9,True)
 
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

@@ -66,3 +66,26 @@ swfColsToKeep = [
         ['Mean Gross FTE Salary of All Teachers (£s)','Mean Gross FTE Salary of All Teachers (£s)',
          'Mean Gross FTE Salary of All Teachers (Â£s)', 'Mean Gross FTE Salary of All Teachers','SALARY']
         ]
+        
+cfrColsToKeep = [
+        ['URN'],
+        ['PUPILS'],
+        ['FSM'],
+        ['GRANTFUNDING'],
+        ['SELFGENERATEDINCOME'],
+        ['TEACHINGSTAFF'],
+        ['SUPPLYTEACHERS'],
+        ['EDUCATIONSUPPORTSTAFF'],
+        ['PREMISES'],
+        ['LEARNINGRESOURCES'],
+        ['BOUGHTINPROFESSIONALSERVICES'],
+        ['TOTALEXPENDITURE'],
+        ['DCAT1'],
+        ['DCAT2'],
+        ['DCAT5'],
+        ['PTEACHINGSTAFF']        
+        ]
+bla=[]
+for colList in cfrColsToKeep:
+    bla.append(colList[0])
+print(bla)
