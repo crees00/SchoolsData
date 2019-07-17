@@ -32,16 +32,13 @@ spineDict = GDIh.spineDict
 swfDict = GDIh.swfDict
 cfrDict = GDIh.cfrDict
 
+
 def readData(dataDict):
     startReading = datetime.datetime.now()
     for name in dataDict.keys():
         dataDict[name]["df"] = pd.read_csv(
             sf.homeFolder + dataDict[name]["path"], encoding="latin-1"
         )
-    #        print(dataDict[name]["df"].columns)
-#        for col in dataDict[name]['df'].columns:
-#            print([col])
-        #cam.analyseCols(dataDict[name]['df'][dataDict[name]['df'].isin([item for sublist in dataDict[name]['toKeep'] for item in sublist])])
     print(f"data loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
@@ -51,7 +48,6 @@ print("updating dfs..")
 
 def colChop(df, toKeep):
     nowKeep = []
-    #    print(df.columns)
     for listOfCols in toKeep:
         if type(listOfCols) == str:
             if listOfCols in df.columns:
@@ -64,9 +60,6 @@ def colChop(df, toKeep):
     else:
         print(f"\nError - only {len(nowKeep)} of {len(toKeep)} cols found")
         print(f"nowKeep: {nowKeep}\ntoKeep: {toKeep}")
-
-
-#        print(f"{set(toKeep)-set(nowKeep)} missing")
 
 
 def feedToColChop(dataDict):
@@ -94,14 +87,6 @@ def tidyUp(dataDict):
                     df[column].replace({" ": np.nan}, inplace=True)
                 except TypeError:
                     print(f'{column} in {name} not replacing " "')
-    #            if "TOTPUPS" in df.columns:
-    #                df["TOTPUPS"].replace({"NEW": np.nan}, inplace=True)
-    #                df["TOTPUPS"].replace({"NP": np.nan}, inplace=True)
-    # get rid of text in cols that are being turned to floats
-    #        for col in dataDict[name]['toFloat']:
-    #            df[col].replace({"[a-zA-Z]+": np.nan}, inplace=True, regex=True)
-    #            except:
-    #                pass
     return dataDict
 
 
@@ -111,8 +96,6 @@ def fixCols(dataDict):
             df = dataDict[name]["df"]
             for col in df.columns:
                 if col in dataDict[name]["toFloat"]:
-                    #                    print(col)
-                    #                    df[col] = df[col].astype(float)
                     try:
                         df[col] = pd.to_numeric(df[col], errors="coerce")
                     except ValueError:
@@ -132,20 +115,17 @@ def allInOne(dataDict):
     return tidyUp(fixCols(feedToColChop(readData(dataDict))))
 
 
-# perfDict = allInOne(perfDict)
-
-
 def mergeVertical(ks2df, ks4df, year):
     """ take ks2 and ks4 rows for the same year and stack them. 
     For schools which have both ks2 and ks4, take the line from ks4 """
-#    print(f"ks2dfcols:\n{ks2df.columns}")
-#    print(f"ks4dfcols:\n{ks4df.columns}")
+    #    print(f"ks2dfcols:\n{ks2df.columns}")
+    #    print(f"ks4dfcols:\n{ks4df.columns}")
     newColDict = dict(zip(ks4df.columns, ks2df.columns))
-#    print(f"newColDict:\n{newColDict}")
+    #    print(f"newColDict:\n{newColDict}")
     stackedDF = pd.concat([ks2df, ks4df.rename(columns=newColDict)], ignore_index=True)
     finColNames = [x + "_" + str(year) for x in stackedDF.columns if x != "URN"]
     finColNames.insert(0, "URN")
-#    print(finColNames)
+    #    print(finColNames)
     finColDict = dict(zip(stackedDF.columns, finColNames))
     stackedDF = stackedDF.rename(columns=finColDict)
     stackedDF["URN"].astype(float)
@@ -218,6 +198,6 @@ df6 = runAll(censusDict, df5, True)
 df7 = runAll(absDict, df6, True)
 df8 = runAll(spineDict, df7, True)
 df9 = runAll(swfDict, df8, True)
-df10 = runAll(cfrDict,df9,True)
+df10 = runAll(cfrDict, df9, True)
 
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

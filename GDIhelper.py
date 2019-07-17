@@ -198,14 +198,25 @@ for y in ["y18"]:
         "toCurr": [],
     }
 
-cfrPaths = [
-    r"\2017-2018\Workforce and Finance\england_cfr.csv",
-]
+cfrPaths = [r"\2017-2018\Workforce and Finance\england_cfr.csv"]
 for i, name in enumerate(cfrNames):
     ad = cfrDict[name]
     ad["path"] = cfrPaths[i]
     ad["toKeep"] = cn.cfrColsToKeep
-    ad["toFloat"] = ["URN", 'PUPILS', 'FSM']
-    ad["toPct"] = ['PTEACHINGSTAFF']
+    ad["toFloat"] = ["URN", "PUPILS", "FSM"]
+    ad["toPct"] = ["PTEACHINGSTAFF"]
     ad["mergeName"] = "_" + name[1:3]
-    ad["toCurr"] = ['GRANTFUNDING', 'TEACHINGSTAFF','SELFGENERATEDINCOME',  'SUPPLYTEACHERS',  'EDUCATIONSUPPORTSTAFF', 'PREMISES', 'LEARNINGRESOURCES', 'BOUGHTINPROFESSIONALSERVICES', 'TOTALEXPENDITURE',   'DCAT1', 'DCAT2', 'DCAT5']
+    ad["toCurr"] = [
+        "GRANTFUNDING",
+        "TEACHINGSTAFF",
+        "SELFGENERATEDINCOME",
+        "SUPPLYTEACHERS",
+        "EDUCATIONSUPPORTSTAFF",
+        "PREMISES",
+        "LEARNINGRESOURCES",
+        "BOUGHTINPROFESSIONALSERVICES",
+        "TOTALEXPENDITURE",
+        "DCAT1",
+        "DCAT2",
+        "DCAT5",
+    ]

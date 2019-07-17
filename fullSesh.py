@@ -10,11 +10,11 @@ import copy
 import datetime
 import combineInspData
 
-# import sys
+#import sys
 #
-# orig_stdout = sys.stdout
-# f = open('out.txt', 'w')
-# sys.stdout = f
+#orig_stdout = sys.stdout
+#f = open('analyseDF10.txt', 'w')
+#sys.stdout = f
 
 start = datetime.datetime.now()
 params = findStuck.initialiseVariables()
@@ -79,5 +79,5 @@ print(f'fullSesh complete - took {datetime.datetime.now()-start}')
 # lostSchoolsdf.to_csv('lostSchoolsdf.csv')
 
 
-# sys.stdout = orig_stdout
-# f.close()
+#sys.stdout = orig_stdout
+#f.close()

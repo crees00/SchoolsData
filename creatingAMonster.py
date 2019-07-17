@@ -11,9 +11,10 @@ import setFolder as sf
 import re
 import colNames as cn
 import datetime
+
 where = sf.where
 start = datetime.datetime.now()
-print(f'running creatingAMonster at {start}')
+print(f"running creatingAMonster at {start}")
 # Read in files
 def readFiles():
     print("Opening files..")
@@ -103,16 +104,18 @@ def p2f(x):
         except ValueError:
             return np.nan
 
+
 def c2f(x):
     """ converts currency string e.g. £4,122,222.01
     to float e.g. 4122222.01 """
-    if x!=x:
+    if x != x:
         return x
     else:
         try:
-            return float(re.sub(r'[^\d.]',"",x))
+            return float(re.sub(r"[^\d.]", "", x))
         except ValueError:
             return np.nan
+
 
 # Add edubase cols
 def addEdubaseCols(df0, ebDF):
@@ -223,9 +226,9 @@ def runAll(write=False):
     )
     print("df4.shape", df4.shape)
     if write:
-        df4.to_csv('df4.csv')
+        df4.to_csv("df4.csv")
     return ebDF, spineDF, balanceDF, df0, df2, df3, df4
 
 
-#ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll(True)
-print(f'monster created - took {datetime.datetime.now()-start}')
+# ebDF, spineDF, balanceDF, df0, df2, df3, df4 = runAll(True)
+print(f"monster created - took {datetime.datetime.now()-start}")
