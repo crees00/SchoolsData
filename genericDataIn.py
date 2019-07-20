@@ -23,7 +23,7 @@ import copy
 import GDIhelper as GDIh
 
 start = datetime.datetime.now()
-print(f"running genericDataIn at {start}")
+print(f"running genericDataIn from {sf.where} at {start}")
 # Load dictionaries giving all the needed info
 perfDict = GDIh.perfDict
 censusDict = GDIh.censusDict
@@ -192,12 +192,12 @@ def runAll(dataDict, dfToAddTo, write=False):
     return df
 
 
-df4 = pd.read_csv("df4.csv")
-df5 = runAll(perfDict, df4, True)
-df6 = runAll(censusDict, df5, True)
-df7 = runAll(absDict, df6, True)
-df8 = runAll(spineDict, df7, True)
-df9 = runAll(swfDict, df8, True)
-df10 = runAll(cfrDict, df9, True)
+#df4 = pd.read_csv("df4.csv")
+#df5 = runAll(perfDict, df4, True)
+#df6 = runAll(censusDict, df5, True)
+#df7 = runAll(absDict, df6, True)
+#df8 = runAll(spineDict, df7, True)
+#df9 = runAll(swfDict, df8, True)
+#df10 = runAll(cfrDict, df9, True)
 
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

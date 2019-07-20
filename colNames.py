@@ -85,7 +85,37 @@ cfrColsToKeep = [
         ['DCAT5'],
         ['PTEACHINGSTAFF']        
         ]
-bla=[]
-for colList in cfrColsToKeep:
-    bla.append(colList[0])
-print(bla)
+
+modelColsToKeep = [
+        'URN',
+        'Stuck',
+        'Boarders (name)',
+        'OfficialSixthForm (name)',
+        'Gender (name)',
+    'GOR (name)',
+    'PctRevBalance Change 7yr',
+    'PctRevBalance Change 4yr',
+    'PctRevBalance Change 2yr',
+    'TOTPUPS__18',
+    'PBELIG__18',
+    'PGELIG__18',
+    'PTKS1GROUP_L__18',
+    'PTKS1GROUP_M__18',
+    'PTKS1GROUP_H__18',
+    'PTFSM6CLA1A__18',
+    'PTEALGRP2__18',
+    'PTMOBN__18',
+    'PSENELSE__18',
+    'PNUMEAL',
+    'PNUMFSM',
+    'PERCTOT',
+    'MINORGROUP',
+    'ISPRIMARY',
+    'ISSECONDARY',
+    'ISPOST16',
+    'AGEL',
+    'AGEH',
+    'GENDER',
+    'Pupil:     Teacher Ratio',
+    'Mean Gross FTE Salary of All Teachers (Ã‚Â£s)'
+        ]
