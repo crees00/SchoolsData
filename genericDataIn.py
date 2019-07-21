@@ -39,6 +39,11 @@ def readData(dataDict):
         dataDict[name]["df"] = pd.read_csv(
             sf.homeFolder + dataDict[name]["path"], encoding="latin-1"
         )
+        print('\n\n',name,'\n')
+        for col in dataDict[name]['df'].columns:
+            if col in ['p8mea','att8scr','perfirchoice16']:
+                print(name, col)
+
     print(f"data loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
@@ -192,8 +197,8 @@ def runAll(dataDict, dfToAddTo, write=False):
     return df
 
 
-#df4 = pd.read_csv("df4.csv")
-#df5 = runAll(perfDict, df4, True)
+df4 = pd.read_csv("df4.csv")
+df5 = runAll(perfDict, df4, False)
 #df6 = runAll(censusDict, df5, True)
 #df7 = runAll(absDict, df6, True)
 #df8 = runAll(spineDict, df7, True)

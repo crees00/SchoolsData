@@ -115,7 +115,6 @@ modelColsToKeep = [
     'ISPOST16',
     'AGEL',
     'AGEH',
-    'GENDER',
     'Pupil:     Teacher Ratio',
     'Mean Gross FTE Salary of All Teachers (Ã‚Â£s)'
         ]
