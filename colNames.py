@@ -93,9 +93,11 @@ modelColsToKeep = [
         'OfficialSixthForm (name)',
         'Gender (name)',
     'GOR (name)',
-    'PctRevBalance Change 7yr',
-    'PctRevBalance Change 4yr',
-    'PctRevBalance Change 2yr',
+    'Total revenue balance (1) as a % of total revenue income (6) 2017-18',
+    'Total revenue balance (1) 2017-18',
+    'TotalRevBalance Change 7yr',
+    'TotalRevBalance Change 4yr',
+    'TotalRevBalance Change 2yr',
     'TOTPUPS__18',
     'PBELIG__18',
     'PGELIG__18',
@@ -116,5 +118,5 @@ modelColsToKeep = [
     'AGEL',
     'AGEH',
     'Pupil:     Teacher Ratio',
-    'Mean Gross FTE Salary of All Teachers (Ã‚Â£s)'
+    'Mean Gross FTE Salary of All Teachers (Â£s)'
         ]
