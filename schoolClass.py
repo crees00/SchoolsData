@@ -9,6 +9,7 @@ import numpy as np
 import datetime
 import re
 import setFolder as sf
+import dateutil.parser as parser
 
 where = sf.where
 start = datetime.datetime.now()
@@ -25,7 +26,8 @@ class School:
         self.predecessorURNs = []
         self.predecessors = []
         self.status = "closed"  # 'open' or 'closed'
-
+        self.lastFirst = []
+        self.lastFirstCats = [] # [no of insps, ratings of most recent 4, avg of ones before] 
     def checkIfInspNoIsInList(self, inspNo):
         return inspNo in self.inspNosForSchool
 
@@ -43,9 +45,22 @@ class School:
 
     def getStatus(self):
         return self.status
+    
+    def getLastFirst(self):
+        return self.lastFirst
+    
+    def getLastFirstCats(self):
+        return self.lastFirstCats
 
     def setStatus(self, statusIn):
         self.status = statusIn
+        
+    def setLastFirst(self, lastFirst):
+        self.lastFirst = lastFirst
+    
+    def setLastFirstCats(self,lastFirstCats):
+        self.lastFirstCats = lastFirstCats
+    
 
     def addInspToSchool(self, insp):
         self.inspections.append(insp)
@@ -70,11 +85,12 @@ class School:
 
 
 class Inspection:
-    def __init__(self, inspNo, cat, URN):
+    def __init__(self, inspNo, cat, URN, year):
         self.URN = URN
         #        self.date = date
         self.cat = cat
         self.inspNo = inspNo
+        self.year = year
 
     def __str__(self):
         return f"Inspection {self.getInspNo()}: Cat {self.getCat()}"
@@ -87,15 +103,25 @@ class Inspection:
 
     def getInspNo(self):
         return self.inspNo
+    
+    def getYear(self):
+        return self.year
 
 
 def loadInspections(row):
     global inspList
     URN = int(row["URN"])
-    # Generate an instance of Inspection for this row in df
-    currentInsp = Inspection(
-        row["Inspection number"], row["Overall effectiveness"], URN
+    date = row['Inspection start date']
+    try:
+        year = parser.parse(date).year
+        currentInsp = Inspection(
+                row["Inspection number"], row["Overall effectiveness"], URN, year
     )
+    except TypeError:
+#        print(date, type(date),'did not parse')
+        currentInsp = Inspection(row['Inspection number'],row['Overall effectiveness'],
+                                 URN, 2004)
+    # Generate an instance of Inspection for this row in df
     inspList.append(currentInsp)
     return row
 
@@ -175,7 +201,7 @@ def calcStuck(SchoolDict):
 def setAllStatuses(SchoolDict):
     folderPath = sf.folderPath
     openAndUninspected = []
-    if where == "ONS":
+    if where in ["ONS",'Cdrive']:
         file = "Data\edubaseallstatefunded20190704.csv"
     else:
         file = "edubaseallstatefunded20190627.csv"
@@ -200,16 +226,58 @@ def whichStuckAreOpen(stuck):
     print(f"{len(openStuck)} open stuck schools")
     return openStuck
 
+def sortInspectionsToLastFirst(school):
+    tupList, years, lastFirst, lastFirstCats = [],[],[],[]
+    for insp in school.inspections:
+        tupList.append((insp, insp.getYear()))
+        years.append(insp.getYear())
+    years.sort(reverse=True)
+    for year in set(years):
+        for tup in tupList:
+            if tup[1] == year:
+                lastFirst.append(tup[0])
+                lastFirstCats.append(tup[0].getCat())
+    # Put the average of all previous inspections 
+    if len(tupList)>4:
+        avg = np.mean(lastFirstCats[4:])
+        lastFirstCats = lastFirstCats[:4]
+        lastFirstCats.append(avg)
+    # If exactly 4 inspections, put the average as the 4th inspection
+    elif len(tupList)==4:
+        lastFirstCats.append(lastFirstCats[3])
+    lastFirstCats.insert(0,len(tupList))
+    school.setLastFirst(lastFirst)
+    school.setLastFirstCats(lastFirstCats)
+    return school
 
-predsThatAreNotInDF = []
-inspList = []
-df = pd.read_csv("bigDFnoDups1.csv")
+def feedToSort(SchoolDict):
+    for URN in SchoolDict.keys():
+        SchoolDict[URN] = sortInspectionsToLastFirst(SchoolDict[URN])
+    return SchoolDict
 
-df = df.apply(loadInspections, axis=1)
-SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-df = df.apply(addPredecessorURNsFromDF, axis=1)
-SchoolDict = addAllPredecessors(SchoolDict)
-stuck = calcStuck(SchoolDict)
-SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-openStuck = whichStuckAreOpen(stuck)
-print(f"took {datetime.datetime.now()-start}")
+def clusterDF(SchoolDict, write=''):
+    df = pd.DataFrame()
+    
+    for URN in SchoolDict.keys():
+        lastFirstCats = SchoolDict[URN].getLastFirstCats()
+        if len(lastFirstCats) ==6:
+            df[URN] = lastFirstCats
+    if write != '':
+        df.to_csv(write)
+    return df
+
+#predsThatAreNotInDF = []
+#inspList = []
+#df = pd.read_csv("bigDFnoDups1.csv")
+#
+#df = df.apply(loadInspections, axis=1)
+#SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+#df = df.apply(addPredecessorURNsFromDF, axis=1)
+#SchoolDict = addAllPredecessors(SchoolDict)
+#stuck = calcStuck(SchoolDict)
+#SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+#openStuck = whichStuckAreOpen(stuck)
+#SchoolDict = feedToSort(SchoolDict)
+dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
+
+#print(f"took {datetime.datetime.now()-start}")
