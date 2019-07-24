@@ -70,6 +70,7 @@ def colChop(df, toKeep):
 def feedToColChop(dataDict):
     """ Just sends dfs to colChop to remove cols"""
     for name in dataDict.keys():
+        print(name)
         if dataDict[name]["ignore"] == False:
             dataDict[name]["df"] = colChop(
                 dataDict[name]["df"], dataDict[name]["toKeep"]

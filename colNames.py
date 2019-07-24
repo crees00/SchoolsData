@@ -32,7 +32,10 @@ PerfColsToKeep = [['URN'],
  ['PTFSM6CLA1A','PTFSMCLA'],
  ['PTEALGRP2'],
  ['PTMOBN','PTNMOB'],
- ['PSENELSE','PSENELS','PSENSE4','PSENAPS4']]
+ ['PSENELSE','PSENELS','PSENSE4','PSENAPS4'],
+ ['ATT8SCR'],
+ ['P8MEA'],
+ ['PTL2BASICS_94']]
 
 CensusColsToKeep = [
         'URN',

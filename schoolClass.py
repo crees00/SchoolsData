@@ -27,7 +27,10 @@ class School:
         self.predecessors = []
         self.status = "closed"  # 'open' or 'closed'
         self.lastFirst = []
-        self.lastFirstCats = [] # [no of insps, ratings of most recent 4, avg of ones before] 
+        self.lastFirstCats = (
+            []
+        )  # [no of insps, ratings of most recent 4, avg of ones before]
+
     def checkIfInspNoIsInList(self, inspNo):
         return inspNo in self.inspNosForSchool
 
@@ -45,22 +48,21 @@ class School:
 
     def getStatus(self):
         return self.status
-    
+
     def getLastFirst(self):
         return self.lastFirst
-    
+
     def getLastFirstCats(self):
         return self.lastFirstCats
 
     def setStatus(self, statusIn):
         self.status = statusIn
-        
+
     def setLastFirst(self, lastFirst):
         self.lastFirst = lastFirst
-    
-    def setLastFirstCats(self,lastFirstCats):
+
+    def setLastFirstCats(self, lastFirstCats):
         self.lastFirstCats = lastFirstCats
-    
 
     def addInspToSchool(self, insp):
         self.inspections.append(insp)
@@ -103,7 +105,7 @@ class Inspection:
 
     def getInspNo(self):
         return self.inspNo
-    
+
     def getYear(self):
         return self.year
 
@@ -111,16 +113,17 @@ class Inspection:
 def loadInspections(row):
     global inspList
     URN = int(row["URN"])
-    date = row['Inspection start date']
+    date = row["Inspection start date"]
     try:
         year = parser.parse(date).year
         currentInsp = Inspection(
-                row["Inspection number"], row["Overall effectiveness"], URN, year
-    )
+            row["Inspection number"], row["Overall effectiveness"], URN, year
+        )
     except TypeError:
-#        print(date, type(date),'did not parse')
-        currentInsp = Inspection(row['Inspection number'],row['Overall effectiveness'],
-                                 URN, 2004)
+        #        print(date, type(date),'did not parse')
+        currentInsp = Inspection(
+            row["Inspection number"], row["Overall effectiveness"], URN, 2004
+        )
     # Generate an instance of Inspection for this row in df
     inspList.append(currentInsp)
     return row
@@ -201,7 +204,7 @@ def calcStuck(SchoolDict):
 def setAllStatuses(SchoolDict):
     folderPath = sf.folderPath
     openAndUninspected = []
-    if where in ["ONS",'Cdrive']:
+    if where in ["ONS", "Cdrive"]:
         file = "Data\edubaseallstatefunded20190704.csv"
     else:
         file = "edubaseallstatefunded20190627.csv"
@@ -226,8 +229,9 @@ def whichStuckAreOpen(stuck):
     print(f"{len(openStuck)} open stuck schools")
     return openStuck
 
+
 def sortInspectionsToLastFirst(school):
-    tupList, years, lastFirst, lastFirstCats = [],[],[],[]
+    tupList, years, lastFirst, lastFirstCats = [], [], [], []
     for insp in school.inspections:
         tupList.append((insp, insp.getYear()))
         years.append(insp.getYear())
@@ -237,47 +241,79 @@ def sortInspectionsToLastFirst(school):
             if tup[1] == year:
                 lastFirst.append(tup[0])
                 lastFirstCats.append(tup[0].getCat())
-    # Put the average of all previous inspections 
-    if len(tupList)>4:
+    # Put the average of all previous inspections
+    if len(tupList) > 4:
         avg = np.mean(lastFirstCats[4:])
         lastFirstCats = lastFirstCats[:4]
         lastFirstCats.append(avg)
     # If exactly 4 inspections, put the average as the 4th inspection
-    elif len(tupList)==4:
+    elif len(tupList) == 4:
         lastFirstCats.append(lastFirstCats[3])
-    lastFirstCats.insert(0,len(tupList))
+    lastFirstCats.insert(0, len(tupList))
     school.setLastFirst(lastFirst)
     school.setLastFirstCats(lastFirstCats)
     return school
+
 
 def feedToSort(SchoolDict):
     for URN in SchoolDict.keys():
         SchoolDict[URN] = sortInspectionsToLastFirst(SchoolDict[URN])
     return SchoolDict
 
-def clusterDF(SchoolDict, write=''):
+
+def clusterDF(SchoolDict, write=""):
     df = pd.DataFrame()
-    
+
     for URN in SchoolDict.keys():
         lastFirstCats = SchoolDict[URN].getLastFirstCats()
-        if len(lastFirstCats) ==6:
+        if len(lastFirstCats) == 6:
             df[URN] = lastFirstCats
-    if write != '':
+    if write != "":
         df.to_csv(write)
     return df
 
-#predsThatAreNotInDF = []
-#inspList = []
-#df = pd.read_csv("bigDFnoDups1.csv")
-#
-#df = df.apply(loadInspections, axis=1)
-#SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-#df = df.apply(addPredecessorURNsFromDF, axis=1)
-#SchoolDict = addAllPredecessors(SchoolDict)
-#stuck = calcStuck(SchoolDict)
-#SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-#openStuck = whichStuckAreOpen(stuck)
-#SchoolDict = feedToSort(SchoolDict)
-dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
 
-#print(f"took {datetime.datetime.now()-start}")
+def makeURNvsYearInspCats(SchoolDict, write=""):
+    URNdict = {}
+    for URN in SchoolDict:
+        school = SchoolDict[URN]
+        if school.getStatus() == "closed":
+            continue
+        insps = school.getInspections()
+        yearDict = {year: 0 for year in list(range(2005, 2019))}
+
+        for insp in insps:
+            flag = False
+            year = insp.getYear()
+            while flag == False:
+                if yearDict[year] == 0:
+                    yearDict[year] = insp.getCat()
+                    flag = True
+                elif year > 2005:
+                    year -= 1
+                #                    print(SchoolDict[URN])
+                else:
+                    flag = True
+        URNdict[URN] = yearDict
+
+    dfOut = pd.DataFrame(URNdict)
+    if write != "":
+        dfOut.to_csv(write)
+    return dfOut
+
+
+# predsThatAreNotInDF = []
+# inspList = []
+# df = pd.read_csv("bigDFnoDups1.csv")
+#
+# df = df.apply(loadInspections, axis=1)
+# SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+# df = df.apply(addPredecessorURNsFromDF, axis=1)
+# SchoolDict = addAllPredecessors(SchoolDict)
+# stuck = calcStuck(SchoolDict)
+# SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+# openStuck = whichStuckAreOpen(stuck)
+# SchoolDict = feedToSort(SchoolDict)
+# dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
+dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+print(f"took {datetime.datetime.now()-start}")
