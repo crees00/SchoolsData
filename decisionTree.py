@@ -28,7 +28,4 @@ tree.plot_tree(clf)
 
 dot_data = tree.export_graphviz(clf, out_file=None)
 graph = graphviz.Source(dot_data)
-
-
 r = export_text(clf, feature_names=xCols)
-

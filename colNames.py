@@ -33,9 +33,11 @@ PerfColsToKeep = [['URN'],
  ['PTEALGRP2'],
  ['PTMOBN','PTNMOB'],
  ['PSENELSE','PSENELS','PSENSE4','PSENAPS4'],
- ['ATT8SCR'],
- ['P8MEA'],
- ['PTL2BASICS_94']]
+ ['ATT8SCR', 'PTRWM_EXP','PTAC5EM_PTQ','PTREADWRITTAMATX']]
+
+Perfks4ColsToKeep = [
+ ['P8MEA','B8VAMEA_PTQ', 'OVAMEAS'],# Only for ks4
+ ['PTL2BASICS_94','PTL2BASICS_LL_PTQ_EE', 'PTL2BASICS_PTQ']] # Only for ks4
 
 CensusColsToKeep = [
         'URN',

@@ -40,6 +40,10 @@ perfPaths = [
 for i, name in enumerate(perfNames):
     perfDict[name]["path"] = perfPaths[i]
     perfDict[name]["toKeep"] = cn.PerfColsToKeep
+    if name[-3:] == 'ks4':
+        for subList in cn.Perfks4ColsToKeep:
+            print(name,subList)
+            perfDict[name]["toKeep"].append(subList)
     perfDict[name]["toFloat"] = ["URN", "TOTPUPS"]
     perfDict[name]["toPct"] = set(
         [item for sublist in cn.PerfColsToKeep for item in sublist]
