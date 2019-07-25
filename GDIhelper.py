@@ -39,11 +39,15 @@ perfPaths = [
 ]
 for i, name in enumerate(perfNames):
     perfDict[name]["path"] = perfPaths[i]
-    perfDict[name]["toKeep"] = cn.PerfColsToKeep
+    perfDict[name]["toKeep"] = cn.PerfColsToKeep.copy()
+#    print(name, perfDict[name]["toKeep"])
     if name[-3:] == 'ks4':
         for subList in cn.Perfks4ColsToKeep:
-            print(name,subList)
+#            print('\n',name)
+#            print('sublist:',subList)
+#            print('\ntoKeep before:',perfDict[name]["toKeep"])
             perfDict[name]["toKeep"].append(subList)
+#            print('\ntoKeep after:',perfDict[name]["toKeep"])
     perfDict[name]["toFloat"] = ["URN", "TOTPUPS"]
     perfDict[name]["toPct"] = set(
         [item for sublist in cn.PerfColsToKeep for item in sublist]
@@ -223,4 +227,45 @@ for i, name in enumerate(cfrNames):
         "DCAT1",
         "DCAT2",
         "DCAT5",
+    ]
+
+### SFB Academy workforce/finance Data #######################################
+sfbNames = []
+sfbDict = {}
+for y in ["y18", "y16", "y14"]:
+    sfbNames.append(y)
+    sfbDict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+        "toCurr": [],
+    }
+
+sfbPaths = [
+    r"\2017-2018\Workforce and Finance\SFB_Academies_2017-18_download.csv",
+    r"\2015-2016\Workforce and Finance\SFR32_2017_Main_Tables.csv",
+    r"\2013-2014\Workforce and Finance\SFR28_2015_Main_Tables.csv",
+]
+for i, name in enumerate(sfbNames):
+    ad = sfbDict[name]
+    ad["path"] = sfbPaths[i]
+    ad["toKeep"] = cn.sfbColsToKeep
+    ad["toFloat"] = ["URN", 'No Pupils','% of pupils eligible for FSM']
+    ad["toPct"] = []
+    ad["mergeName"] = "_" + name[1:3]
+    ad["toCurr"] = [
+        'Grant Funding',
+       'Self Generated Funding',
+        'Teaching staff',
+        'Supply teaching staff',
+        'Education support staff',
+        'Premises',
+        'Learning resources (not ICT equipment)',
+        'Brought in Professional Services',
+        'Total Expenditure'
     ]

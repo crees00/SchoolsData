@@ -31,6 +31,7 @@ absDict = GDIh.absDict
 spineDict = GDIh.spineDict
 swfDict = GDIh.swfDict
 cfrDict = GDIh.cfrDict
+sfbDict = GDIh.sfbDict
 
 
 def readData(dataDict):
@@ -51,29 +52,45 @@ def readData(dataDict):
 print("updating dfs..")
 
 
-def colChop(df, toKeep):
+def colChop(df, toKeep, name):
     nowKeep = []
+    blanks = []
     for listOfCols in toKeep:
         if type(listOfCols) == str:
             if listOfCols in df.columns:
                 nowKeep.append(listOfCols)
-        for col in listOfCols:
-            if col in df.columns:
-                nowKeep.append(col)
+            else:
+                blanks.append(listOfCols)
+        else:
+            addedOne = False
+            for col in listOfCols:
+                if col in df.columns:
+                    nowKeep.append(col)
+                    addedOne = True
+            if addedOne == False:
+                blanks.append(listOfCols[0])
     if len(nowKeep) == len(toKeep):
         return df[nowKeep]
     else:
         print(f"\nError - only {len(nowKeep)} of {len(toKeep)} cols found")
         print(f"nowKeep: {nowKeep}\ntoKeep: {toKeep}")
+        print(f"blanks: {blanks}")
+        # ks2 has some cols that don't match with ks4 so return it anyway with 
+        # nans in cols which it doesn't share. Keep the cols to keep the dims
+        # of the df to stop problems later
+        if name[-3:] == 'ks2':
+            print(f"returning df anyway with cols {nowKeep+blanks}")
+            for blank in blanks:
+                df[blank] = np.nan
+            return df[nowKeep + blanks]
 
 
 def feedToColChop(dataDict):
     """ Just sends dfs to colChop to remove cols"""
     for name in dataDict.keys():
-        print(name)
         if dataDict[name]["ignore"] == False:
             dataDict[name]["df"] = colChop(
-                dataDict[name]["df"], dataDict[name]["toKeep"]
+                dataDict[name]["df"], dataDict[name]["toKeep"], name
             )
     return dataDict
 
@@ -124,14 +141,14 @@ def allInOne(dataDict):
 def mergeVertical(ks2df, ks4df, year):
     """ take ks2 and ks4 rows for the same year and stack them. 
     For schools which have both ks2 and ks4, take the line from ks4 """
-    #    print(f"ks2dfcols:\n{ks2df.columns}")
-    #    print(f"ks4dfcols:\n{ks4df.columns}")
+#    print(f"ks2dfcols:\n{ks2df.columns}")
+#    print(f"ks4dfcols:\n{ks4df.columns}")
     newColDict = dict(zip(ks4df.columns, ks2df.columns))
-    #    print(f"newColDict:\n{newColDict}")
+#    print(f"newColDict:\n{newColDict}")
     stackedDF = pd.concat([ks2df, ks4df.rename(columns=newColDict)], ignore_index=True)
     finColNames = [x + "_" + str(year) for x in stackedDF.columns if x != "URN"]
     finColNames.insert(0, "URN")
-    #    print(finColNames)
+#    print(finColNames)
     finColDict = dict(zip(stackedDF.columns, finColNames))
     stackedDF = stackedDF.rename(columns=finColDict)
     stackedDF["URN"].astype(float)
@@ -205,5 +222,5 @@ df5 = runAll(perfDict, df4, False)
 #df8 = runAll(spineDict, df7, True)
 #df9 = runAll(swfDict, df8, True)
 #df10 = runAll(cfrDict, df9, True)
-
+df11 = runAll(sfbDict, df5, False)
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

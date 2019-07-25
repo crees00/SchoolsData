@@ -26,7 +26,10 @@ def makePickColsToUse(df, writeName=""):
         example2 = df[col].iloc[1000]
         example3 = df[col].iloc[2000]
         example4 = df[col].iloc[11000]
-        example5 = df[col].iloc[17000]
+        try:
+            example5 = df[col].iloc[17000]
+        except IndexError:
+            example5 = ''
         describe = df[col].describe()
         if df[col].nunique() < 11:
             valCounts = df[col].value_counts()
@@ -96,7 +99,6 @@ def normaliseSDcol(colOfDF):
 
 def normalise(df, cols, func):
     for col in cols:
-        print(col)
         df[col] = func(df[col])
     return df
 
@@ -113,19 +115,20 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-dfForModelModified = fixCategoricalCols(dfForModel)
-dfForModelModified = normalise(
-    dfForModelModified,
-    [
-        x
-        for x in (
-            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
-            - set(toNormaliseWithStD)
-        )
-    ],
-    normalise01Col,
-)
-dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
-makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
-dfForModel.to_csv("dfForModel.csv")
-dfForModelModified.to_csv("dfForModelModified.csv")
+#dfForModelModified = fixCategoricalCols(dfForModel)
+#dfForModelModified = normalise(
+#    dfForModelModified,
+#    [
+#        x
+#        for x in (
+#            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
+#            - set(toNormaliseWithStD)
+#        )
+#    ],
+#    normalise01Col,
+#)
+#dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
+#makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
+##makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
+#dfForModel.to_csv("dfForModel.csv")
+#dfForModelModified.to_csv("dfForModelModified.csv")

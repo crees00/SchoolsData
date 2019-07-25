@@ -302,18 +302,18 @@ def makeURNvsYearInspCats(SchoolDict, write=""):
     return dfOut
 
 
-# predsThatAreNotInDF = []
-# inspList = []
-# df = pd.read_csv("bigDFnoDups1.csv")
-#
-# df = df.apply(loadInspections, axis=1)
-# SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-# df = df.apply(addPredecessorURNsFromDF, axis=1)
-# SchoolDict = addAllPredecessors(SchoolDict)
-# stuck = calcStuck(SchoolDict)
-# SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-# openStuck = whichStuckAreOpen(stuck)
-# SchoolDict = feedToSort(SchoolDict)
-# dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
+predsThatAreNotInDF = []
+inspList = []
+df = pd.read_csv("bigDFnoDups1.csv")
+
+df = df.apply(loadInspections, axis=1)
+SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+df = df.apply(addPredecessorURNsFromDF, axis=1)
+SchoolDict = addAllPredecessors(SchoolDict)
+stuck = calcStuck(SchoolDict)
+SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+openStuck = whichStuckAreOpen(stuck)
+SchoolDict = feedToSort(SchoolDict)
+dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
 dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
 print(f"took {datetime.datetime.now()-start}")
