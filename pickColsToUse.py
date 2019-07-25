@@ -80,29 +80,52 @@ def fixCategoricalCols(df):
         df,
         ["Boarders (name)", "OfficialSixthForm (name)", "Gender (name)", "MINORGROUP"],
     )
-    df = pd.get_dummies(df,prefix = 'GOR', columns = ['GOR (name)'])
+    df = pd.get_dummies(df, prefix="GOR", columns=["GOR (name)"])
     return df
 
 
-def normaliseCol(colOfDF):
+def normalise01Col(colOfDF):
     colMin = np.min(colOfDF)
     colMax = np.max(colOfDF)
     return (colOfDF - colMin) / (colMax - colMin)
 
 
-def normalise(df, cols):
+def normaliseSDcol(colOfDF):
+    return (colOfDF - (np.mean(colOfDF))) / (np.std(colOfDF))
+
+
+def normalise(df, cols, func):
     for col in cols:
         print(col)
-        df[col] = normaliseCol(df[col])
+        df[col] = func(df[col])
     return df
 
+
+toNormaliseWithStD = [
+    "Mean Gross FTE Salary of All Teachers (Â£s)",
+    "Total revenue balance (1) 2017-18",
+    "PERCTOT",
+    "TotalRevBalance Change 7yr",
+    "TotalRevBalance Change 2yr",
+    "Total revenue balance (1) as a % of total revenue income (6) 2017-18",
+    "TotalRevBalance Change 4yr",
+    "Pupil:     Teacher Ratio",
+    "PSENELSE__18",
+]
 
 dfForModelModified = fixCategoricalCols(dfForModel)
 dfForModelModified = normalise(
     dfForModelModified,
-    [x for x in (set(dfForModelModified.columns)-{'URN','GOR (name)'})],
+    [
+        x
+        for x in (
+            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
+            - set(toNormaliseWithStD)
+        )
+    ],
+    normalise01Col,
 )
-
+dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
 makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
 dfForModel.to_csv("dfForModel.csv")
 dfForModelModified.to_csv("dfForModelModified.csv")
