@@ -31,7 +31,7 @@ class School:
         self.lastFirstCats = (
             []
         )  # [no of insps, ratings of most recent 4, avg of ones before]
-        self.goods = []
+        self.goods = [] # running total of goods from 1st inspection on
         self.bads = []
 
     def checkIfInspNoIsInList(self, inspNo):
@@ -358,21 +358,21 @@ def makeMatrices(SchoolDict):
         steps[0,0] = len(SchoolDict)
     return finalPt, steps
 
-#predsThatAreNotInDF = []
-#inspList = []
-#df = pd.read_csv("bigDFnoDups1.csv")
-#
-#df = df.apply(loadInspections, axis=1)
-#SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-#df = df.apply(addPredecessorURNsFromDF, axis=1)
-#SchoolDict = addAllPredecessors(SchoolDict)
-#stuck = calcStuck(SchoolDict)
-#SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-#openStuck = whichStuckAreOpen(stuck)
-#SchoolDict = feedToSort(SchoolDict)
-#dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
-#SchoolDict = makeGoodsAndBadsLists(SchoolDict)
-#dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
-#print(f"took {datetime.datetime.now()-start}")
+predsThatAreNotInDF = []
+inspList = []
+df = pd.read_csv("bigDFnoDups1.csv")
+
+df = df.apply(loadInspections, axis=1)
+SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+df = df.apply(addPredecessorURNsFromDF, axis=1)
+SchoolDict = addAllPredecessors(SchoolDict)
+stuck = calcStuck(SchoolDict)
+SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+openStuck = whichStuckAreOpen(stuck)
+SchoolDict = feedToSort(SchoolDict)
+dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
+SchoolDict = makeGoodsAndBadsLists(SchoolDict)
+dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+print(f"took {datetime.datetime.now()-start}")
 finalPt, steps = makeMatrices(SchoolDict)
 #
