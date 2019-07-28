@@ -10,6 +10,7 @@ import datetime
 import re
 import setFolder as sf
 import dateutil.parser as parser
+import matplotlib.pyplot as plt
 
 where = sf.where
 start = datetime.datetime.now()
@@ -26,10 +27,12 @@ class School:
         self.predecessorURNs = []
         self.predecessors = []
         self.status = "closed"  # 'open' or 'closed'
-        self.lastFirst = []
+        self.lastFirst = [] # all instances of inspection
         self.lastFirstCats = (
             []
         )  # [no of insps, ratings of most recent 4, avg of ones before]
+        self.goods = []
+        self.bads = []
 
     def checkIfInspNoIsInList(self, inspNo):
         return inspNo in self.inspNosForSchool
@@ -54,6 +57,12 @@ class School:
 
     def getLastFirstCats(self):
         return self.lastFirstCats
+    
+    def getBads(self):
+        return self.bads
+    
+    def getGoods(self):
+        return self.goods
 
     def setStatus(self, statusIn):
         self.status = statusIn
@@ -63,6 +72,12 @@ class School:
 
     def setLastFirstCats(self, lastFirstCats):
         self.lastFirstCats = lastFirstCats
+        
+    def setGoods(self, goods):
+        self.goods = goods
+        
+    def setBads(self, bads):
+        self.bads = bads
 
     def addInspToSchool(self, insp):
         self.inspections.append(insp)
@@ -301,19 +316,63 @@ def makeURNvsYearInspCats(SchoolDict, write=""):
         dfOut.to_csv(write)
     return dfOut
 
+def makeGoodsAndBadsLists(SchoolDict):
+    ''' Makes lists in time (non-reversed) order i.e. starts at 1st insp'''
+    for URN in SchoolDict:
+        school = SchoolDict[URN]
+        goods, bads, current =[], [], [0,0]
+        for insp in reversed(school.getLastFirst()):
+            if insp.getCat() in [1,2]:
+                current[0] += 1
+            elif insp.getCat() in [3,4]:
+                current[1] += 1
+            goods.append(current[0])
+            bads.append(current[1])
+        school.setGoods(goods)
+        school.setBads(bads)
+    return SchoolDict
 
-predsThatAreNotInDF = []
-inspList = []
-df = pd.read_csv("bigDFnoDups1.csv")
+def plotGvsB(SchoolDict):
+    a=0
+    for URN in SchoolDict:
+        goods = SchoolDict[URN].getGoods()
+        bads = SchoolDict[URN].getBads()
+        if len(goods)==0:
+            goods, bads = [0],[0]
+        plt.scatter(goods[-1],bads[-1], color='k', alpha=(1/255))    
+        a += 1
+        if a > 1000:
+            break
+        
+def makeMatrices(SchoolDict):
+    finalPt = np.zeros((9,6)) # bads, goods
+    steps = np.zeros((9,6))
+    for URN in SchoolDict:
+        goods = SchoolDict[URN].getGoods()
+        bads = SchoolDict[URN].getBads()
+        if len(goods)==0:
+            goods, bads = [0],[0]
+        finalPt[bads[-1],goods[-1]] += 1
+        for i in range(len(goods)):
+            steps[bads[i], goods[i]] += 1
+        steps[0,0] = len(SchoolDict)
+    return finalPt, steps
 
-df = df.apply(loadInspections, axis=1)
-SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-df = df.apply(addPredecessorURNsFromDF, axis=1)
-SchoolDict = addAllPredecessors(SchoolDict)
-stuck = calcStuck(SchoolDict)
-SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-openStuck = whichStuckAreOpen(stuck)
-SchoolDict = feedToSort(SchoolDict)
-dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
-dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
-print(f"took {datetime.datetime.now()-start}")
+#predsThatAreNotInDF = []
+#inspList = []
+#df = pd.read_csv("bigDFnoDups1.csv")
+#
+#df = df.apply(loadInspections, axis=1)
+#SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+#df = df.apply(addPredecessorURNsFromDF, axis=1)
+#SchoolDict = addAllPredecessors(SchoolDict)
+#stuck = calcStuck(SchoolDict)
+#SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+#openStuck = whichStuckAreOpen(stuck)
+#SchoolDict = feedToSort(SchoolDict)
+#dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
+#SchoolDict = makeGoodsAndBadsLists(SchoolDict)
+#dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+#print(f"took {datetime.datetime.now()-start}")
+finalPt, steps = makeMatrices(SchoolDict)
+#
