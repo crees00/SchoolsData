@@ -102,6 +102,11 @@ def normalise(df, cols, func):
         df[col] = func(df[col])
     return df
 
+def onlyFullCols(df):
+    for col in df.columns:
+        if df[col].count() < len(df):
+            df.drop(col, inplace=True, axis=1)
+    return df
 
 toNormaliseWithStD = [
     "Mean Gross FTE Salary of All Teachers (Â£s)",
@@ -115,20 +120,22 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-#dfForModelModified = fixCategoricalCols(dfForModel)
-#dfForModelModified = normalise(
-#    dfForModelModified,
-#    [
-#        x
-#        for x in (
-#            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
-#            - set(toNormaliseWithStD)
-#        )
-#    ],
-#    normalise01Col,
-#)
-#dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
-#makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
-##makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
-#dfForModel.to_csv("dfForModel.csv")
-#dfForModelModified.to_csv("dfForModelModified.csv")
+dfForModelModified = fixCategoricalCols(dfForModel)
+dfForModelModified = normalise(
+    dfForModelModified,
+    [
+        x
+        for x in (
+            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
+            - set(toNormaliseWithStD)
+        )
+    ],
+    normalise01Col,
+)
+dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
+makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
+#makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
+dfForModel.to_csv("dfForModel.csv")
+dfForModelModified.to_csv("dfForModelModified.csv")
+dfOnlyFullCols = onlyFullCols(dfForModelModified)
+dfOnlyFullCols.to_csv('dfOnlyFullCols.csv')
