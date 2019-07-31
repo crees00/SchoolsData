@@ -81,7 +81,7 @@ nodeDict["0"] = Node([x for x in SchoolDict.values()], "")
 def printNodeDict(nodeDict, layers=4):
 
     #    for layer in range(layers):
-    width = ((2 ** layers) * 4) # Whole width
+    width = (2 ** layers) * 4  # Whole width
     centrePt = (width // 2) + 1
     nodeLabel = ""
     # Layer0
@@ -104,96 +104,99 @@ def printNodeDict(nodeDict, layers=4):
         + str(len(nodeDict["0"].getSchoolsOutB()))
         + "," * (centrePt - 2)
     )
-    strings.append('')
-    
-    nodeLabels = ['g','b']
+    strings.append("")
+
+    nodeLabels = ["g", "b"]
     lines = {}
     for nodeLabel in nodeLabels:
-        lines[nodeLabel] =  makeOneNode(nodeDict, nodeLabel)
+        lines[nodeLabel] = makeOneNode(nodeDict, nodeLabel)
     for nodeLabel in nodeLabels:
-        centrePt = width // ((len(nodeLabel)+1) * 2)
-        spacer = (centrePt-2) * ','
-        
-    
-    
-    
+        centrePt = width // ((len(nodeLabel) + 1) * 2)
+        spacer = (centrePt - 2) * ","
+
     with open("classTree.csv", "w") as f:
         for line in strings:
             f.write(line)
             f.write("\n")
 
+
 def makeAllNodes(nodeDict):
     treeDict = {}
     for nodeLabel in nodeDict.keys():
         strings = []
-        
+
+        strings.append("," + str(nodeDict[nodeLabel].getPatternIn()) + ",")
+        strings.append("," + str(len(nodeDict[nodeLabel].getSchoolsIn())) + ",")
+        strings.append("G,S,B")
         strings.append(
-            ','+str(nodeDict[nodeLabel].getPatternIn()) + ','
-        )
-        strings.append(
-             ','+str(len(nodeDict[nodeLabel].getSchoolsIn()))+','
-        )
-        strings.append( "G,S,B" )
-        strings.append(
-             str(len(nodeDict[nodeLabel].getSchoolsOutG()))
+            str(len(nodeDict[nodeLabel].getSchoolsOutG()))
             + ","
             + str(len(nodeDict[nodeLabel].getSchoolsStaying()))
             + ","
             + str(len(nodeDict[nodeLabel].getSchoolsOutB()))
         )
-        strings.append('')
+        strings.append("")
         treeDict[nodeLabel] = strings
     return treeDict
 
-    
+
 def buildLayerOfNodes(treeDict, layer, totalLayers):
-    numNodes = 2**layer
-    width =((2 ** totalLayers) * 6)+1 # Whole width
-    print('\nlayer',layer)
-    print('width',width)
-    spacing = (width - (numNodes*3))//(numNodes)
-    print('spacing',spacing)
+    numNodes = 2 ** layer
+    width = ((2 ** totalLayers) * 6) + 1  # Whole width
+    print("\nlayer", layer)
+    print("width", width)
+    spacing = (width - (numNodes * 3)) // (numNodes)
+    print("spacing", spacing)
     if spacing < 2:
         spacing = 2
-    lines = [','*(spacing//2)] * 5
+    lines = ["," * (spacing // 2)] * 5
     spaceUsed = len(lines)
     nodesLeftInLayer = numNodes
-    for sequence in itertools.product('gb', repeat = layer):
-        nodeLabel = ''
-        spacing = (width-(len(lines[0]) + nodesLeftInLayer*3)) // (nodesLeftInLayer+1)
+    for sequence in itertools.product("gb", repeat=layer):
+        nodeLabel = ""
+        spacing = (width - (len(lines[0]) + nodesLeftInLayer * 3)) // (
+            nodesLeftInLayer + 1
+        )
         if spacing < 2:
             spacing = 2
 
-        if layer >2:
-            print(nodesLeftInLayer,len(lines[0]),(width-(len(lines[0])+nodesLeftInLayer*3)),spacing)
+        if layer > 2:
+            print(
+                nodesLeftInLayer,
+                len(lines[0]),
+                (width - (len(lines[0]) + nodesLeftInLayer * 3)),
+                spacing,
+            )
         for item in sequence:
             nodeLabel += item
-#        print(nodeLabel)
-#        print(lines)
-        for i,line in enumerate(lines):
-#            print(treeDict[nodeLabel][i])
-            if nodeLabel == '':
-                lines[i] += treeDict['0'][i]
+        #        print(nodeLabel)
+        #        print(lines)
+        for i, line in enumerate(lines):
+            #            print(treeDict[nodeLabel][i])
+            if nodeLabel == "":
+                lines[i] += treeDict["0"][i]
             else:
                 try:
                     lines[i] += treeDict[nodeLabel][i]
                 except KeyError:
-                    lines[i] += ','*3
-            lines[i] += ','*spacing
+                    lines[i] += "," * 3
+            lines[i] += "," * spacing
         nodesLeftInLayer -= 1
-#            print(line)
-#            print(lines)
-    return lines            
-  
+    #            print(line)
+    #            print(lines)
+    return lines
+
+
 def makeWholeTree(nodeDict):
     treeDict = makeAllNodes(nodeDict)
-    totalLayers =5#  max([len(x) for x in nodeDict.keys()])
+    totalLayers = 5  #  max([len(x) for x in nodeDict.keys()])
     lines = []
     with open("classTree.csv", "w") as f:
-        for layer in range(totalLayers+1):
+        for layer in range(totalLayers + 1):
             for line in buildLayerOfNodes(treeDict, layer, totalLayers):
                 f.write(line)
                 f.write("\n")
 
-makeWholeTree(nodeDict)  
-#printNodeDict(nodeDict)
+
+makeWholeTree(nodeDict)
+# printNodeDict(nodeDict)

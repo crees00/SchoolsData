@@ -4,7 +4,7 @@ Created on Wed Jul 10 13:32:43 2019
 
 @author: reesc1
 """
-where = "home"
+where = "Cdrive"
 # Folder
 if where in ["ONS", 'Cdrive']:
     folderPath = r"C:\Users\reesc1\Docs" + "\\"

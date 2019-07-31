@@ -24,21 +24,21 @@ class School:
         self.ones, self.twos, self.threes, self.fours, self.nines = [], [], [], [], []
         self.inspNosForSchool = []
         self.inspections = []  # list of instances of Inspection
-        self.predecessorURNs = []
-        self.predecessors = []
+        self.predecessorURNs = []  # list of URNs
+        self.predecessors = []  # list of instances of School
         self.status = "closed"  # 'open' or 'closed'
-        self.lastFirst = [] # all instances of inspection
+        self.lastFirst = []  # all instances of inspection
         self.lastFirstCats = (
             []
         )  # [no of insps, ratings of most recent 4, avg of ones before]
-        self.goods = [] # running total of goods from 1st inspection on
+        self.goods = []  # running total of goods from 1st inspection on
         self.bads = []
 
     def checkIfInspNoIsInList(self, inspNo):
         return inspNo in self.inspNosForSchool
 
     def __str__(self):
-        return f"{self.getURN()} with {len(self.getInspections())} inspections: {[x.getCat() for x in self.getInspections()]}"
+        return f"{self.getURN()} with {len(self.getInspections())} inspections: {[x.getCat() for x in self.getLastFirst()]}"
 
     def getURN(self):
         return self.URN
@@ -57,10 +57,10 @@ class School:
 
     def getLastFirstCats(self):
         return self.lastFirstCats
-    
+
     def getBads(self):
         return self.bads
-    
+
     def getGoods(self):
         return self.goods
 
@@ -72,10 +72,10 @@ class School:
 
     def setLastFirstCats(self, lastFirstCats):
         self.lastFirstCats = lastFirstCats
-        
+
     def setGoods(self, goods):
         self.goods = goods
-        
+
     def setBads(self, bads):
         self.bads = bads
 
@@ -316,15 +316,16 @@ def makeURNvsYearInspCats(SchoolDict, write=""):
         dfOut.to_csv(write)
     return dfOut
 
+
 def makeGoodsAndBadsLists(SchoolDict):
-    ''' Makes lists in time (non-reversed) order i.e. starts at 1st insp'''
+    """ Makes lists in time (non-reversed) order i.e. starts at 1st insp"""
     for URN in SchoolDict:
         school = SchoolDict[URN]
-        goods, bads, current =[], [], [0,0]
+        goods, bads, current = [], [], [0, 0]
         for insp in reversed(school.getLastFirst()):
-            if insp.getCat() in [1,2]:
+            if insp.getCat() in [1, 2]:
                 current[0] += 1
-            elif insp.getCat() in [3,4]:
+            elif insp.getCat() in [3, 4]:
                 current[1] += 1
             goods.append(current[0])
             bads.append(current[1])
@@ -332,47 +333,172 @@ def makeGoodsAndBadsLists(SchoolDict):
         school.setBads(bads)
     return SchoolDict
 
+
 def plotGvsB(SchoolDict):
-    a=0
+    a = 0
     for URN in SchoolDict:
         goods = SchoolDict[URN].getGoods()
         bads = SchoolDict[URN].getBads()
-        if len(goods)==0:
-            goods, bads = [0],[0]
-        plt.scatter(goods[-1],bads[-1], color='k', alpha=(1/255))    
+        if len(goods) == 0:
+            goods, bads = [0], [0]
+        plt.scatter(goods[-1], bads[-1], color="k", alpha=(1 / 255))
         a += 1
         if a > 1000:
             break
-        
+
+
 def makeMatrices(SchoolDict):
-    finalPt = np.zeros((9,6)) # bads, goods
-    steps = np.zeros((9,6))
+    finalPt = np.zeros((9, 6))  # bads, goods
+    steps = np.zeros((9, 6))
     for URN in SchoolDict:
         goods = SchoolDict[URN].getGoods()
         bads = SchoolDict[URN].getBads()
-        if len(goods)==0:
-            goods, bads = [0],[0]
-        finalPt[bads[-1],goods[-1]] += 1
+        if len(goods) == 0:
+            goods, bads = [0], [0]
+        finalPt[bads[-1], goods[-1]] += 1
         for i in range(len(goods)):
             steps[bads[i], goods[i]] += 1
-        steps[0,0] = len(SchoolDict)
+        steps[0, 0] = len(SchoolDict)
     return finalPt, steps
 
-predsThatAreNotInDF = []
-inspList = []
-df = pd.read_csv("bigDFnoDups1.csv")
 
-df = df.apply(loadInspections, axis=1)
-SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
-df = df.apply(addPredecessorURNsFromDF, axis=1)
-SchoolDict = addAllPredecessors(SchoolDict)
-stuck = calcStuck(SchoolDict)
-SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
-openStuck = whichStuckAreOpen(stuck)
-SchoolDict = feedToSort(SchoolDict)
-dfForClustering = clusterDF(SchoolDict, 'clusterDF.csv')
-SchoolDict = makeGoodsAndBadsLists(SchoolDict)
-dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+def findOpenSchools(SchoolDict):
+    import copy
+
+    outDict = {}
+    for URN in SchoolDict.keys():
+        if SchoolDict[URN].getStatus() == "open":
+            outDict[URN] = copy.copy(SchoolDict[URN])
+    return outDict
+
+
+def filterSchools(SchoolsList, numMin=0, numMax=20, cats=[[]] * 20, printout=False):
+    """ Takes in list of schools, returns a list of schools which is a subset
+    of the original. If no filters applied, returns original list.
+    To only include cat 1&2 for 2nd most recent inspection:
+        numMin = 2, cats = [[],[1,2]]"""
+    if (numMin == 0) and (len(cats) < 20):
+        numMin = len(cats)
+        if printout:
+            print(f"Setting numMin to {numMin}")
+    numInsps = list(range(numMin, numMax))
+    outList = []
+    for school in SchoolsList:
+        # set 'out' as true, and only change it to False if school breaks
+        # a filter rule
+        out = True
+        lastFirst = [insp.getCat() for insp in school.getLastFirst()]  # List of cats
+        if len(lastFirst) in numInsps:
+            for i, insp in enumerate(cats):
+                # if a filter is set
+                if len(insp) > 0:
+                    # if there are enough inspections for filter to apply
+                    if len(lastFirst) > i:
+                        # if the cat of this inspection is allowed by set filter
+                        if lastFirst[i] not in insp:
+                            out = False
+        else:
+            out = False
+        if out:
+            outList.append(school)
+    if printout:
+        print(f"{len(outList)} schools in cat {cats}")
+    return outList
+
+
+def findGrandParents(SchoolDict, printout=False):
+    threeGenerations = []
+    for school in SchoolDict.values():
+        for predecessor in school.getPredecessors():
+            if len(predecessor.getPredecessors()) > 0:
+                threeGenerations.append(
+                    (school, predecessor, predecessor.getPredecessors())
+                )
+    if printout:
+        for (ch, par, gp) in threeGenerations:
+            print("child:\n", ch.getURN())
+            print("parent:\n", par.getURN())
+            print("grandparent(s):\n", {x.getURN() for x in gp})
+            print()
+    return threeGenerations
+
+
+def grouping(openSchoolDict, printout=False):
+    groupDict = {
+        x: [] for x in ["stuck", "becomeStuck", "becomingStuck", "escaped", "downUp"]
+    }
+    print("making groups")
+    groupDict["stuck"] = filterSchools(
+        openSchoolDict.values(),
+        numMin=4,
+        cats=[[3, 4]]*15
+           
+    )
+    for ones in range(4, 7):
+        groupDict["becomeStuck"] += filterSchools(
+            openSchoolDict.values(), cats=[[3, 4]] * ones + [[1, 2]]
+        )
+    for ones in range(1, 4):
+        groupDict["becomingStuck"] += filterSchools(
+            openSchoolDict.values(), cats=[[3, 4]] * ones + [[1, 2]]
+        )
+    for ones in range(1, 5):
+        groupDict["escaped"] += filterSchools(
+            openSchoolDict.values(), cats=[[1, 2]] * ones + [[3, 4]] * 4
+        )
+    for ones in range(1, 5):
+        for twos in range(1, 5):
+            for threes in range(1, 5):
+                groupDict["downUp"] += filterSchools(
+                    openSchoolDict.values(),
+                    cats=[[1, 2]] * ones + [[3, 4]] * twos + [[1, 2]] * threes,
+                )
+    if printout:
+        import itertools
+
+        for group in groupDict.keys():
+            print(f"{group} has {len(groupDict[group])} items")
+        print("checking if there is any crossover between groups...")
+        for (group, otherGroup) in itertools.combinations(groupDict.keys(), 2):
+            if (group != otherGroup) and (
+                len(set(groupDict[group]) & set(groupDict[otherGroup])) > 0
+            ):
+                print(
+                    group,
+                    "and",
+                    otherGroup,
+                    "share",
+                    len(set(groupDict[group]) & set(groupDict[otherGroup])),
+                    "items",
+                )
+    return groupDict
+
+
+def runAll():
+    predsThatAreNotInDF = []
+    global inspList
+    global SchoolDict
+    inspList = []
+    df = pd.read_csv("bigDFnoDups1.csv")
+    df = df.apply(loadInspections, axis=1)
+    SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
+    df = df.apply(addPredecessorURNsFromDF, axis=1)
+    SchoolDict = addAllPredecessors(SchoolDict)
+    stuck = calcStuck(SchoolDict)
+    SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
+    openStuck = whichStuckAreOpen(stuck)
+    SchoolDict = feedToSort(SchoolDict)
+    dfForClustering = clusterDF(SchoolDict, "clusterDF.csv")
+    SchoolDict = makeGoodsAndBadsLists(SchoolDict)
+    dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+    finalPt, steps = makeMatrices(SchoolDict)
+    openSchoolDict = findOpenSchools(SchoolDict)
+    threeGenerations = findGrandParents(SchoolDict)
+    groupDict = grouping(openSchoolDict)
+    return SchoolDict, openSchoolDict, groupDict
+
+
+# SchoolDict, openSchoolDict, groupDict = runAll()
+groupDict = grouping(openSchoolDict, True)
+
 print(f"took {datetime.datetime.now()-start}")
-finalPt, steps = makeMatrices(SchoolDict)
-#
