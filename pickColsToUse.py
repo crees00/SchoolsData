@@ -10,8 +10,6 @@ import pandas as pd
 import colNames as cn
 import numpy as np
 
-df = pd.read_csv("df5.csv")
-
 
 def makePickColsToUse(df, writeName=""):
     outDF = pd.DataFrame()
@@ -29,7 +27,7 @@ def makePickColsToUse(df, writeName=""):
         try:
             example5 = df[col].iloc[17000]
         except IndexError:
-            example5 = ''
+            example5 = ""
         describe = df[col].describe()
         if df[col].nunique() < 11:
             valCounts = df[col].value_counts()
@@ -42,16 +40,6 @@ def makePickColsToUse(df, writeName=""):
         if writeName != "":
             outDF.to_csv(writeName)
     return outDF
-
-
-outDF = makePickColsToUse(df)
-# outDF.to_csv('pickColsToUse.csv')
-
-toKeep = cn.modelColsToKeep
-
-toDrop = set(df.columns) - set(toKeep)
-
-dfForModel = cam.dropColsFromList(df, toDrop)
 
 
 def fixCategoricalCols(df):
@@ -79,11 +67,13 @@ def fixCategoricalCols(df):
     df["MaintainedNew"] = np.where(df["MINORGROUP"] == "Maintained School", 1, 0)
     df["AcademyNew"] = np.where(df["MINORGROUP"] == "Academy", 1, 0)
     df["SpecialNew"] = np.where(df["MINORGROUP"] == "Special School", 1, 0)
+    df = pd.get_dummies(df, prefix="GOR", columns=["GOR (name)"])
     df = cam.dropColsFromList(
         df,
-        ["Boarders (name)", "OfficialSixthForm (name)", "Gender (name)", "MINORGROUP"],
+        ["Boarders (name)", "OfficialSixthForm (name)", "Gender (name)", "MINORGROUP",
+         "GOR (name)"],
     )
-    df = pd.get_dummies(df, prefix="GOR", columns=["GOR (name)"])
+
     return df
 
 
@@ -100,13 +90,32 @@ def normaliseSDcol(colOfDF):
 def normalise(df, cols, func):
     for col in cols:
         df[col] = func(df[col])
+        
     return df
+
 
 def onlyFullCols(df):
     for col in df.columns:
         if df[col].count() < len(df):
             df.drop(col, inplace=True, axis=1)
     return df
+
+def imputeAll(df, write=''):
+    ''' impute all of the columns in the DF apart from URN '''
+    import numpy as np
+    from sklearn.experimental import enable_iterative_imputer
+    from sklearn.impute import IterativeImputer
+    URNcol = df['URN'][:]
+    originalCols = list(df.columns)
+    originalCols.remove('URN')
+    dfToFit = df.drop(['URN'], axis=1)
+    imp = IterativeImputer(max_iter=10, random_state=0)
+    imp.fit(dfToFit)
+    fixed_df = pd.DataFrame(imp.transform(dfToFit), columns=originalCols)
+    fixed_df['URN'] = URNcol
+    if len(write)>0:
+        fixed_df.to_csv(write)
+    return fixed_df
 
 toNormaliseWithStD = [
     "Mean Gross FTE Salary of All Teachers (Â£s)",
@@ -120,22 +129,27 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
+df = pd.read_csv("df5.csv")
+outDF = makePickColsToUse(df)
+# outDF.to_csv('pickColsToUse.csv')
+toKeep = cn.modelColsToKeep
+toDrop = set(df.columns) - set(toKeep)
+# Just drop cols from df5 to get dfForModel
+dfForModel = cam.dropColsFromList(df, toDrop)
+# Encode categorical cols with one-hot encoding
 dfForModelModified = fixCategoricalCols(dfForModel)
+# Standardise all of the cols
 dfForModelModified = normalise(
     dfForModelModified,
-    [
-        x
-        for x in (
-            (set(dfForModelModified.columns) - {"URN", "GOR (name)"})
-            - set(toNormaliseWithStD)
-        )
-    ],
-    normalise01Col,
+    set(dfForModelModified.columns) - {"URN"},
+    normaliseSDcol,
 )
-dfForModelModified = normalise(dfForModelModified, toNormaliseWithStD, normaliseSDcol)
-makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
-#makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
-dfForModel.to_csv("dfForModel.csv")
-dfForModelModified.to_csv("dfForModelModified.csv")
-dfOnlyFullCols = onlyFullCols(dfForModelModified)
-dfOnlyFullCols.to_csv('dfOnlyFullCols.csv')
+dfForModelModifiedImputed = imputeAll(dfForModelModified, 'dfForModelModifiedImputed.csv')
+makePickColsToUse(dfForModelModifiedImputed, "dfForModelModifiedImputedAnalysed.csv")
+
+# makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
+##makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
+# dfForModel.to_csv("dfForModel.csv")
+# dfForModelModified.to_csv("dfForModelModified.csv")
+# dfOnlyFullCols = onlyFullCols(dfForModelModified)
+# dfOnlyFullCols.to_csv('dfOnlyFullCols.csv')

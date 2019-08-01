@@ -80,6 +80,9 @@ class School:
         self.bads = bads
 
     def addInspToSchool(self, insp):
+        ''' insp is an instance of Inspection '''
+        if insp in self.getInspections():
+            return
         self.inspections.append(insp)
         self.inspNosForSchool.append(insp.getInspNo())
         if insp.getCat() == 1:
@@ -94,6 +97,11 @@ class School:
             self.nines.append(insp)
 
     def addPredecessorFromURN(self, predURN):
+        # First check it isn't already in the list
+        for existingPredecessor in self.getPredecessors():
+            if existingPredecessor.getURN() == predURN:
+                return
+        global predsThatAreNotInDF
         try:
             self.predecessors.append(SchoolDict[predURN])
             self.predecessorURNs.append(predURN)
@@ -372,6 +380,24 @@ def findOpenSchools(SchoolDict):
     return outDict
 
 
+def findGrandParents(SchoolDict, printout=False):
+    threeGenerations = []
+    for school in SchoolDict.values():
+        if school.getStatus() =='open':
+            for predecessor in school.getPredecessors():
+                if len(predecessor.getPredecessors()) > 0:
+                    threeGenerations.append(
+                        (school, predecessor, predecessor.getPredecessors())
+                    )
+    if printout:
+        for (ch, par, gp) in threeGenerations:
+            print("child:\n", ch.getURN())
+            print("parent:\n", par.getURN())
+            print("grandparent(s):\n", {x.getURN() for x in gp})
+            print()
+    return threeGenerations
+
+
 def filterSchools(SchoolsList, numMin=0, numMax=20, cats=[[]] * 20, printout=False):
     """ Takes in list of schools, returns a list of schools which is a subset
     of the original. If no filters applied, returns original list.
@@ -406,33 +432,13 @@ def filterSchools(SchoolsList, numMin=0, numMax=20, cats=[[]] * 20, printout=Fal
     return outList
 
 
-def findGrandParents(SchoolDict, printout=False):
-    threeGenerations = []
-    for school in SchoolDict.values():
-        for predecessor in school.getPredecessors():
-            if len(predecessor.getPredecessors()) > 0:
-                threeGenerations.append(
-                    (school, predecessor, predecessor.getPredecessors())
-                )
-    if printout:
-        for (ch, par, gp) in threeGenerations:
-            print("child:\n", ch.getURN())
-            print("parent:\n", par.getURN())
-            print("grandparent(s):\n", {x.getURN() for x in gp})
-            print()
-    return threeGenerations
-
-
 def grouping(openSchoolDict, printout=False):
     groupDict = {
         x: [] for x in ["stuck", "becomeStuck", "becomingStuck", "escaped", "downUp"]
     }
     print("making groups")
     groupDict["stuck"] = filterSchools(
-        openSchoolDict.values(),
-        numMin=4,
-        cats=[[3, 4]]*15
-           
+        openSchoolDict.values(), numMin=4, cats=[[3, 4]] * 15
     )
     for ones in range(4, 7):
         groupDict["becomeStuck"] += filterSchools(
@@ -475,6 +481,7 @@ def grouping(openSchoolDict, printout=False):
 
 
 def runAll():
+    global predsThatAreNotInDF
     predsThatAreNotInDF = []
     global inspList
     global SchoolDict
@@ -497,8 +504,7 @@ def runAll():
     groupDict = grouping(openSchoolDict)
     return SchoolDict, openSchoolDict, groupDict
 
-
-# SchoolDict, openSchoolDict, groupDict = runAll()
-groupDict = grouping(openSchoolDict, True)
+SchoolDict, openSchoolDict, groupDict = runAll()
+#groupDict = grouping(openSchoolDict, True)
 
 print(f"took {datetime.datetime.now()-start}")

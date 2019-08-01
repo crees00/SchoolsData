@@ -62,16 +62,19 @@ def analyseCols(df, name=""):
         print(f"{len(scoreDict[key])} cols {key}")
 
 
-def dropColsFromList(df, toDrop):
+def dropColsFromList(df, toDrop,i=0):
     """ Takes each column name in toDrop and drops that col from df.
     Works regardless of whether col name from toDrop is in df"""
     try:
         return df.drop(toDrop, axis=1)
     except KeyError as error:
-        colToChop = re.findall("'[\w ]+'", str(error))
+        colToChop = re.findall("'[\w ()]+'", str(error))
         colToChop = [x[1:-1] for x in colToChop]
         toDrop = list(set(toDrop) - set(colToChop))
-        return dropColsFromList(df, toDrop)
+        if i>2:
+            print('\n\ntoDrop:',toDrop, '\ncolToChop:',colToChop,'\ncols:',df.columns)
+            return
+        return dropColsFromList(df, toDrop,i+1)
 
 
 def absChange(row, col1, col2):
