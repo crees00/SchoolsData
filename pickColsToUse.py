@@ -141,7 +141,7 @@ dfForModelModified = fixCategoricalCols(dfForModel)
 # Standardise all of the cols
 dfForModelModified = normalise(
     dfForModelModified,
-    set(dfForModelModified.columns) - {"URN"},
+    set(dfForModelModified.columns) - {"URN", "Stuck"},
     normaliseSDcol,
 )
 dfForModelModifiedImputed = imputeAll(dfForModelModified, 'dfForModelModifiedImputed.csv')
