@@ -12,7 +12,7 @@ import numpy as np
 x = [x - 0.5 for x in list(range(6))]
 y = [x - 0.5 for x in list(range(9))]
 
-intensity = steps
+intensity = finalPt
 
 # setup the 2D grid with Numpy
 x, y = np.meshgrid(x, y)
@@ -24,9 +24,9 @@ intensity = np.array(intensity)
 fig, ax = plt.subplots()
 fig.set_figheight(8)
 fig.set_figwidth(5)
-ax.pcolormesh(x, y, intensity)
-fig.suptitle("Steps along the way")
-ax.set_xlabel("Total goods")
-ax.set_ylabel("Total bads")
-# fig.colorbar() #need a colorbar to show the intensity scale
+a = ax.pcolormesh(x, y, intensity)
+fig.suptitle("Frequencies of inspection history")
+ax.set_xlabel("Total good (cat1/cat2) inspections")
+ax.set_ylabel("Total bad (cat3/cat4) inspections")
+plt.colorbar(a) #need a colorbar to show the intensity scale
 plt.show()  # boom
