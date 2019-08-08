@@ -6,8 +6,9 @@ Created on Mon Jul 22 11:20:45 2019
 """
 
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 import pandas as pd
 from sklearn.metrics import (
     confusion_matrix,
@@ -20,6 +21,7 @@ import matplotlib.pyplot as plt
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import RFE
 import itertools
+from random import sample
 
 # import statsmodels
 
@@ -130,7 +132,7 @@ class ModelData:
 
 
 class Model:
-    def __init__(self, data, runParams=None):
+    def __init__(self, data, runParams={}):
         # data is an instance of ModelData
         self.data = data
         self.params = runParams
@@ -155,6 +157,56 @@ class Model:
 
     def getAUC(self):
         return self.roc_auc
+
+    def getParams(self):
+        return self.params
+
+    def getCR(self):
+        return self.cr
+
+    def getCM(self):
+        return self.cm
+
+    def getPrecision1(self):
+        return self.precision1
+
+    def getRecall1(self):
+        return self.recall1
+
+    def getPrecision0(self):
+        return self.precision0
+
+    def getRecall0(self):
+        return self.recall0
+
+    def getF1(self):
+        return self.fscore1
+
+    def getF0(self):
+        return self.fscore0
+
+    def setScores(self):
+        cm = self.getCM()
+        self.tp = cm[1][1]
+        self.tn = cm[0][0]
+        self.fp = cm[0][1]
+        self.fn = cm[1][0]
+        self.precision1 = self.tp / (self.tp + self.fp)
+        self.recall1 = self.tp / (self.tp + self.fn)
+        self.precision0 = self.tn / (self.tn + self.fn)
+        self.recall0 = self.tn / (self.tn + self.fp)
+        self.fscore1 = (
+            2
+            * self.getPrecision1()
+            * self.getRecall1()
+            / (self.getPrecision1() + self.getRecall1())
+        )
+        self.fscore0 = (
+            2
+            * self.getPrecision0()
+            * self.getRecall0()
+            / (self.getPrecision0() + self.getRecall0())
+        )
 
     def plotROC(self):  # fpr, tpr, runName, roc_auc, longRunName, fileName=""):
         plt.plot(
@@ -202,6 +254,7 @@ class LogReg(Model):
         self.fpr, self.tpr, self.thresholds = roc_curve(
             y_test, logreg.predict_proba(x_test)[:, 1]
         )
+        self.setScores()
 
 
 class RandomForest(Model):
@@ -209,10 +262,15 @@ class RandomForest(Model):
         self.runName = "RF_" + dataName
         self.longName = "Random Forest"
         Model.__init__(self, data, runParams)
-        self.fitRandomForestModel()
-        print(self.longName, self.runName, self.params)
+        self.fitRandomForestModel(**self.getParams())
+        print("Generated", self.longName, self.runName, self.params)
 
-    def fitRandomForestModel(self):  # x_train, y_train, x_test, y_test, runName):
+    def __str__(self):
+        return f"{self.getLongName()} {self.getRunName()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
+
+    def fitRandomForestModel(
+        self, n_estimators, max_depth, criterion="gini", bootstrap=True
+    ):  # x_train, y_train, x_test, y_test, runName):
         data = self.getData()
         x_train, y_train, x_test, y_test = (
             data.getxTrain(),
@@ -220,7 +278,13 @@ class RandomForest(Model):
             data.getxTest(),
             data.getyTest(),
         )
-        clf = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=0)
+        clf = RandomForestClassifier(
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            random_state=0,
+            criterion=criterion,
+            bootstrap=bootstrap,
+        )
         clf.fit(x_train, y_train.values.ravel())
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
@@ -230,6 +294,55 @@ class RandomForest(Model):
         self.fpr, self.tpr, self.thresholds = roc_curve(
             y_test, clf.predict_proba(x_test)[:, 1]
         )
+        self.setScores()
+
+
+class SVM(Model):
+    def __init__(self, dataName, data, runParams={}):
+        self.runName = "SVM_" + dataName
+        self.longName = "Support Vector Machine"
+        Model.__init__(self, data, runParams)
+        self.fitSVMModel(**self.getParams())
+        print("Generated", self.longName, self.runName, self.params)
+
+    def __str__(self):
+        return f"{self.getLongName()} {self.getRunName()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
+
+    def fitSVMModel(
+        self, C=1, kernel="rbf", degree=3, max_iter=-1
+    ):  # x_train, y_train, x_test, y_test, runName):
+        data = self.getData()
+        x_train, y_train, x_test, y_test = (
+            data.getxTrain(),
+            data.getyTrain(),
+            data.getxTest(),
+            data.getyTest(),
+        )
+        clf = SVC(C=C, kernel=kernel, degree=degree, max_iter=max_iter)
+        clf.fit(x_train, y_train.values.ravel())
+        y_pred = clf.predict(x_test)
+        self.cm = confusion_matrix(y_test, y_pred)
+        self.cr = classification_report(y_test, y_pred)
+        self.acc = clf.score(x_test, y_test)
+        self.roc_auc = roc_auc_score(y_test, clf.predict(x_test))
+        self.fpr, self.tpr, self.thresholds = roc_curve(y_test, clf.predict(x_test))
+        self.setScores()
+
+
+def countRuns(doOverSample, doRFE, modelClasses, numColsToKeep, numParamCombos):
+    runCount = len(doOverSample) * len(doRFE)
+    if doRFE:
+        runCount *= len(numColsToKeep)
+    modelTot = 0
+    for modelClass in modelClasses:
+        modelCount = 1
+        if modelClass in runParams.keys():
+            modelCount = numParamCombos
+        #            for value in runParams[modelClass].values():
+        #                modelCount *= len(value)
+        modelTot += modelCount
+    runCount *= modelTot
+    return runCount
 
 
 def oneFullRun(
@@ -238,11 +351,12 @@ def oneFullRun(
     doOverSample,
     doRFE,
     modelClass,
-    runParams=None,
+    runParams={},
     numColsToKeep=0,
+    runNo=0,
 ):
     print(
-        f"\nRunning",
+        f"Running oneFullRun",
         "with oversampling" if doOverSample else "",
         f"with RFE with {numColsToKeep} cols" if doRFE else "",
     )
@@ -263,30 +377,50 @@ def oneFullRun(
     #    print('mod:',mod)
     #    print('dataName:',dataName)
     #    print('modelDataDict:',modelDataDict)
-    
-    modelDict[mod.getRunName()] = mod
+    modelDict[mod.getRunName() + (("_" + str(runNo)) if runNo > 0 else "")] = mod
     #    fpr, tpr, runName, logit_roc_auc = model(x_train, y_train, x_test, y_test, runName)
     #    plotROC(fpr, tpr, runName, logit_roc_auc, longRunName)
     return modelDataDict, modelDict
 
 
-def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num):
+def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num, numParamCombos):
+    print(f"running runsForModels {(os, rfe, modelClass, num)}")
+    runNo = 0
     if modelClass in runParams.keys():
         keys, values = zip(*runParams[modelClass].items())
         listOfRunParams = [dict(zip(keys, val)) for val in itertools.product(*values)]
-        print(listOfRunParams)
-        for singleRunParams in listOfRunParams:
-            print('singleRunParams:',singleRunParams)
+        if numParamCombos > len(listOfRunParams):
+            sampleOfRunParamList = listOfRunParams
+        else:
+            sampleOfRunParamList = sample(listOfRunParams, numParamCombos)
+
+        #        print(listOfRunParams)
+        # use listOfRunParams below to try every possible combo
+        for singleRunParams in sampleOfRunParamList:
+            runNo += 1
+            #            print('singleRunParams:',singleRunParams)
             modelDataDict, modelDict = oneFullRun(
-                modelDataDict, modelDict, os, rfe, modelClass, singleRunParams, num
+                modelDataDict,
+                modelDict,
+                os,
+                rfe,
+                modelClass,
+                singleRunParams,
+                num,
+                runNo=runNo,
             )
+    #            print('oneFullRun done - back in runsForModels')
     else:
         modelDataDict, modelDict = oneFullRun(
             modelDataDict, modelDict, os, rfe, modelClass, numColsToKeep=num
         )
+    return modelDataDict, modelDict
 
 
-def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0):
+def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0, numParamCombos=10):
+    print(
+        f"running runAGroup with {countRuns(doOverSample, doRFE, modelClasses, numColsToKeep, numParamCombos)} runs to do"
+    )
     modelDataDict, modelDict = {}, {}
     assert type(modelClasses) == list
     for modelClass in modelClasses:
@@ -294,7 +428,13 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0):
             for rfe in doRFE:
                 for num in numColsToKeep:
                     modelDataDict, modelDict = runsForModels(
-                        modelDataDict, modelDict, os, rfe, modelClass, num
+                        modelDataDict,
+                        modelDict,
+                        os,
+                        rfe,
+                        modelClass,
+                        num,
+                        numParamCombos,
                     )
                     if rfe == False:
                         break  # stop it doing the same thing 5x if RFE not used
@@ -302,14 +442,30 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0):
 
 
 runParams = {
-    RandomForest: {"n_estimators": [10, 1000], "max_depth": [None, 10]}
+    RandomForest: {
+        "n_estimators": [10, 50, 100, 300, 500, 800, 1000],
+        "max_depth": [None, 3, 5, 8, 10],
+        "criterion": ["gini", "entropy"],
+        "bootstrap": [True, False],
+    },
+    SVM: {"C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.2, 1.4, 1.6, 2, 3]},
 }
-modelDataDict, modelDict = runAGroup([False], [False], [RandomForest], [10, 20])
+modelDataDict, modelDict = runAGroup(
+    [False], [False], [SVM, LogReg, RandomForest], [10, 20], numParamCombos=5
+)
 
 plt.figure(figsize=(15, 11))
 for item in modelDict.values():
     item.plotROC()
     item.printOut()
 plt.show()
+
+maxF = 0
+for mod in modelDict.values():
+    if (mod.getF1() + mod.getF0()) > maxF:
+        maxF = mod.getF1() + mod.getF0()
+        currMod = mod
+print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
+
 
 # modelDataDict = runAGroup([True, False],[True, False],['LogReg'],[10, 20])
