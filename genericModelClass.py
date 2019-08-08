@@ -130,7 +130,7 @@ class ModelData:
 
 
 class Model:
-    def __init__(self, data, runParams=None):
+    def __init__(self, data, runParams={}):
         # data is an instance of ModelData
         self.data = data
         self.params = runParams
@@ -155,6 +155,9 @@ class Model:
 
     def getAUC(self):
         return self.roc_auc
+    
+    def getParams(self):
+        return self.params
 
     def plotROC(self):  # fpr, tpr, runName, roc_auc, longRunName, fileName=""):
         plt.plot(
@@ -209,10 +212,13 @@ class RandomForest(Model):
         self.runName = "RF_" + dataName
         self.longName = "Random Forest"
         Model.__init__(self, data, runParams)
-        self.fitRandomForestModel()
-        print(self.longName, self.runName, self.params)
-
-    def fitRandomForestModel(self):  # x_train, y_train, x_test, y_test, runName):
+        self.fitRandomForestModel(**self.getParams())
+        print('Generated',self.longName, self.runName, self.params)
+    
+    def __str__(self):
+        return f"{self.getLongName()} {self.getRunName()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
+    def fitRandomForestModel(self, n_estimators, max_depth, criterion='gini',
+                             bootstrap=True):  # x_train, y_train, x_test, y_test, runName):
         data = self.getData()
         x_train, y_train, x_test, y_test = (
             data.getxTrain(),
@@ -220,7 +226,9 @@ class RandomForest(Model):
             data.getxTest(),
             data.getyTest(),
         )
-        clf = RandomForestClassifier(n_estimators=100, max_depth=8, random_state=0)
+        clf = RandomForestClassifier(n_estimators=n_estimators, 
+                                     max_depth=max_depth, random_state=0,
+                                     criterion=criterion, bootstrap=bootstrap)
         clf.fit(x_train, y_train.values.ravel())
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
@@ -231,6 +239,20 @@ class RandomForest(Model):
             y_test, clf.predict_proba(x_test)[:, 1]
         )
 
+def countRuns(doOverSample, doRFE, modelClasses, numColsToKeep):
+    runCount = len(doOverSample) * len(doRFE)
+    if doRFE:
+        runCount *= len(numColsToKeep)
+    modelTot = 0
+    for modelClass in modelClasses:
+        modelCount = 1
+        if modelClass in runParams.keys():
+            for value in runParams[modelClass].values():
+                modelCount *= len(value)
+        modelTot += modelCount
+    runCount *= modelTot
+    return runCount
+
 
 def oneFullRun(
     modelDataDict,
@@ -240,9 +262,10 @@ def oneFullRun(
     modelClass,
     runParams=None,
     numColsToKeep=0,
+    runNo=0
 ):
     print(
-        f"\nRunning",
+        f"Running oneFullRun",
         "with oversampling" if doOverSample else "",
         f"with RFE with {numColsToKeep} cols" if doRFE else "",
     )
@@ -260,33 +283,39 @@ def oneFullRun(
         modelDataDict[dataName] = data
     #    print('data:',data)
     mod = modelClass(dataName, modelDataDict[dataName], runParams)
+    
     #    print('mod:',mod)
     #    print('dataName:',dataName)
     #    print('modelDataDict:',modelDataDict)
     
-    modelDict[mod.getRunName()] = mod
+    modelDict[mod.getRunName()+ (("_" + str(runNo)) if runNo>0 else "")] = mod
     #    fpr, tpr, runName, logit_roc_auc = model(x_train, y_train, x_test, y_test, runName)
     #    plotROC(fpr, tpr, runName, logit_roc_auc, longRunName)
     return modelDataDict, modelDict
 
 
 def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num):
+    print(f"running runsForModels {(os, rfe, modelClass, num)}")
+    runNo = 0
     if modelClass in runParams.keys():
         keys, values = zip(*runParams[modelClass].items())
         listOfRunParams = [dict(zip(keys, val)) for val in itertools.product(*values)]
-        print(listOfRunParams)
+#        print(listOfRunParams)
         for singleRunParams in listOfRunParams:
-            print('singleRunParams:',singleRunParams)
+            runNo += 1
+#            print('singleRunParams:',singleRunParams)
             modelDataDict, modelDict = oneFullRun(
-                modelDataDict, modelDict, os, rfe, modelClass, singleRunParams, num
+                modelDataDict, modelDict, os, rfe, modelClass, singleRunParams, num, runNo=runNo
             )
+#            print('oneFullRun done - back in runsForModels')
     else:
         modelDataDict, modelDict = oneFullRun(
             modelDataDict, modelDict, os, rfe, modelClass, numColsToKeep=num
         )
-
+    return modelDataDict, modelDict
 
 def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0):
+    print(f'running runAGroup with {countRuns(doOverSample, doRFE, modelClasses, numColsToKeep)} runs to do')
     modelDataDict, modelDict = {}, {}
     assert type(modelClasses) == list
     for modelClass in modelClasses:
@@ -302,9 +331,10 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0):
 
 
 runParams = {
-    RandomForest: {"n_estimators": [10, 1000], "max_depth": [None, 10]}
+    RandomForest: {"n_estimators": [10, 100, 1000], "max_depth": [None,3,5, 10],
+                   "criterion":['gini','entropy'], "bootstrap":[True, False]}
 }
-modelDataDict, modelDict = runAGroup([False], [False], [RandomForest], [10, 20])
+modelDataDict, modelDict = runAGroup([False], [False], [RandomForest, LogReg], [10, 20])
 
 plt.figure(figsize=(15, 11))
 for item in modelDict.values():
