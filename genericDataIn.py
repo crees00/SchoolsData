@@ -2,6 +2,9 @@
 """
 Created on Mon Jul 15 14:52:17 2019
 
+data in: df4.csv from creatingAMonster.py
+data out: df5.csv used by pickColsToUse.py
+
 @author: reesc1
 """
 
@@ -32,7 +35,8 @@ spineDict = GDIh.spineDict
 swfDict = GDIh.swfDict
 cfrDict = GDIh.cfrDict
 sfbDict = GDIh.sfbDict
-
+fin18Dict = GDIh.fin18Dict
+fin17Dict = GDIh.fin17Dict
 
 def readData(dataDict):
     startReading = datetime.datetime.now()
@@ -44,8 +48,9 @@ def readData(dataDict):
         for col in dataDict[name]['df'].columns:
             if col in ['p8mea','att8scr','perfirchoice16']:
                 print(name, col)
-
-    print(f"data loaded - took {datetime.datetime.now()-startReading}")
+        print(dataDict[name]['df'].columns)
+        print(dataDict[name]["toKeep"])
+    print(f"data for {name} loaded - took {datetime.datetime.now()-startReading}")
     return dataDict
 
 
@@ -55,6 +60,7 @@ print("updating dfs..")
 def colChop(df, toKeep, name):
     nowKeep = []
     blanks = []
+    print(f"toKeep for {name}:\n{toKeep}")
     for listOfCols in toKeep:
         if type(listOfCols) == str:
             if listOfCols in df.columns:
@@ -88,18 +94,23 @@ def colChop(df, toKeep, name):
 def feedToColChop(dataDict):
     """ Just sends dfs to colChop to remove cols"""
     for name in dataDict.keys():
+        print("running feedToColChop for",name, "with shape",dataDict[name]["df"].shape)
+        print("toKeep from dataDict:\n",dataDict[name]["toKeep"])
         if dataDict[name]["ignore"] == False:
             dataDict[name]["df"] = colChop(
                 dataDict[name]["df"], dataDict[name]["toKeep"], name
             )
+        print("after feedToColChop",name, "has shape",dataDict[name]["df"].shape)
     return dataDict
 
 
 def tidyUp(dataDict):
     for name in dataDict.keys():
+        print("running tidyUp for",name)
         if dataDict[name]["ignore"] == True:
             continue
         df = dataDict[name]["df"]
+        print(df.shape)
         for column in df.columns:
             if column not in (
                 set(dataDict[name]["toFloat"])
@@ -177,27 +188,33 @@ def addToMainDF(dfToAddTo, dataDict, write=False):
     listOfDFs = feedToMergeVertical(dataDict)
     dfNew = dfToAddTo
     for dfOrName in listOfDFs:
+        mergeCol = "URN"
         URNs = set(dfNew["URN"])
         if type(dfOrName) == str:
             df = dataDict[dfOrName]["df"]
-            dfSubset = df.drop_duplicates(subset=["URN"])
+            print(df.columns)
+            if "URN" not in df.columns:
+                mergeCol = "LAESTAB"
+            dfSubset = df.drop_duplicates(subset=[mergeCol])
+            print('size of dfSubset',dfSubset.shape)
+            print('dfSubset cols:', dfSubset.columns)
             dfNew = dfNew.merge(
                 dfSubset,
-                on="URN",
+                on=mergeCol,
                 how="left",
                 sort=True,
                 suffixes=("", dataDict[dfOrName]["mergeName"]),
             )
-            print(f"{len(set(dfSubset['URN']))} to {len(set(dfNew['URN']))}")
+            print(f"{len(set(dfSubset[mergeCol]))} to {len(set(dfNew[mergeCol]))}")
             print(
                 f"after adding {dfOrName} with shape {dataDict[dfOrName]['df'].shape} has shape {dfNew.shape}"
             )
 
         else:
             df = dfOrName
-            dfSubset = df.drop_duplicates(subset=["URN"])
-            dfNew = dfNew.merge(dfSubset, on="URN", how="left", sort=True)
-            print(f"{len(set(dfOrName['URN']))} to {len(set(dfNew['URN']))}")
+            dfSubset = df.drop_duplicates(subset=[mergeCol])
+            dfNew = dfNew.merge(dfSubset, on=mergeCol, how="left", sort=True)
+            print(f"{len(set(dfOrName[mergeCol]))} to {len(set(dfNew[mergeCol]))}")
             print(f"after adding {dfOrName.shape} has shape {dfNew.shape}")
 
     #    df5 = df5.sort_values(by='URN', axis=1)
@@ -216,11 +233,13 @@ def runAll(dataDict, dfToAddTo, write=False):
 
 
 df4 = pd.read_csv("df4.csv")
-df5 = runAll(perfDict, df4, False)
-df6 = runAll(censusDict, df5, True)
-df7 = runAll(absDict, df6, True)
-df8 = runAll(spineDict, df7, True)
-df9 = runAll(swfDict, df8, True)
-df10 = runAll(cfrDict, df9, True)
+df5 = runAll(perfDict, df4)
+df6 = runAll(censusDict, df5)
+df7 = runAll(absDict, df6)
+df8 = runAll(spineDict, df7)
+df9 = runAll(swfDict, df8)
+#df10 = runAll(cfrDict, df9, True)
 #df11 = runAll(sfbDict, df9, True)
+df12 = runAll(fin18Dict, df9)
+df13 = runAll(fin17Dict, df12, True)
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

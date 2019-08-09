@@ -2,6 +2,9 @@
 """
 Created on Mon Jul  1 13:03:11 2019
 
+data in: bigDFnoDups1.csv from combineInspData.py
+data out: dfOnlyOpen.csv to creatingAMonster.py
+
 @author: Chris
 """
 import findStuck

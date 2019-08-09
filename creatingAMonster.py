@@ -2,6 +2,11 @@
 """
 Created on Wed Jul 10 11:19:46 2019
 
+data in: dfOnlyOpen.csv from findStuck.py
+data out: df4.csv used by genericDataIn.py
+
+Adds some cols for some of the DFE input data
+
 @author: reesc1
 """
 

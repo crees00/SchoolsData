@@ -190,6 +190,8 @@ for i, name in enumerate(swfNames):
     ]
 
 ### CFR DATA #################################################################
+### NOT USED - REPLACED BY JOE'S DATA BELOW ##################################
+
 cfrNames = []
 cfrDict = {}
 for y in ["y18"]:
@@ -230,6 +232,7 @@ for i, name in enumerate(cfrNames):
     ]
 
 ### SFB Academy workforce/finance Data #######################################
+### NOT USED - REPLACED BY JOE'S DATA BELOW ##################################
 sfbNames = []
 sfbDict = {}
 for y in ["y18", "y16", "y14"]:
@@ -269,3 +272,96 @@ for i, name in enumerate(sfbNames):
         'Brought in Professional Services',
         'Total Expenditure'
     ]
+
+### Finance 1718 data from Joe ##################################################
+#finNames = []
+#finDict = {}
+#for y in ["y18","y17"]:
+#    finNames.append(y)
+#    finDict[y] = {
+#        "df": pd.DataFrame(),
+#        "path": None,
+#        "toKeep": [],
+#        "toFloat": [],
+#        "toPct": [],
+#        "mergeName": None,
+#        "ignore": False,
+#        "stackOn": None,
+#        "toCurr": [],
+#    }
+#
+#finPaths = [
+#    r"\2017-2018\Workforce and Finance\finance1718.csv",
+#    r"\2016-2017\Workforce and Finance\Finance_1217.csv",
+#]
+#for i, name in enumerate(finNames):
+#    ad = finDict[name]
+#    ad["path"] = finPaths[i]
+#    ad["toKeep"] =cn.finColsToKeep
+#    ad["toFloat"] = ["LAESTAB"]
+#    ad["toPct"] = []
+#    ad["mergeName"] = "_" + name[1:3]
+#    ad["toCurr"] = [x[0] for x in cn.finColsToKeep]
+    
+
+
+
+
+#
+fin18Names = []
+fin18Dict = {}
+for y in ["y18"]:
+    fin18Names.append(y)
+    fin18Dict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+        "toCurr": [],
+    }
+
+fin18Paths = [
+    r"\2017-2018\Workforce and Finance\finance1718.csv",
+]
+for i, name in enumerate(fin18Names):
+    ad = fin18Dict[name]
+    ad["path"] = fin18Paths[i]
+    ad["toKeep"] = cn.fin18ColsToKeep
+    ad["toFloat"] = [x[0] for x in cn.fin18ColsToKeep]
+    ad["toPct"] = []
+    ad["mergeName"] = "_" + name[1:3]
+    ad["toCurr"] = []
+    
+### Finance 1217 data from Joe ##################################################
+fin17Names = []
+fin17Dict = {}
+for y in ["y17"]:
+    fin17Names.append(y)
+    fin17Dict[y] = {
+        "df": pd.DataFrame(),
+        "path": None,
+        "toKeep": [],
+        "toFloat": [],
+        "toPct": [],
+        "mergeName": None,
+        "ignore": False,
+        "stackOn": None,
+        "toCurr": [],
+    }
+
+fin17Paths = [
+    r"\2016-2017\Workforce and Finance\Finance_1217.csv",
+]
+for i, name in enumerate(fin17Names):
+    ad = fin17Dict[name]
+    ad["path"] = fin17Paths[i]
+    ad["toKeep"] = cn.fin17ColsToKeep
+    ad["toFloat"] = [x[0] for x in cn.fin17ColsToKeep]
+    ad["toPct"] = []
+    ad["mergeName"] = "_" + name[1:3]
+    ad["toCurr"] = []
+#
