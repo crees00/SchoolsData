@@ -8,7 +8,7 @@ Created on Mon Aug 12 19:21:26 2019
 import smtplib
 
 port = 587  # For SSL
-pwd = input("Type your email password and press enter: ")
+pwd = input("Type email password to get an email: ")
 emailFrom = "chrisr4444@hotmail.com"
 def sendEmail(subject="", content="",to="chrisr4@hotmail.co.uk"):
     if pwd=="":

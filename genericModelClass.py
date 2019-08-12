@@ -519,7 +519,7 @@ if __name__ == "__main__":
     print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
     import pickling
     now=datetime.datetime.now()
-    pickling.save_dill(modelDict, 'modelDict'+str(now.day) + str(now.month) + str(now.hour)+str(now.minute))
+    pickling.save_dill(modelDict, 'modelDict'+str(now.day) +'_'+ str(now.month) + '_'+str(now.hour)+str(now.minute))
     content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
     emailing.sendEmail(subject="Run complete", content=content)
 #import pickling
