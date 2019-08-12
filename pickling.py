@@ -14,9 +14,10 @@ import dill
 def save_dill(obj, name):
     with open(name + '.pik', 'wb') as f:
         dill.dump(obj, f)
+    print('pickled')
 
 def load_dill(name):
-    with open(name + '.pik', 'rb') as f:
+    with open(name , 'rb') as f:
         return dill.load(f)
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ from sklearn.feature_selection import RFE
 import itertools
 from random import sample
 import datetime
+import emailing
 
 start = datetime.datetime.now()
 print(f"running genericModelClass at {start}")
@@ -54,7 +55,7 @@ class ModelData:
 
         if self.doRFE:
             self.recursiveFE()
-
+        print('Generated',self)
     def __str__(self):
         return f"ModelData instance {self.getName()}"
 
@@ -439,6 +440,16 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0, numParamCombos
     )
     global modelDataDict #modelDataDict = {}
     global modelDict #modelDict = {}
+    try:
+        modelDataDict
+    except NameError:
+        print('new modelDataDict')
+        modelDataDict = {}
+    try:
+        modelDict
+    except NameError:
+        print('new modelDict')
+        modelDict = {}
     assert type(modelClasses) == list
     for modelClass in modelClasses:
         for os in doOverSample:
@@ -480,15 +491,16 @@ if __name__ == "__main__":
     xCols = [x for x in (set(df.columns) - {"URN", "Stuck", "Unnamed: 0"})]
     x = df[xCols]
     y = df["Stuck"]
-
+    
+    modelsAtStart = len(modelDict)
     # Generate data and model instances, run the models
     modelDataDict, modelDict = runAGroup(
-        [True,False], [True, False], 
+        [True], [True], 
         [
         SVM, 
         LogReg, 
         RandomForest
-        ], [10, 20, 30], numParamCombos=20
+        ], [30], numParamCombos=3
     )
     
     # Print out ROC curve
@@ -505,7 +517,11 @@ if __name__ == "__main__":
             maxF = mod.getF1() + mod.getF0()
             currMod = mod
     print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
-
+    import pickling
+    now=datetime.datetime.now()
+    pickling.save_dill(modelDict, 'modelDict'+str(now.day) + str(now.month) + str(now.hour)+str(now.minute))
+    content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
+    emailing.sendEmail(subject="Run complete", content=content)
 #import pickling
 #pickling.save_dill(modelDict, 'modelDictWithDill0908')
 #aReloaded = pickling.load_dill('modelDictWithDill')
