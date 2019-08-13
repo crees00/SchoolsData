@@ -491,16 +491,18 @@ if __name__ == "__main__":
     xCols = [x for x in (set(df.columns) - {"URN", "Stuck", "Unnamed: 0"})]
     x = df[xCols]
     y = df["Stuck"]
-    
-    modelsAtStart = len(modelDict)
+    try:
+        modelsAtStart = len(modelDict)
+    except NameError:
+        modelsAtStart = 0
     # Generate data and model instances, run the models
     modelDataDict, modelDict = runAGroup(
-        [True], [True], 
+        [True, False], [True, False], 
         [
         SVM, 
         LogReg, 
         RandomForest
-        ], [30], numParamCombos=3
+        ], [30], numParamCombos=2
     )
     
     # Print out ROC curve
@@ -513,7 +515,7 @@ if __name__ == "__main__":
     # Find 'best' model in dict
     maxF = 0
     for mod in modelDict.values():
-        if (mod.getF1() + mod.getF0()) > maxF:
+        if (2*mod.getF1() + mod.getF0()) > maxF:
             maxF = mod.getF1() + mod.getF0()
             currMod = mod
     print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
