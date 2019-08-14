@@ -479,6 +479,60 @@ def grouping(openSchoolDict, printout=False):
                 )
     return groupDict
 
+def newGrouping(openSchoolDict, printout=False):
+    ''' returns a dictionary of lists
+    i.e. {'xbb':[school1, school2,...],...}'''
+    groupDict = {
+        x: [] for x in ["xbb", "xbbb", "bbb", "gbb", "gbbb", "bbbb"]
+    }
+    print("making groups")
+    groupDict["xbb"] = filterSchools(
+        openSchoolDict.values(), numMin=3, cats=[[]] + [[3, 4]] * 2
+    )
+    groupDict["xbbb"] += filterSchools(
+            openSchoolDict.values(), cats=[[]] + [[3, 4]] * 3
+        )
+    groupDict["bbb"] += filterSchools(
+            openSchoolDict.values(), cats= [[3, 4]] * 3
+        )
+    groupDict["gbb"] += filterSchools(
+            openSchoolDict.values(), cats=[[1,2]] + [[3, 4]] * 2
+        )
+    groupDict["gbbb"] += filterSchools(
+            openSchoolDict.values(), cats=[[1,2]] + [[3, 4]] * 3
+        )
+    groupDict["bbbb"] += filterSchools(
+            openSchoolDict.values(), cats= [[3, 4]] * 4
+        )
+    if printout:
+        import itertools
+
+        for group in groupDict.keys():
+            print(f"{group} has {len(groupDict[group])} items")
+        print("checking if there is any crossover between groups...")
+        for (group, otherGroup) in itertools.combinations(groupDict.keys(), 2):
+            if (group != otherGroup) and (
+                len(set(groupDict[group]) & set(groupDict[otherGroup])) > 0
+            ):
+                print(
+                    group,
+                    "and",
+                    otherGroup,
+                    "share",
+                    len(set(groupDict[group]) & set(groupDict[otherGroup])),
+                    "items",
+                )
+    return groupDict
+
+def makeURNListFromGroupDict(groupDict):
+    ''' returns dict with list of URNs
+    i.e. {'xbb':[182274, 123423,...],...}    '''
+    dictOfURNs = {}
+    for group in groupDict.keys():
+        dictOfURNs[group] = []
+        for school in groupDict[group]:
+            dictOfURNs[group].append(school.getURN())
+    return dictOfURNs
 
 def runAll():
     global predsThatAreNotInDF
