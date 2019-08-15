@@ -133,24 +133,6 @@ def imputeAll(df, write=''):
         fixed_df.to_csv(write)
     return fixed_df
 
-def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
-    """Add a column called Stuck to the df
-    1 if the URN is in the 'stuck' list
-    0 if not stuck
-    If write != False then write to .csv
-    """
-    print("Adding/updating stuck column in df...")
-    posURNs, negURNs = dictOfURNGroups[cat1], dictOfURNGroups[cat2]
-    allURNs = posURNs + negURNs
-    URNsToDrop = set(df['URN']) - set(allURNs)
-    df = df[~df['URN'].isin(URNsToDrop)]
-    df["Class"] = df.apply(
-        lambda row: np.where((int(row["URN"]) in posURNs), 1, 0), axis=1
-    )
-    df = cam.dropColsFromList(df, ['Stuck'])
-    if len(write) >0:
-        df.to_csv(write)
-    return  df
 
 toNormaliseWithStD = [
     "Mean Gross FTE Salary of All Teachers (Â£s)",

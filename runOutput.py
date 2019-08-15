@@ -13,6 +13,7 @@ def exportResultsDF(dic, write=''):
         mod = dic[name]
 #        entry = dictToDF[name]
         entry={
+                'acc':mod.getAcc(),
                 'cm': mod.getCM(),
                 'auc':mod.getAUC(),
                 'cr':mod.getCR(),
@@ -32,7 +33,7 @@ def exportResultsDF(dic, write=''):
     outDF = pd.DataFrame(dictToDF)
     if len(write)>0:
         outDF.to_csv(write)
-        print('.csv file written')
+        print(write,'file written')
     return outDF
 
 

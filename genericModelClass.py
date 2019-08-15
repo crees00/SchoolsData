@@ -176,6 +176,9 @@ class Model:
 
     def getCM(self):
         return self.cm
+    
+    def getAcc(self):
+        return self.acc
 
     def getPrecision1(self):
         return self.precision1
@@ -493,75 +496,74 @@ runParams = {
 
 
 if __name__ == "__main__":
-    fileName = "bbbbVgbbbLessCols.csv"
-#    if lastFileNameUsed != fileName:
-#        modelDict={}
-    lastFileNameUsed = fileName
-    df = pd.read_csv(fileName)
-    xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
-    x = df[xCols]
-    y = df["Class"]
-    try:
-        modelsAtStart = len(modelDict)
-    except NameError:
-        modelsAtStart = 0
-    # Generate data and model instances, run the models
-    modelDataDict, modelDict = runAGroup(
-        [
-                True, 
-                False
-         ],
-        [
-                True,
-                False
-                ],
-        [
-                LogReg, 
-                SVM, 
-                RandomForest
-                ],
-        [5,10,15,20],
-        numParamCombos=80,
-    )
-
-    # Print out ROC curve
-    plt.figure(figsize=(15, 11))
-    for item in modelDict.values():
-        item.plotROC()
-        item.printOut()
-    plt.show()
-
-    # Find 'best' model in dict
-    maxF = 0
-    for mod in modelDict.values():
-        if (mod.getF1() + mod.getF0()) > maxF:
-            maxF = mod.getF1() + mod.getF0()
-            currMod = mod
-    print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
-    import pickling
-
-    now = datetime.datetime.now()
-    pickling.save_dill(
-        modelDict,
-        "modelDict"
-        + str(now.day)
-        + "_"
-        + str(now.month)
-        + "_"
-        + str(now.hour)
-        + str(now.minute),
-    )
-    content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
-    emailing.sendEmail(subject="Run complete", content=content)
-    runOutput.exportResultsDF(modelDict, "modelDict"
-        + str(now.day)
-        + "_"
-        + str(now.month)
-        + "_"
-        + str(now.hour)
-        + str(now.minute)
-        + fileName
-    )
+    for fileName in ['NewStuckDF.csv']:#['bbbVgsbbs.csv','bbbVgbb.csv', 'bbbbVgbbb.csv', 'NewStuckDF.csv']:
+        modelDict={}
+        modelDataDict={}
+        df = pd.read_csv(fileName)
+        xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+        x = df[xCols]
+        y = df["Class"]
+        try:
+            modelsAtStart = len(modelDict)
+        except NameError:
+            modelsAtStart = 0
+        # Generate data and model instances, run the models
+        modelDataDict, modelDict = runAGroup(
+            [
+                    True, 
+                    False
+             ],
+            [
+                    True,
+                    False
+                    ],
+            [
+                    LogReg, 
+                    SVM, 
+                    RandomForest
+                    ],
+            [5,10,20],
+            numParamCombos=10,
+        )
+    
+        # Print out ROC curve
+        plt.figure(figsize=(15, 11))
+        for item in modelDict.values():
+            item.plotROC()
+    #        item.printOut()
+        plt.show()
+    
+        # Find 'best' model in dict
+        maxF = 0
+        for mod in modelDict.values():
+            if (mod.getF1() + mod.getF0()) > maxF:
+                maxF = mod.getF1() + mod.getF0()
+                currMod = mod
+        print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
+        import pickling
+    
+        now = datetime.datetime.now()
+        pickling.save_dill(
+            modelDict,
+            "modelDict"
+            + str(now.day)
+            + "_"
+            + str(now.month)
+            + "_"
+            + str(now.hour)
+            + str(now.minute),
+        )
+        content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
+        emailing.sendEmail(subject="Run complete", content=content)
+        runOutput.exportResultsDF(modelDict, "modelDict"
+            + str(now.day)
+            + "_"
+            + str(now.month)
+            + "_"
+            + str(now.hour)
+            + str(now.minute)
+            + fileName
+        )
 
 
 #    pass
