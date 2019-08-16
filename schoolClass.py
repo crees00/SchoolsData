@@ -484,7 +484,7 @@ def runAll():
     dfForClustering = clusterDF(SchoolDict, "clusterDF.csv")
     SchoolDict = makeGoodsAndBadsLists(SchoolDict)
     dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
-    finalPt, steps = makeMatrices(SchoolDict)
+#    finalPt, steps = makeMatrices(SchoolDict)
     openSchoolDict = findOpenSchools(SchoolDict)
     threeGenerations = findGrandParents(SchoolDict)
     groupDict = grouping(openSchoolDict)

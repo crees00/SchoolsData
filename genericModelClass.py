@@ -233,7 +233,7 @@ class Model:
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
         plt.title(f"Receiver Operating Characteristic for {self.getLongName()}")
-        plt.legend(loc="lower right")
+#        plt.legend(loc="lower right")
 
     def printOut(self):
         print(self)
@@ -421,6 +421,7 @@ def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num, numParamCo
         #        print(listOfRunParams)
         # use listOfRunParams below to try every possible combo
         for singleRunParams in sampleOfRunParamList:
+            
             runNo += 1
             #            print('singleRunParams:',singleRunParams)
             modelDataDict, modelDict = oneFullRun(
@@ -474,7 +475,10 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0, numParamCombos
                     if rfe == False:
                         break  # stop it doing the same thing 5x if RFE not used
         content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
-        emailing.sendEmail(subject="Some runs done", content=content)
+        try:
+            emailing.sendEmail(subject="Some runs done", content=content)
+        except:
+            print("\nEmail sending  for run type failed, carrying on..\n)
 
     return modelDataDict, modelDict
 
@@ -496,7 +500,7 @@ runParams = {
 
 
 if __name__ == "__main__":
-    for fileName in ['NewStuckDF.csv']:#['bbbVgsbbs.csv','bbbVgbb.csv', 'bbbbVgbbb.csv', 'NewStuckDF.csv']:
+    for fileName in ['bbbbVgsbbbsLessCols.csv','bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
         modelDict={}
         modelDataDict={}
         df = pd.read_csv(fileName)
@@ -522,24 +526,23 @@ if __name__ == "__main__":
                     SVM, 
                     RandomForest
                     ],
-            [5,10,20],
-            numParamCombos=10,
+            [5,10,15,20],
+            numParamCombos=100,
         )
     
-        # Print out ROC curve
-        plt.figure(figsize=(15, 11))
-        for item in modelDict.values():
-            item.plotROC()
-    #        item.printOut()
-        plt.show()
     
         # Find 'best' model in dict
-        maxF = 0
+        maxF, maxAcc= 0,0
         for mod in modelDict.values():
             if (mod.getF1() + mod.getF0()) > maxF:
                 maxF = mod.getF1() + mod.getF0()
-                currMod = mod
-        print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
+                currModF = mod
+            if mod.getAcc() > maxAcc:
+                maxAcc - mod.getAcc()
+                currModAcc = mod
+        print(f"Best model for F from run is:\n{currModF}\n{currModF.getCM()}")
+        print(f"Best model for accuracy from run is:\n{currModAcc}\n{currModAcc.getCM()}")
+        print(f"Accuracy: {currModAcc.getAcc()}")
         import pickling
     
         now = datetime.datetime.now()
@@ -554,7 +557,6 @@ if __name__ == "__main__":
             + str(now.minute),
         )
         content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
-        emailing.sendEmail(subject="Run complete", content=content)
         runOutput.exportResultsDF(modelDict, "modelDict"
             + str(now.day)
             + "_"
@@ -564,7 +566,16 @@ if __name__ == "__main__":
             + str(now.minute)
             + fileName
         )
-
+        # Print out ROC curve
+        plt.figure(figsize=(15, 11))
+        for item in modelDict.values():
+            item.plotROC()
+    #        item.printOut()
+        plt.show()
+        try:
+            emailing.sendEmail(subject="Run complete", content=content)
+        except:
+            print("\nEmail sending failed, carrying on..\n)
 
 #    pass
 # import pickling

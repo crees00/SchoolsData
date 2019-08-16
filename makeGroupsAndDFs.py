@@ -45,7 +45,7 @@ def newGrouping(openSchoolDict, printout=False):
     ''' returns a dictionary of lists
     i.e. {'xbb':[school1, school2,...],...}'''
     groupDict = {
-        x: [] for x in ["xbb", "xbbb", "bbb", "gbb", "gbbb", "bbbb","stuck","all",'gsbbs']
+        x: [] for x in ["xbb", "xbbb", "bbb", "gbb", "gbbb", "bbbb","stuck","all",'gsbbs','gsbbbs']
     }
     print("making groups")
     groupDict["xbb"] = filterSchools(
@@ -74,6 +74,11 @@ def newGrouping(openSchoolDict, printout=False):
     for ones in range(1,8):
         for twos in range(2,5):
             groupDict["gsbbs"] += filterSchools(
+            openSchoolDict.values(), cats= [[1,2]] * ones + [[3, 4]] * twos
+        )
+    for ones in range(1,8):
+        for twos in range(3,8):
+            groupDict["gsbbbs"] += filterSchools(
             openSchoolDict.values(), cats= [[1,2]] * ones + [[3, 4]] * twos
         )
 
@@ -132,7 +137,8 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv('dfForModelModifiedImputed.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbb.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbb.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbs.csv')
+inputDF = pd.read_csv('dfForModelModifiedImputed - copy.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbsLessCols.csv')
