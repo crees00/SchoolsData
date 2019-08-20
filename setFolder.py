@@ -4,8 +4,23 @@ Created on Wed Jul 10 13:32:43 2019
 
 @author: reesc1
 """
-where = "home"
-# Folder
+
+where = 'home'
+
+
+from os.path import exists
+
+#def findWhere():
+#    where = input('put in a where:\n')
+#    return where
+#
+#try:
+#    if not exists(spineFolder):
+#        print('No folder')
+#        where = findWhere()
+#except NameError:
+#    where = findWhere()
+    
 if where in ["ONS", 'Cdrive']:
     folderPath = r"C:\Users\reesc1\Docs" + "\\"
 else:
@@ -42,3 +57,7 @@ if where == "ONS":
     homeFolder = r"Y:\2. Education, Skills, Children's Social Care\Ofsted - Stuck Schools\2. Data\1. Raw Data\Schools Data Files - 2005-present\DfE Data"
 if where == "Cdrive":
     homeFolder = r"C:\Users\reesc1\Docs\Data\DfE Data"
+    
+
+if not exists(spineFolder):
+    raise FileNotFoundError

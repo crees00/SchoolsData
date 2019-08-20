@@ -26,13 +26,13 @@ import itertools
 from random import sample
 import datetime
 import emailing
+import runOutput
 
 start = datetime.datetime.now()
 print(f"running genericModelClass at {start}")
 
 
 # import statsmodels
-
 
 
 class ModelData:
@@ -55,7 +55,8 @@ class ModelData:
 
         if self.doRFE:
             self.recursiveFE()
-        print('Generated',self)
+        print("Generated", self)
+
     def __str__(self):
         return f"ModelData instance {self.getName()}"
 
@@ -141,9 +142,8 @@ class Model:
         self.runCode = self.getRunName()
         if len(runParams) > 0:
             for val in runParams.values():
-                self.runCode += ("_" + str(val))
-            
-            
+                self.runCode += "_" + str(val)
+
     def __str__(self):
         return f"{self.getLongName()} {self.getRunName()} with AUC {format(self.getAUC(),'.2f')}"
 
@@ -155,7 +155,7 @@ class Model:
 
     def getLongName(self):
         return self.longName
-    
+
     def getRunCode(self):
         return self.runCode
 
@@ -176,6 +176,9 @@ class Model:
 
     def getCM(self):
         return self.cm
+    
+    def getAcc(self):
+        return self.acc
 
     def getPrecision1(self):
         return self.precision1
@@ -230,7 +233,7 @@ class Model:
         plt.xlabel("False Positive Rate")
         plt.ylabel("True Positive Rate")
         plt.title(f"Receiver Operating Characteristic for {self.getLongName()}")
-        plt.legend(loc="lower right")
+#        plt.legend(loc="lower right")
 
     def printOut(self):
         print(self)
@@ -244,7 +247,8 @@ class LogReg(Model):
         self.runName = "LR_" + dataName
         self.longName = "Logistic Regression"
         Model.__init__(self, data)
-#        self.fitLogRegModel()
+
+    #        self.fitLogRegModel()
 
     def fitModel(self):  # x_train, y_train, x_test, y_test, runName):
         data = self.getData()
@@ -273,7 +277,7 @@ class RandomForest(Model):
         self.runName = "RF_" + dataName
         self.longName = "Random Forest"
         Model.__init__(self, data, runParams)
-#        self.fitRandomForestModel(**self.getParams())
+        #        self.fitRandomForestModel(**self.getParams())
         print("Generated", self.longName, self.runName, self.params)
 
     def __str__(self):
@@ -308,19 +312,20 @@ class RandomForest(Model):
         self.setScores()
         print(f"Model fitted: {self.getRunCode()}")
 
+
 class SVM(Model):
     def __init__(self, dataName, data, runParams={}):
         self.runName = "SVM_" + dataName
         self.longName = "Support Vector Machine"
         Model.__init__(self, data, runParams)
-#        self.fitSVMModel(**self.getParams())
+        #        self.fitSVMModel(**self.getParams())
         print("Generated", self.longName, self.runName, self.params)
 
     def __str__(self):
         return f"{self.getLongName()} {self.getRunName()} {self.getRunCode()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
 
     def fitModel(
-        self, C=1, kernel="rbf", degree=3, max_iter=-1, gamma='scale'
+        self, C=1, kernel="rbf", degree=3, max_iter=-1, gamma="scale"
     ):  # x_train, y_train, x_test, y_test, runName):
         data = self.getData()
         x_train, y_train, x_test, y_test = (
@@ -336,7 +341,9 @@ class SVM(Model):
         self.cr = classification_report(y_test, y_pred)
         self.acc = clf.score(x_test, y_test)
         self.roc_auc = roc_auc_score(y_test, clf.decision_function(x_test))
-        self.fpr, self.tpr, self.thresholds = roc_curve(y_test, clf.decision_function(x_test))
+        self.fpr, self.tpr, self.thresholds = roc_curve(
+            y_test, clf.decision_function(x_test)
+        )
         self.setScores()
         print(f"Model fitted: {self.getRunCode()}")
 
@@ -386,12 +393,12 @@ def oneFullRun(
         modelDataDict[dataName] = data
     #    print('data:',data)
     mod = modelClass(dataName, modelDataDict[dataName], runParams)
-    
+
     #    print('mod:',mod)
     #    print('dataName:',dataName)
     #    print('modelDataDict:',modelDataDict)
-#    modelDict[mod.getRunName() + (("_" + str(runNo)) if runNo > 0 else "")] = mod
-    if mod.getRunCode() not in modelDict: 
+    #    modelDict[mod.getRunName() + (("_" + str(runNo)) if runNo > 0 else "")] = mod
+    if mod.getRunCode() not in modelDict:
         mod.fitModel(**runParams)
         modelDict[mod.getRunCode()] = mod
     #    fpr, tpr, runName, logit_roc_auc = model(x_train, y_train, x_test, y_test, runName)
@@ -414,6 +421,7 @@ def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num, numParamCo
         #        print(listOfRunParams)
         # use listOfRunParams below to try every possible combo
         for singleRunParams in sampleOfRunParamList:
+            
             runNo += 1
             #            print('singleRunParams:',singleRunParams)
             modelDataDict, modelDict = oneFullRun(
@@ -438,17 +446,17 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0, numParamCombos
     print(
         f"running runAGroup with {countRuns(doOverSample, doRFE, modelClasses, numColsToKeep, numParamCombos)} runs to do"
     )
-    global modelDataDict #modelDataDict = {}
-    global modelDict #modelDict = {}
+    global modelDataDict  # modelDataDict = {}
+    global modelDict  # modelDict = {}
     try:
         modelDataDict
     except NameError:
-        print('new modelDataDict')
+        print("new modelDataDict")
         modelDataDict = {}
     try:
         modelDict
     except NameError:
-        print('new modelDict')
+        print("new modelDict")
         modelDict = {}
     assert type(modelClasses) == list
     for modelClass in modelClasses:
@@ -466,6 +474,12 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0, numParamCombos
                     )
                     if rfe == False:
                         break  # stop it doing the same thing 5x if RFE not used
+        content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
+        try:
+            emailing.sendEmail(subject="Some runs done", content=content)
+        except:
+            print("\nEmail sending  for run type failed, carrying on..\n)
+
     return modelDataDict, modelDict
 
 
@@ -476,55 +490,97 @@ runParams = {
         "criterion": ["gini", "entropy"],
         "bootstrap": [True, False],
     },
-    SVM: {"C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.1,1.2, 1.4, 1.6, 2,2.5, 3, 3.6],
-          "kernel": [
-                  'linear', 
-                  'poly', 
-                  'rbf'
-                  ],
-          "degree": [2, 3, 4, 5]
-          },
+    SVM: {
+        "C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.1, 1.2, 1.4, 1.6, 2, 2.5, 3, 3.6],
+        "kernel": ["linear", "poly", "rbf"],
+        "degree": [2, 3, 4, 5],
+        "gamma": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 1]
+    },
 }
-    
+
+
 if __name__ == "__main__":
-    df = pd.read_csv("dfForModelModifiedImputed.csv")
-    xCols = [x for x in (set(df.columns) - {"URN", "Stuck", "Unnamed: 0"})]
-    x = df[xCols]
-    y = df["Stuck"]
+    for fileName in ['bbbbVgsbbbsLessCols.csv','bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+        modelDict={}
+        modelDataDict={}
+        df = pd.read_csv(fileName)
+        xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+        x = df[xCols]
+        y = df["Class"]
+        try:
+            modelsAtStart = len(modelDict)
+        except NameError:
+            modelsAtStart = 0
+        # Generate data and model instances, run the models
+        modelDataDict, modelDict = runAGroup(
+            [
+                    True, 
+                    False
+             ],
+            [
+                    True,
+                    False
+                    ],
+            [
+                    LogReg, 
+                    SVM, 
+                    RandomForest
+                    ],
+            [5,10,15,20],
+            numParamCombos=100,
+        )
     
-    modelsAtStart = len(modelDict)
-    # Generate data and model instances, run the models
-    modelDataDict, modelDict = runAGroup(
-        [True], [True], 
-        [
-        SVM, 
-        LogReg, 
-        RandomForest
-        ], [30], numParamCombos=3
-    )
     
-    # Print out ROC curve
-    plt.figure(figsize=(15, 11))
-    for item in modelDict.values():
-        item.plotROC()
-        item.printOut()
-    plt.show()
+        # Find 'best' model in dict
+        maxF, maxAcc= 0,0
+        for mod in modelDict.values():
+            if (mod.getF1() + mod.getF0()) > maxF:
+                maxF = mod.getF1() + mod.getF0()
+                currModF = mod
+            if mod.getAcc() > maxAcc:
+                maxAcc - mod.getAcc()
+                currModAcc = mod
+        print(f"Best model for F from run is:\n{currModF}\n{currModF.getCM()}")
+        print(f"Best model for accuracy from run is:\n{currModAcc}\n{currModAcc.getCM()}")
+        print(f"Accuracy: {currModAcc.getAcc()}")
+        import pickling
     
-    # Find 'best' model in dict
-    maxF = 0
-    for mod in modelDict.values():
-        if (mod.getF1() + mod.getF0()) > maxF:
-            maxF = mod.getF1() + mod.getF0()
-            currMod = mod
-    print(f"Best model from run is:\n{currMod}\n{currMod.getCM()}")
-    import pickling
-    now=datetime.datetime.now()
-    pickling.save_dill(modelDict, 'modelDict'+str(now.day) +'_'+ str(now.month) + '_'+str(now.hour)+str(now.minute))
-    content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
-    emailing.sendEmail(subject="Run complete", content=content)
-#import pickling
-#pickling.save_dill(modelDict, 'modelDictWithDill0908')
-#aReloaded = pickling.load_dill('modelDictWithDill')
+        now = datetime.datetime.now()
+        pickling.save_dill(
+            modelDict,
+            "modelDict"
+            + str(now.day)
+            + "_"
+            + str(now.month)
+            + "_"
+            + str(now.hour)
+            + str(now.minute),
+        )
+        content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
+        runOutput.exportResultsDF(modelDict, "modelDict"
+            + str(now.day)
+            + "_"
+            + str(now.month)
+            + "_"
+            + str(now.hour)
+            + str(now.minute)
+            + fileName
+        )
+        # Print out ROC curve
+        plt.figure(figsize=(15, 11))
+        for item in modelDict.values():
+            item.plotROC()
+    #        item.printOut()
+        plt.show()
+        try:
+            emailing.sendEmail(subject="Run complete", content=content)
+        except:
+            print("\nEmail sending failed, carrying on..\n)
+
+#    pass
+# import pickling
+# pickling.save_dill(modelDict, 'modelDictWithDill0908')
+# aReloaded = pickling.load_dill('modelDictWithDill')
 
 # modelDataDict = runAGroup([True, False],[True, False],['LogReg'],[10, 20])
 print(f"finished genericModelClass - took {datetime.datetime.now() - start}")

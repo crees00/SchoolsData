@@ -133,6 +133,7 @@ def imputeAll(df, write=''):
         fixed_df.to_csv(write)
     return fixed_df
 
+
 toNormaliseWithStD = [
     "Mean Gross FTE Salary of All Teachers (Â£s)",
     "Total revenue balance (1) 2017-18",
@@ -145,26 +146,26 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-df = pd.read_csv("df5.csv")
-df = makeFinanceCols(df)
-outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
-# outDF.to_csv('pickColsToUse.csv')
-toKeep = cn.modelColsToKeep
-toDrop = set(df.columns) - set(toKeep)
-# Just drop cols from df5 to get dfForModel
-dfForModel = cam.dropColsFromList(df, toDrop)
-# Encode categorical cols with one-hot encoding
-dfForModelModified = fixCategoricalCols(dfForModel)
-## Standardise all of the cols
-dfForModelModified = normalise(
-    dfForModelModified,
-    set(dfForModelModified.columns) - {"URN", "Stuck"},
-    normaliseSDcol,
-)
-
-dfForModelModifiedImputed = imputeAll(dfForModelModified, 'dfForModelModifiedImputed.csv')
-makePickColsToUse(dfForModelModifiedImputed, "dfForModelModifiedImputedAnalysed.csv")
-
+#df = pd.read_csv("df5.csv")
+#df = makeFinanceCols(df)
+#outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
+## outDF.to_csv('pickColsToUse.csv')
+#toKeep = cn.modelColsToKeep
+#toDrop = set(df.columns) - set(toKeep)
+## Just drop cols from df5 to get dfForModel
+#dfForModel = cam.dropColsFromList(df, toDrop)
+## Encode categorical cols with one-hot encoding
+#dfForModelModified = fixCategoricalCols(dfForModel)
+### Standardise all of the cols
+#dfForModelModified = normalise(
+#    dfForModelModified,
+#    set(dfForModelModified.columns) - {"URN", "Stuck"},
+#    normaliseSDcol,
+#)
+#
+#dfForModelModifiedImputed = imputeAll(dfForModelModified, 'dfForModelModifiedImputed.csv')
+#makePickColsToUse(dfForModelModifiedImputed, "dfForModelModifiedImputedAnalysed.csv")
+#
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
 ##makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")
 # dfForModel.to_csv("dfForModel.csv")

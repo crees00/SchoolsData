@@ -20,7 +20,7 @@ def load_dill(name):
     with open(name , 'rb') as f:
         return dill.load(f)
 
-if __name__ == "__main__":
-    save_dill(modelDict, 'modelDictAllFeatures0908')
+#if __name__ == "__main__":
+#    save_dill(modelDict, 'modelDictAllFeatures0908')
 #    aReloaded = load_dill('modelDictWithDill')
 #    pass

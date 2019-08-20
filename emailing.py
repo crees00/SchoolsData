@@ -8,13 +8,17 @@ Created on Mon Aug 12 19:21:26 2019
 import smtplib
 
 port = 587  # For SSL
-pwd = input("Type email password to get an email: ")
+pwd = input("Type email password for email: ")
 emailFrom = "chrisr4444@hotmail.com"
 def sendEmail(subject="", content="",to="chrisr4@hotmail.co.uk"):
     if pwd=="":
         print('no password -> no email')
         return
-    server = smtplib.SMTP('smtp.live.com', 587)
+    try:
+        server = smtplib.SMTP('smtp.live.com', 587)
+    except:
+        print('email connection failed - message not sent')
+        return
     server.starttls()
     server.login(emailFrom, pwd)
     toCheck = False
