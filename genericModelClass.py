@@ -519,26 +519,28 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
 
 
 def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
-    modelAvgDict = {}
-    for run in modelDict.keys():
-        if 'of' in run:
+    now = datetime.datetime.now()
+    modelAvgDict, modelScoresDict = runOutput.makeAvgResults(modelDict,  'AVG'  + str(now.day)
+        + "_"
+        + str(now.month)
+        + "_"
+        + str(now.hour)
+        + str(now.minute)
+        + fileName
+)
             
     # Find 'best' model in dict
     maxF, maxAcc= 0,0
-    for mod in modelDict.values():
-        if (mod.getF1() + mod.getF0()) > maxF:
-            maxF = mod.getF1() + mod.getF0()
-            currModF = mod
-        if mod.getAcc() > maxAcc:
-            maxAcc - mod.getAcc()
-            currModAcc = mod
-    print(f"Best model for F from run is:\n{currModF}\n{currModF.getCM()}")
-    print(f"Best model for accuracy from run is:\n{currModAcc}\n{currModAcc.getCM()}")
-    print(f"Accuracy: {currModAcc.getAcc()}")
+    for runName in modelAvgDict.keys():
+        if modelAvgDict[runName]['acc'] > maxAcc:
+            maxAcc = modelAvgDict[runName]['acc']
+            currModAcc = runName
+#    print(f"Best model for F from run is:\n{currModF}\n{currModF.getCM()}")
+    print(f"Best model for accuracy from run is:\n{currModAcc}")
+    print(f"Accuracy: {maxAcc}")
     
     if pickleIt:    
         import pickling
-        now = datetime.datetime.now()
         pickling.save_dill(
             modelDict,
             "modelDict"
@@ -571,6 +573,8 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
             emailing.sendEmail(subject="Run complete", content=content)
         except:
             print("\nEmail sending failed, carrying on..\n")
+    return modelAvgDict, modelScoresDict
+
 
 runParams = {
     RandomForest: {
@@ -603,23 +607,23 @@ if __name__ == "__main__":
         # Generate data and model instances, run the models
         modelDataDict, modelDict = runAGroup(
             [
-                    True, 
+#                    True, 
                     False
              ],
             [
-                    True,
+#                    True,
                     False
                     ],
             [
-                    LogReg, 
-                    SVM, 
+#                    LogReg, 
+#                    SVM, 
                     RandomForest
                     ],
             [5,10,15,20],
             numParamCombos=2,
             nFolds = 5
         )
-    
+        modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
     
 
 #    pass
