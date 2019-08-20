@@ -72,12 +72,8 @@ def makeAvgResults(modelDict, write=''):
     # Fill up a dict of dicts with just an average score for each set of runs
     for runName, runResultsDict in modelScoresDict.items():
         modelAvgDict[runName] = {}
-        print(runResultsDict.keys())
         for score in (set(runResultsDict.keys()) - 
                       {'cr','longName','params','runCode','runName','tpr','fpr','cm'}):
-            print(score)
-            print(runResultsDict[score])
-            print(np.mean(runResultsDict[score]))
             modelAvgDict[runName][score] = np.mean(runResultsDict[score])
             modelAvgDict[runName]['acc variance'] = np.var(runResultsDict['acc'])
     

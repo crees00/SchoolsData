@@ -11,6 +11,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split, RandomizedSearchCV, KFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.naive_bayes import GaussianNB
 import pandas as pd
 import numpy as np
 from sklearn.metrics import (
@@ -357,6 +359,75 @@ class SVM(Model):
         self.setScores()
         print(f"Model fitted: {self.getRunCode()}")
 
+class NN(Model):
+    def __init__(self, dataName, data, runParams={}):
+        print('starting generating a NN called',dataName,'with',runParams)
+        self.runName = "NN_" + dataName
+        self.longName = "Neural Network"
+        Model.__init__(self, data, runParams)
+        print("Generated", self.longName, self.runName, self.params)
+
+    def __str__(self):
+        return f"{self.getLongName()} {self.getRunName()} {self.getRunCode()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
+
+    def fitModel(
+        self, numLayers=1, nodesPerLayer=2, solver='adam', alpha=0.0001
+    ):  # x_train, y_train, x_test, y_test, runName):
+        data = self.getData()
+        x_train, y_train, x_test, y_test = (
+            data.getxTrain(),
+            data.getyTrain(),
+            data.getxTest(),
+            data.getyTest(),
+        )
+        hidden_layer_sizes = tuple(list(nodesPerLayer for x in range(numLayers)))
+        clf = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes,
+                            solver=solver, alpha=alpha, max_iter=400)
+        clf.fit(x_train, y_train.values.ravel())
+        y_pred = clf.predict(x_test)
+        self.cm = confusion_matrix(y_test, y_pred)
+        self.cr = classification_report(y_test, y_pred)
+        self.acc = clf.score(x_test, y_test)
+        self.roc_auc = roc_auc_score(y_test, clf.predict_proba(x_test)[:, 1])
+        self.fpr, self.tpr, self.thresholds = roc_curve(
+            y_test, clf.predict_proba(x_test)[:, 1]
+        )
+        self.setScores()
+        print(f"Model fitted: {self.getRunCode()}")
+
+class GaussianBayes(Model):
+    def __init__(self, dataName, data, runParams={}):
+        self.runName = "GNB_" + dataName
+        self.longName = "Gaussian Naive Bayes"
+        Model.__init__(self, data, runParams)
+        #        self.fitSVMModel(**self.getParams())
+        print("Generated", self.longName, self.runName, self.params)
+
+    def __str__(self):
+        return f"{self.getLongName()} {self.getRunName()} {self.getRunCode()} with AUC {format(self.getAUC(),'.2f')} and params {self.getParams()}"
+
+    def fitModel(
+        self
+    ):  # x_train, y_train, x_test, y_test, runName):
+        data = self.getData()
+        x_train, y_train, x_test, y_test = (
+            data.getxTrain(),
+            data.getyTrain(),
+            data.getxTest(),
+            data.getyTest(),
+        )
+        clf = GaussianNB()
+        clf.fit(x_train, y_train.values.ravel())
+        y_pred = clf.predict(x_test)
+        self.cm = confusion_matrix(y_test, y_pred)
+        self.cr = classification_report(y_test, y_pred)
+        self.acc = clf.score(x_test, y_test)
+        self.roc_auc = roc_auc_score(y_test, clf.predict_proba(x_test)[:,1])
+        self.fpr, self.tpr, self.thresholds = roc_curve(
+            y_test, clf.predict_proba(x_test)[:,1]
+        )
+        self.setScores()
+        print(f"Model fitted: {self.getRunCode()}")
 
 def countRuns(doOverSample, doRFE, modelClasses, numColsToKeep, numParamCombos):
     runCount = len(doOverSample) * len(doRFE)
@@ -438,6 +509,7 @@ def runsForModels(modelDataDict, modelDict, os, rfe, modelClass, num,
     print(f"running runsForModels {(os, rfe, modelClass, num)}")
     runNo = 0
     if modelClass in runParams.keys():
+        print(modelClass)
         # Generate all possible combinations of runParams
         keys, values = zip(*runParams[modelClass].items())
         listOfRunParams = [dict(zip(keys, val)) for val in itertools.product(*values)]
@@ -518,7 +590,7 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
     return modelDataDict, modelDict
 
 
-def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
+def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False):
     now = datetime.datetime.now()
     modelAvgDict, modelScoresDict = runOutput.makeAvgResults(modelDict,  'AVG'  + str(now.day)
         + "_"
@@ -530,7 +602,7 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
 )
             
     # Find 'best' model in dict
-    maxF, maxAcc= 0,0
+    maxAcc= 0
     for runName in modelAvgDict.keys():
         if modelAvgDict[runName]['acc'] > maxAcc:
             maxAcc = modelAvgDict[runName]['acc']
@@ -562,12 +634,13 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
         + str(now.minute)
         + fileName
     )
-    # Print out ROC curve
-    plt.figure(figsize=(15, 11))
-    for item in modelDict.values():
-        item.plotROC()
-#        item.printOut()
-    plt.show()
+    if ROC:
+        # Print out ROC curve
+        plt.figure(figsize=(15, 11))
+        for item in modelDict.values():
+            item.plotROC()
+    #        item.printOut()
+        plt.show()
     if emailIt:
         try:
             emailing.sendEmail(subject="Run complete", content=content)
@@ -575,6 +648,9 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True):
             print("\nEmail sending failed, carrying on..\n")
     return modelAvgDict, modelScoresDict
 
+#nnLayers = []; maxLayers = 5; maxNodesPerLayer = 10
+#for n in range(1,maxLayers):
+#    nnLayers.append(list(itertools.permutations(list(range(1,maxNodesPerLayer)),n)))
 
 runParams = {
     RandomForest: {
@@ -589,13 +665,19 @@ runParams = {
         "degree": [2, 3, 4, 5],
         "gamma": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 1]
     },
+    NN: {
+        'numLayers' : list(range(1,5)),
+        'nodesPerLayer' : list(range(1,10)),
+        'solver' : ['adam','sgd','lbfgs'], 
+        'alpha' : [1e-5,5e-5,1e-4,5e-4,1e-3]
+        }
 }
 
 
 if __name__ == "__main__":
     for fileName in ['bbbbVgsbbbsLessCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        modelDict={}
-        modelDataDict={}
+#        modelDict={}
+#        modelDataDict={}
         df = pd.read_csv(fileName)
         xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
         x = df[xCols]
@@ -607,24 +689,27 @@ if __name__ == "__main__":
         # Generate data and model instances, run the models
         modelDataDict, modelDict = runAGroup(
             [
-#                    True, 
+                    True, 
                     False
              ],
             [
-#                    True,
+                    True,
                     False
                     ],
             [
-#                    LogReg, 
-#                    SVM, 
-                    RandomForest
+                    LogReg, 
+                    SVM, 
+                    RandomForest,
+                    NN,
+                    GaussianBayes
                     ],
             [5,10,15,20],
             numParamCombos=2,
             nFolds = 5
         )
         modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
-    
+        print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
+
 
 #    pass
 # import pickling
@@ -632,4 +717,3 @@ if __name__ == "__main__":
 # aReloaded = pickling.load_dill('modelDictWithDill')
 
 # modelDataDict = runAGroup([True, False],[True, False],['LogReg'],[10, 20])
-print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
