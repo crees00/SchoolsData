@@ -675,9 +675,9 @@ runParams = {
 
 
 if __name__ == "__main__":
-    for fileName in ['bbbbVgsbbbsLessCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-#        modelDict={}
-#        modelDataDict={}
+    for fileName in ['bbbbVgsbbbsLessCols.csv','bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+        modelDict={}
+        modelDataDict={}
         df = pd.read_csv(fileName)
         xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
         x = df[xCols]
@@ -704,7 +704,7 @@ if __name__ == "__main__":
                     GaussianBayes
                     ],
             [5,10,15,20],
-            numParamCombos=2,
+            numParamCombos=50,
             nFolds = 5
         )
         modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
