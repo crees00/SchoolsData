@@ -42,6 +42,12 @@ def sendEmail(subject="", content="",to="chrisr4@hotmail.co.uk"):
     #content = "nice"#input("Message : ")
 
 
+
+#newThing = 'smtp.office365.com'
+#newserver = smtplib.SMTP(newThing, port)
+#newserver.starttls()
+#newserver.login(emailFrom,pwd)
+
 #import smtplib
 #import string
 #
