@@ -36,7 +36,11 @@ def doPCA(numPCs=6):
     PCs = pca.fit_transform(x)
     print(pca.explained_variance_ratio_, "with", numPCs, "components")
     print(np.cumsum(pca.explained_variance_ratio_), "<- cumsum of explained variance")
-
+    
+    plt.plot(np.cumsum(pca.explained_variance_ratio_))
+    plt.xlabel('number of components')
+    plt.ylabel('cumulative explained variance');
+    plt.grid()
     newDFwithPCs = pd.DataFrame(
         data=PCs,
         columns=["principal component " + str(x) for x in list(range(1, numPCs + 1))],
@@ -140,9 +144,7 @@ def interpretClusters(dfInT, finalDF):
 ###################################################################################
 def plotClassesOnPCA(newDFwithPCs):
     
-    newDFwithPCs.join(other=dfIn[['Class','URN']])
-    print(newDFwithPCs.shape)
-    print(newDFwithPCs.columns)
+    newDFwithPCs = newDFwithPCs.join(other=dfIn.drop([747])[['Class','URN']])
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel("Principal Component 1", fontsize=15)
@@ -151,18 +153,18 @@ def plotClassesOnPCA(newDFwithPCs):
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 2"],
-        s=50,
+        s=2,
     )
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 2"],
-        s=50,
+        s=2,
     )
 
     # ax.legend(targets)
     ax.grid()
 ################# RUN IT ######################################################################
-newDFwithPCs = doPCA(10)
+newDFwithPCs = doPCA(60)
 #finalDF = doClustering()
 #interpretClusters(dfIn, finalDF)
 plotClassesOnPCA(newDFwithPCs)

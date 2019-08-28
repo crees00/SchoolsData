@@ -103,8 +103,8 @@ def processCSV(csv, write=False):
     
     return df
 
-#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
-#df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
+df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
+df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 for model in ['NN','RF','SVM']:
     modelSubset = df1[df1[model]==1]
     for param in ['p1','p2','p3','p4']:
