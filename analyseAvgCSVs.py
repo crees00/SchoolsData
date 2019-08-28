@@ -109,7 +109,13 @@ for model in ['NN','RF','SVM']:
     modelSubset = df1[df1[model]==1]
     for param in ['p1','p2','p3','p4']:
         print(model, param)
-        plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
-#        plt.boxplot(modelSubset[param],modelSubset['acc'])
+        try:
+            plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
+            plt.show()
+#            plt.boxplot(modelSubset[param],modelSubset['acc'])
+#            plt.show()
+        except ValueError:
+            print("matplotlib doesn't like strings")
+#        
 
-        plt.show()
+        

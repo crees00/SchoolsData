@@ -209,6 +209,10 @@ class Model:
 
     def getF0(self):
         return self.fscore0
+    
+    def getFeatureImportances(self):
+        if len(self.featureImportances)>0:
+            return self.featureImportances
 
     def setScores(self):
         cm = self.getCM()
@@ -313,6 +317,7 @@ class RandomForest(Model):
             bootstrap=bootstrap,
         )
         clf.fit(x_train, y_train.values.ravel())
+        self.featureImportances = clf.feature_importances_
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
         self.cr = classification_report(y_test, y_pred)
@@ -648,16 +653,44 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False
             print("\nEmail sending failed, carrying on..\n")
     return modelAvgDict, modelScoresDict
 
-#nnLayers = []; maxLayers = 5; maxNodesPerLayer = 10
-#for n in range(1,maxLayers):
-#    nnLayers.append(list(itertools.permutations(list(range(1,maxNodesPerLayer)),n)))
+def findFIsFromDict(modelDict, toPrint=True):
+    '''Takes in a modelDict with the CV runs from a single run
+    Prints features in reverse order of importance
+    Returns FIarray - a df with a col for each of the CV runs + an average col
+    '''
+    FIarray = 'justastring'
+    for model in modelDict.values():
+        FIarray = featureImportances(model, FIarray)
+    indices = np.argsort(model.getFeatureImportances())[::-1]
+    FIarraySorted = FIarray.sort_values('Avg', ascending=False)
+    if toPrint:
+        print("Feature ranking:")
+        print(FIarraySorted['Avg'])
+#        for f in range(model.getData().getxTrain().shape[1]):
+#            print("%d. feature %d (%f)" % (f + 1, indices[f], model.getFeatureImportances()[indices[f]]))
+#            print(model.getData().getxCols()[indices[f]])
+    return FIarray
+
+def featureImportances(model, FIarray='nothing'):
+    newCol = pd.DataFrame(model.getFeatureImportances(), index=model.getData().getxCols(),
+                          columns = [model.getData().name[-4:]])
+    # Start a new array if nothing fed in
+    if type(FIarray)==str:
+        FIarray=newCol
+    else:
+        # else add on the col to the existing array
+        FIarray = pd.concat([FIarray, newCol], axis=1)  
+        # if final run e.g. 5 of 5
+        if model.getData().name[-4] == model.getData().name[-1]:
+            FIarray['Avg'] = FIarray.apply(np.mean, axis=1)
+    return FIarray
 
 runParams = {
     RandomForest: {
-        "n_estimators": [10, 50, 100, 300, 500, 800, 1000],
-        "max_depth": [None, 3, 5, 8, 10],
-        "criterion": ["gini", "entropy"],
-        "bootstrap": [True, False],
+        "n_estimators":[10],# [10, 50, 100, 300, 500, 800, 1000],
+        "max_depth": [5],#[None, 3, 5, 8, 10],
+        "criterion": ['entropy'],#["gini", "entropy"],
+        "bootstrap": [True],#[True, False],
     },
     SVM: {
         "C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.1, 1.2, 1.4, 1.6, 2, 2.5, 3, 3.6],
@@ -690,18 +723,18 @@ if __name__ == "__main__":
         modelDataDict, modelDict = runAGroup(
             [
                     True, 
-                    False
+#                    False
              ],
             [
-                    True,
+#                    True,
                     False
                     ],
             [
-                    LogReg, 
-                    SVM, 
+#                    LogReg, 
+#                    SVM, 
                     RandomForest,
-                    NN,
-                    GaussianBayes
+#                    NN,
+#                    GaussianBayes
                     ],
             [5,10,15,20],
             numParamCombos=50,
