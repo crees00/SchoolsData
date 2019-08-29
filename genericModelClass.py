@@ -28,8 +28,8 @@ from sklearn.feature_selection import RFE
 import itertools
 from random import sample
 import datetime
-import emailing
-import runOutput
+
+
 
 start = datetime.datetime.now()
 print(f"running genericModelClass at {start}")
@@ -213,7 +213,10 @@ class Model:
     def getFeatureImportances(self):
         if len(self.featureImportances)>0:
             return self.featureImportances
-
+    
+    def getCLF(self):
+        return self.clf
+    
     def setScores(self):
         cm = self.getCM()
         self.tp = cm[1][1]
@@ -237,6 +240,18 @@ class Model:
             / (self.getPrecision0() + self.getRecall0())
         )
 
+    def getTrainingScores(self, printOut=False):
+        '''returns confusion matrix, classification report, accuracy
+        of model on training set '''
+        trainingPredictions = self.getCLF().predict(self.getData().getxTrain())
+        trainLabels = self.getData().getyTrain()
+        self.traincm = confusion_matrix(trainLabels, trainingPredictions)
+        self.traincr = classification_report(trainLabels, trainingPredictions)
+        self.trainacc = self.getCLF().score(self.getData().getxTrain(), trainLabels)
+        if printOut:
+            print(f"trainAcc = {round(self.trainacc,2)}, testAcc = {round(self.getAcc(),2)}, {self.getRunName()}")
+        return self.traincm, self.traincr, self.trainacc
+    
     def plotROC(self):  # fpr, tpr, runName, roc_auc, longRunName, fileName=""):
         plt.plot(
             self.getFPR(),
@@ -276,6 +291,7 @@ class LogReg(Model):
         )
         logreg = LogisticRegression(solver="lbfgs", max_iter=1000)
         logreg.fit(x_train, y_train.values.ravel())
+        self.clf = logreg
         y_pred = logreg.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
         self.cr = classification_report(y_test, y_pred)
@@ -317,6 +333,7 @@ class RandomForest(Model):
             bootstrap=bootstrap,
         )
         clf.fit(x_train, y_train.values.ravel())
+        self.clf = clf
         self.featureImportances = clf.feature_importances_
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
@@ -353,6 +370,7 @@ class SVM(Model):
         )
         clf = SVC(C=C, kernel=kernel, degree=degree, max_iter=max_iter, gamma=gamma)
         clf.fit(x_train, y_train.values.ravel())
+        self.clf = clf
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
         self.cr = classification_report(y_test, y_pred)
@@ -389,6 +407,7 @@ class NN(Model):
         clf = MLPClassifier(hidden_layer_sizes=hidden_layer_sizes,
                             solver=solver, alpha=alpha, max_iter=400)
         clf.fit(x_train, y_train.values.ravel())
+        self.clf = clf
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
         self.cr = classification_report(y_test, y_pred)
@@ -423,6 +442,7 @@ class GaussianBayes(Model):
         )
         clf = GaussianNB()
         clf.fit(x_train, y_train.values.ravel())
+        self.clf = clf
         y_pred = clf.predict(x_test)
         self.cm = confusion_matrix(y_test, y_pred)
         self.cr = classification_report(y_test, y_pred)
@@ -586,18 +606,95 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
                     )
                     if rfe == False:
                         break  # stop it doing the same thing 5x if RFE not used
-        content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
+        
         try:
+            content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
             emailing.sendEmail(subject="Some runs done", content=content)
         except:
             print("\nEmail sending  for run type failed, carrying on..\n")
 
     return modelDataDict, modelDict
 
+def exportResultsDF(dic, write=''):
+    print('saving..')
+    dictToDF  ={}
+    for name in dic.keys():
+        mod = dic[name]
+#        entry = dictToDF[name]
+#        entry = {key: mod.value() for (key, value) in entryInput.items()}
+        entry = {}
+        for key, func in entryInput.items():
+            entry[key] = func(mod)
+
+        dictToDF[name]=entry
+    outDF = pd.DataFrame(dictToDF)
+    if len(write)>0:
+        outDF.to_csv(write)
+        print(write,'file written')
+    return outDF
+
+entryInput={
+                    'acc':Model.getAcc,
+                    'cm':Model.getCM,
+                    'auc':Model.getAUC,
+                    'cr':Model.getCR,
+                    'F0':Model.getF0,
+                    'F1':Model.getF1,
+                    'longName':Model.getLongName,
+                    'params':Model.getParams,
+                    'precision0':Model.getPrecision0,
+                    'precision1': Model.getPrecision1,
+                    'recall0': Model.getRecall0,
+                    'recall1': Model.getRecall1,
+                    'runCode':Model.getRunCode,
+                    'runName':Model.getRunName,
+                    'tpr':Model.getTPR,
+                    'fpr':Model.getFPR}
+
+def makeAvgResults(modelDict, write=''):
+    ''' For k-fold cross validation
+    Makes an average of the k folds for each run setup'''
+    modelScoresDict, modelAvgDict = {},{}
+    # Fill up a dict of dicts with a list of scores for each run
+    for run in modelDict.keys():
+        loc = run.find('of')
+        if loc>0:
+            avgName = run[:loc-2] + run[loc+3:]
+            if avgName not in modelScoresDict.keys():
+                entry={}
+                for key, func in entryInput.items():
+#                    print(modelDict[run])
+#                    print(key, func)
+                    entry[key] = [func(modelDict[run])]
+#                    print(entry)
+#                entry = {key: [func(modelDict[run])] for (key, func) in entryInput.items()}
+                modelScoresDict[avgName] = entry
+            else:
+                for score in modelScoresDict[avgName].keys():
+#                    print(modelScoresDict[avgName])
+#                    print(modelScoresDict[avgName][score])
+                    scoreToAppend = entryInput[score](modelDict[run])
+                    modelScoresDict[avgName][score].append(scoreToAppend)
+ 
+    # Fill up a dict of dicts with just an average score for each set of runs
+    for runName, runResultsDict in modelScoresDict.items():
+        modelAvgDict[runName] = {}
+        for score in (set(runResultsDict.keys()) - 
+                      {'cr','longName','params','runCode','runName','tpr','fpr','cm'}):
+            modelAvgDict[runName][score] = np.mean(runResultsDict[score])
+            modelAvgDict[runName]['acc variance'] = np.var(runResultsDict['acc'])
+    
+    if len(write)>0:
+        outDF = pd.DataFrame(modelAvgDict)
+        outDF.to_csv(write)
+        print(write,'file written')
+#
+    return modelAvgDict, modelScoresDict
+
 
 def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False):
     now = datetime.datetime.now()
-    modelAvgDict, modelScoresDict = runOutput.makeAvgResults(modelDict,  'AVG'  + str(now.day)
+    modelAvgDict, modelScoresDict = makeAvgResults(modelDict,  'AVG'  + str(now.day)
         + "_"
         + str(now.month)
         + "_"
@@ -629,8 +726,8 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False
             + str(now.minute),
         )
     # Save results in .csv file
-    content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
-    runOutput.exportResultsDF(modelDict, "modelDict"
+    
+    exportResultsDF(modelDict, "modelDict"
         + str(now.day)
         + "_"
         + str(now.month)
@@ -648,6 +745,7 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False
         plt.show()
     if emailIt:
         try:
+            content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
             emailing.sendEmail(subject="Run complete", content=content)
         except:
             print("\nEmail sending failed, carrying on..\n")
@@ -687,28 +785,29 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[10],# [10, 50, 100, 300, 500, 800, 1000],
-        "max_depth": [5],#[None, 3, 5, 8, 10],
-        "criterion": ['entropy'],#["gini", "entropy"],
-        "bootstrap": [True],#[True, False],
+        "n_estimators":[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200, 220, 240, 260,280],
+        "max_depth": [4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "criterion": ["gini", "entropy"],
+        "bootstrap": [True, False],
     },
     SVM: {
-        "C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.1, 1.2, 1.4, 1.6, 2, 2.5, 3, 3.6],
-        "kernel": ["linear", "poly", "rbf"],
-        "degree": [2, 3, 4, 5],
-        "gamma": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 1]
+        "C": [1,1.5,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20],
+        "kernel": ["rbf"],
+        "degree":[2],
+        "gamma": [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
-        'numLayers' : list(range(1,5)),
-        'nodesPerLayer' : list(range(1,10)),
-        'solver' : ['adam','sgd','lbfgs'], 
-        'alpha' : [1e-5,5e-5,1e-4,5e-4,1e-3]
+        'numLayers' : [3],
+        'nodesPerLayer' : list(range(4,8)),
+        'solver' : ['adam'], 
+        'alpha' : [1e-7, 5e-7, 1e-6, 5e-6, 1e-5,5e-5,1e-4,5e-4,1e-3,5e-3, 1e-2, 5e-2, 1e-1]
         }
 }
 
 
 if __name__ == "__main__":
-    for fileName in ['bbbbVgsbbbsLessCols.csv','bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+    import emailing
+    for fileName in ['bbbbVgsbbbsWithPTRWM.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
         modelDict={}
         modelDataDict={}
         df = pd.read_csv(fileName)
@@ -723,21 +822,21 @@ if __name__ == "__main__":
         modelDataDict, modelDict = runAGroup(
             [
                     True, 
-#                    False
+                    False
              ],
             [
-#                    True,
+                    True,
                     False
                     ],
             [
-#                    LogReg, 
-#                    SVM, 
+                    LogReg, 
+                    SVM, 
                     RandomForest,
-#                    NN,
-#                    GaussianBayes
+                    NN,
+                    GaussianBayes
                     ],
             [5,10,15,20],
-            numParamCombos=50,
+            numParamCombos=200,
             nFolds = 5
         )
         modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)

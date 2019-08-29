@@ -103,19 +103,50 @@ def processCSV(csv, write=False):
     
     return df
 
-df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
-df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
-for model in ['NN','RF','SVM']:
-    modelSubset = df1[df1[model]==1]
-    for param in ['p1','p2','p3','p4']:
-        print(model, param)
-        try:
-            plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
-            plt.show()
-#            plt.boxplot(modelSubset[param],modelSubset['acc'])
-#            plt.show()
-        except ValueError:
-            print("matplotlib doesn't like strings")
-#        
+def paramHistograms(df, minAcc=0.72):
+    for model in ['NN','RF','SVM']:
+        print('\nModel:',model)
+        modelSubset = df[df[model]==1]
+        accurateSubset = modelSubset[modelSubset['acc']>minAcc]
+        for param in ['p1','p2','p3','p4']:
+            print('\n',param,':')
+            accCounts = accurateSubset[param].value_counts(sort=False)
+            modCounts = modelSubset[param].value_counts(sort=False)
+            newCounts = pd.DataFrame([accCounts,modCounts],index=['acc','mod'])
+            newCounts = newCounts.transpose()
+            newCounts.fillna(0,inplace=True)
+            newCounts['Proportion'] = newCounts['acc']/newCounts['mod']
+            print(newCounts)
+            try:
+#                plt.hist(accurateSubset[param]/modelSubset[param], bins=100)
+                plt.scatter(newCounts.index, newCounts['Proportion'])
+#                plt.hist(, bins=100)
+                plt.show()
+            except ValueError:
+                print("matplotlib doesn't like strings")
+            except TypeError:
+                print("can't divide strings")
+
+            
+def paramScatterPlots(df):
+    for model in ['NN','RF','SVM']:
+        print('\nModel:',model)
+        modelSubset = df1[df1[model]==1]
+        accurateSubset = modelSubset[modelSubset['acc']>0.72]
+        for param in ['p1','p2','p3','p4']:
+    #        print(model, param)
+            try:
+                plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
+                plt.show()
+    #            plt.boxplot(modelSubset[param],modelSubset['acc'])
+    #            plt.show()
+            except ValueError:
+                print("matplotlib doesn't like strings")
+
+
+#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
+# ^ This one used for choosing parameters
+#df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
+paramHistograms(df1)
 
         
