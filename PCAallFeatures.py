@@ -8,15 +8,15 @@ Created on Tue Jul 23 14:47:51 2019
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-
+sns.set()
 ################# ADD MORE FEATURES TO INPUT DATA ###############################
 dfIn = pd.read_csv("bbbbVgsbbbsAllCols.csv")
 dfIn.drop(["Unnamed: 0","Unnamed: 0.1"], inplace=True, axis=1)
 originalCols = dfIn.columns
-print(originalCols)
+#print(originalCols)
 #dfInT = pd.DataFrame(dfIn.values.transpose(), columns=originalCols)
 # MAKE INSPECTION CATS BINARY
 #originalCols = dfInT.columns
