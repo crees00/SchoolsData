@@ -606,8 +606,9 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
                     )
                     if rfe == False:
                         break  # stop it doing the same thing 5x if RFE not used
-        content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
+        
         try:
+            content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
             emailing.sendEmail(subject="Some runs done", content=content)
         except:
             print("\nEmail sending  for run type failed, carrying on..\n")
@@ -784,22 +785,22 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[10],# [10, 50, 100, 300, 500, 800, 1000],
-        "max_depth": [5],#[None, 3, 5, 8, 10],
-        "criterion": ['entropy'],#["gini", "entropy"],
-        "bootstrap": [True],#[True, False],
+        "n_estimators":[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200, 220, 240, 260,280],
+        "max_depth": [4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "criterion": ["gini", "entropy"],
+        "bootstrap": [True, False],
     },
     SVM: {
-        "C": [0.01, 0.1, 0.3, 0.5, 0.7, 0.9, 1, 1.1, 1.2, 1.4, 1.6, 2, 2.5, 3, 3.6],
-        "kernel": ["linear", "poly", "rbf"],
-        "degree": [2, 3, 4, 5],
-        "gamma": [0.001, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 1]
+        "C": [1,1.5,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20],
+        "kernel": ["rbf"],
+        "degree":[2],
+        "gamma": [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
-        'numLayers' : list(range(1,5)),
-        'nodesPerLayer' : list(range(1,10)),
-        'solver' : ['adam','sgd','lbfgs'], 
-        'alpha' : [1e-5,5e-5,1e-4,5e-4,1e-3]
+        'numLayers' : [3],
+        'nodesPerLayer' : list(range(4,8)),
+        'solver' : ['adam'], 
+        'alpha' : [1e-7, 5e-7, 1e-6, 5e-6, 1e-5,5e-5,1e-4,5e-4,1e-3,5e-3, 1e-2, 5e-2, 1e-1]
         }
 }
 
@@ -821,21 +822,21 @@ if __name__ == "__main__":
         modelDataDict, modelDict = runAGroup(
             [
                     True, 
-#                    False
+                    False
              ],
             [
-#                    True,
+                    True,
                     False
                     ],
             [
-#                    LogReg, 
-#                    SVM, 
+                    LogReg, 
+                    SVM, 
                     RandomForest,
-#                    NN,
-#                    GaussianBayes
+                    NN,
+                    GaussianBayes
                     ],
             [5,10,15,20],
-            numParamCombos=50,
+            numParamCombos=200,
             nFolds = 5
         )
         modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)

@@ -19,23 +19,20 @@ xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Un
 x = df[xCols]
 y = df["Class"]
 
-runDict = {'SVM_RFE10_1.6_rbf_4_0.08':{'clf':SVC(C=1.6, gamma=0.08)},
-           'SVM_RFE10_2.5_rbf_5_0.05':{'clf':SVC(C=2.5, gamma=0.05)},
-           'SVM_RFE10_2_rbf_3_0.09' :{'clf':SVC(C=2, gamma=0.09)},
-           'SVM_RFE10_1.4_rbf_5_0.06':{'clf': SVC(C=1.4, gamma=0.06)},
-           'RF_OS_4of5_10_5_entropy_True':{'clf':RandomForestClassifier(n_estimators=10, max_depth=5, criterion='entropy', bootstrap=True)}
+#runDict = {
+#        'SVM_RFE10_1.6_rbf_4_0.08':{'clf':SVC(C=1.6, gamma=0.08)},
+#           'SVM_RFE10_2.5_rbf_5_0.05':{'clf':SVC(C=2.5, gamma=0.05)},
+#           'SVM_RFE10_2_rbf_3_0.09' :{'clf':SVC(C=2, gamma=0.09)},
+#           'SVM_RFE10_1.4_rbf_5_0.06':{'clf': SVC(C=1.4, gamma=0.06)},
+           'RF_OS_10_5_entropy_True':{'clf':RandomForestClassifier(n_estimators=10, max_depth=5, criterion='entropy', bootstrap=True)}
 
         }
 
 for runName, subDict in runDict.items():
     for forward in [True,False]:
-        if forward:
-            k_features = (3,35)
-        else:
-            k_features = (35,3)
         featureSelector = SequentialFeatureSelector(
             subDict['clf'],
-            k_features=k_features,
+            k_features=(3,35),
             forward=forward,
             verbose=2,
             scoring="accuracy",
@@ -50,3 +47,29 @@ for runName, subDict in runDict.items():
             subDict['BfilteredFeatures'] = x.columns[list(subDict['Bfeatures'].k_feature_idx_)]
             
 #print(filteredFeatures)
+
+def showBestFeatures(runDict, printOut=True):
+    for runName,run in runDict.items():
+        print('run name:',runName)
+        for forwardsOrBackwards in ['Ffeatures','Bfeatures']:
+            numberOfFeatures = len(run[forwardsOrBackwards].k_feature_names_)
+            listName = forwardsOrBackwards[0] + 'bestFeatures'
+            run[listName]=[]
+            if printOut:
+                print(f'\n{listName} with {numberOfFeatures} features:')
+            for i in run[forwardsOrBackwards].subsets_.values():
+                for name in i['feature_names']:
+                    if name not in run[listName]:
+                        run[listName].append(name)
+                        if printOut:
+                            if len(run[listName]) < numberOfFeatures:
+                                print(name)
+            if printOut:
+                print(f"------CUTOFF------ ")
+                    
+        forwardSet = set(run['Ffeatures'].k_feature_names_)
+        backwardSet = set(run['Bfeatures'].k_feature_names_)
+        if printOut:
+            print(f"\n{runName} has {len(forwardSet)} in forwardSet, {len(backwardSet)} in backwardSet, {len(forwardSet & backwardSet)} common to both:")
+            print(forwardSet & backwardSet)
+    return runDict
