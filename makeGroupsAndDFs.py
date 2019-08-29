@@ -137,8 +137,8 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv('dfForModelModifiedImputed - copy.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbsLessCols.csv')
+inputDF = pd.read_csv('dfForModelModifiedImputedWithPTRWM.csv')
+#dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
+#dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
+#dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbsWithPTRWM.csv')

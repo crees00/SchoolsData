@@ -166,6 +166,7 @@ modelColsToKeep = [
 #    'PTEALGRP2__18', # Less than the other EAL one
     'PTMOBN__18',
     'PSENELSE__18',
+    'PTRWM_EXP__18',
     'PNUMEAL',
     'PNUMFSM',
     'PERCTOT',

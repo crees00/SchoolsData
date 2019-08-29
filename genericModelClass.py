@@ -806,7 +806,7 @@ runParams = {
 
 if __name__ == "__main__":
     import emailing
-    for fileName in ['bbbbVgsbbbsLessCols.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+    for fileName in ['bbbbVgsbbbsWithPTRWM.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
         modelDict={}
         modelDataDict={}
         df = pd.read_csv(fileName)
