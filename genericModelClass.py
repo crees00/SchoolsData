@@ -594,6 +594,12 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
         for os in doOverSample:
             for rfe in doRFE:
                 for num in numColsToKeep:
+                    if len(modelDict)>4000:
+                        try:
+                            postProcess(modelDataDict, modelDict)
+                            modelDict={}
+                        except:
+                            print('failed postprocessing')
                     modelDataDict, modelDict = runsForModels(
                         modelDataDict,
                         modelDict,
@@ -836,7 +842,7 @@ if __name__ == "__main__":
                     GaussianBayes
                     ],
             [5,10,15,20],
-            numParamCombos=200,
+            numParamCombos=250,
             nFolds = 5
         )
         modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
