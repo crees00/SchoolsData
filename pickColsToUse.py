@@ -146,7 +146,7 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-df = pd.read_csv("df5.csv")
+df = pd.read_csv("df6.csv")
 df = makeFinanceCols(df)
 #outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
 # outDF.to_csv('pickColsToUse.csv')
@@ -163,8 +163,8 @@ dfForModelModified = normalise(
     normaliseSDcol,
 )
 #
-dfForModelModifiedImputed = imputeAll(dfForModelModified, 'dfForModelModifiedImputedWithPTRWM.csv')
-makePickColsToUse(dfForModelModifiedImputed, "dfForModelModifiedImputedAnalysedWithPTRWM.csv")
+dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df6ForModelModifiedImputed.csv')
+makePickColsToUse(dfForModelModifiedImputed, "df6ForModelModifiedImputedAnalysed.csv")
 
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
 #makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")

@@ -137,8 +137,8 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv('dfForModelModifiedImputedWithPTRWM.csv')
+inputDF = pd.read_csv('df6ForModelModifiedImputed.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbsWithPTRWM.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbs6.csv')

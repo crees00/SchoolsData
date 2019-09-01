@@ -223,7 +223,54 @@ def addToMainDF(dfToAddTo, dataDict, write=False):
 
     return dfNew
 
+def fixPerfCol(df, write=''):
+    ''' Attainment measures not dealt with correctly in previous code - 
+    ks4: ATT8SCR - score based on exam results
+    ks2: PTRWM or variant - percentage of pupils with a certain level in reading/writing/maths
+    ATT8SCR was treated as a percentage but it is a score itself
+    
+    This func takes ATT8SCR and ranks all schools which have a score, then 
+    converts rank into % so e.g. mid performing school will have score of 50%,
+    school with worst ATT8SCR will have 0%.
+    
+    Apply same logic to read/write/maths scores, so end up with all ks2 and ks4 
+    schools having a ranking score from 0 to 1. 
+    Then just combine into one col and add to df    
+    '''
 
+    ks4perf18 = pd.read_csv(
+            sf.homeFolder +  r"\2017-2018\Performance\england_ks4final.csv", encoding="latin-1")
+    ks2perf18 = pd.read_csv(
+            sf.homeFolder + r"\2017-2018\Performance\england_ks2final.csv", encoding = "latin-1")
+    rwmSubset = ks2perf18[['URN','PTRWM_EXP']]
+    att8Subset = ks4perf18[['URN','ATT8SCR']]
+    
+    # Remove rows with blanks
+    rwmSubset['URN'] = pd.to_numeric(rwmSubset['URN'], errors='coerce')
+    att8Subset['ATT8SCR'] = pd.to_numeric(att8Subset['ATT8SCR'],errors='coerce')
+    att8Subset.dropna(inplace=True)
+
+    # Make ranking col for ks2 data
+    rwmSubset['PTRWM_EXP']=rwmSubset['PTRWM_EXP'].astype(str)
+    rwmSubset['PTRWM_EXP'] = rwmSubset['PTRWM_EXP'].apply(cam.p2f) 
+    rwmSubset.dropna(inplace=True)
+    rwmSubset['PTRWMpctRank'] = (rwmSubset['PTRWM_EXP'].rank(ascending=True))/len(rwmSubset)
+    
+    # Make ranking col for ks4 data
+    att8Subset['ATT8SCRpctRank'] = (att8Subset['ATT8SCR'].rank(ascending=True)) / len(att8Subset)
+    
+    # Merge new cols onto input large df
+    df = df.merge(how='left',right=att8Subset.drop('ATT8SCR', axis=1), on='URN')
+    df = df.merge(how='left',right=rwmSubset.drop('PTRWM_EXP', axis=1), on='URN')
+    
+    # Merge two new cols to give one col - if vals in both cols, take a mean
+    df['PerformancePctRank'] = np.nanmean([df['PTRWMpctRank'],df['ATT8SCRpctRank']],axis=0)
+    df.drop(['ATT8SCRpctRank','PTRWMpctRank'], axis=1, inplace=True)
+    
+    if len(write)>0:
+        df.to_csv(write)
+    return df
+    
 def runAll(dataDict, dfToAddTo, write=False):
     startOfRunAll = datetime.datetime.now()
     dataDict = allInOne(dataDict)
@@ -231,15 +278,17 @@ def runAll(dataDict, dfToAddTo, write=False):
     print(f"runAll took {datetime.datetime.now()-startOfRunAll}")
     return df
 
+df14 = fixPerfCol(pd.read_csv('df5.csv'), 'df6.csv')
 
-df4 = pd.read_csv("df4.csv")
-df5 = runAll(perfDict, df4)
-df6 = runAll(censusDict, df5)
-df7 = runAll(absDict, df6)
-df8 = runAll(spineDict, df7)
-df9 = runAll(swfDict, df8)
-#df10 = runAll(cfrDict, df9, True)
-#df11 = runAll(sfbDict, df9, True)
-df12 = runAll(fin18Dict, df9)
-df13 = runAll(fin17Dict, df12, True)
+#df4 = pd.read_csv("df4.csv")
+#df5 = runAll(perfDict, df4)
+#df6 = runAll(censusDict, df5)
+#df7 = runAll(absDict, df6)
+#df8 = runAll(spineDict, df7)
+#df9 = runAll(swfDict, df8)
+##df10 = runAll(cfrDict, df9, True)
+##df11 = runAll(sfbDict, df9, True)
+#df12 = runAll(fin18Dict, df9)
+#df13 = runAll(fin17Dict, df12, True)
+
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

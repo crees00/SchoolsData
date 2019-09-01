@@ -33,7 +33,7 @@ PerfColsToKeep = [['URN'],
  ['PTEALGRP2'],
  ['PTMOBN','PTNMOB'],
  ['PSENELSE','PSENELS','PSENSE4','PSENAPS4'],
- ['ATT8SCR', 'PTRWM_EXP','PTAC5EM_PTQ','PTREADWRITTAMATX'],
+# ['ATT8SCR', 'PTRWM_EXP','PTAC5EM_PTQ','PTREADWRITTAMATX'],  PROBLEM - ATT8SCR IS NOT A PERCENTAGE BUT IS BEING TREATED LIKE ONE
  ['P8MEA','B8VAMEA_PTQ', 'OVAMEAS'],# Only for ks4
  ['PTL2BASICS_94','PTL2BASICS_LL_PTQ_EE', 'PTL2BASICS_PTQ']] # Only for ks4
 
@@ -166,7 +166,8 @@ modelColsToKeep = [
 #    'PTEALGRP2__18', # Less than the other EAL one
     'PTMOBN__18',
     'PSENELSE__18',
-    'PTRWM_EXP__18',
+    'PerformancePctRank', # New col
+#    'PTRWM_EXP__18',
     'PNUMEAL',
     'PNUMFSM',
     'PERCTOT',

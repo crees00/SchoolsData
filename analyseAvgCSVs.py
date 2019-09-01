@@ -9,14 +9,62 @@ import pandas as pd
 import numpy as np
 import re
 import matplotlib.pyplot as plt
+from os import listdir
+import setFolder as sf
+
+def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
+    '''Make a list of all the filenames in a folder'''
+    fullPath = basePath + folderName
+    listofcsvs = listdir(fullPath) 
+    listofcsvs = [folderName+r"\\"+x for x in listofcsvs]
+    return listofcsvs
+
+def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
+    ''' Runs take too much memory and crash computer so at intervals it dumps
+    the results to csv and wipes the memory clean. This function is just to 
+    stitch the csv files together so the results are all in one place
+    '''
+    global dupLists
+    dupLists = {}
+    allDups = []
+    bigDF = pd.read_csv(listOfCSVFilenames[0])
+    bigDF.set_index(keys='Unnamed: 0')
+    for fileName in listOfCSVFilenames[1:]:
+        nextDFtoJoin = pd.read_csv(fileName)
+        colsToDrop = ['Unnamed: 0']
+        for col in colsToDrop:
+            if col in nextDFtoJoin.columns:
+                nextDFtoJoin.drop(col, axis=1, inplace=True)
+        bigDF = bigDF.join(nextDFtoJoin)#, rsuffix='_'+fileName[:-4]+'_DUP')
+        
+        for col in bigDF.columns:
+            if col[-4:]=='_DUP':
+                if col not in allDups:
+                    allDups.append(col)
+                    try:
+                        dupLists[fileName].append(col)
+                    except KeyError:
+                        dupLists[fileName] = [col]
+    if outFile !='':
+        bigDF.to_csv(outFile, index=False)
+    
+    return bigDF
 
 def processCSV(csv, write=False):
-    df = pd.read_csv(csv)
+    ''' Takes in avg results csv
+    Reads run name and extracts run info, putting into cols to use later 
+    for plotting etc.
+    Adds one hot cols for RFE & OS
+    Adds p1/2/3/4 cols with the param values for that run
+    '''
+    if type(csv)==str:
+        df = pd.read_csv(csv)
+    else:
+        df = csv
     df.set_index('Unnamed: 0', inplace=True)
-    
     df = df.sort_values(by='acc', axis=1, ascending=False)
-    
     df = df.transpose()
+    
     
     print(f'Best accuracy in {csv}:')
     print(df.loc[:,'acc'].max(),'for',df.loc[:,'acc'].idxmax())
@@ -34,16 +82,6 @@ def processCSV(csv, write=False):
         # Identify model type in 'Model' col
         nameDict = {'SV':'SVM','NN':'NN','RF':'RF','GN':'GNB','LR':'LR'}
         df.loc[runName,'Model'] = nameDict[runName[:2]]
-#        if runName[:3]=='SVM':
-#            df.loc[runName,'Model']='SVM'
-#        elif runName[:2]=='NN':
-#            df.loc[runName,'Model']='NN'
-#        elif runName[:2]=='RF':
-#            df.loc[runName,'Model']='RF'
-#        elif runName[:3]=='GNB':
-#            df.loc[runName,'Model']='GNB'
-#        elif runName[:2]=='LR':
-#            df.loc[runName,'Model']='LR'
         end=3
         if runName[:2] in ['GN','SV']:
             end=4
@@ -103,11 +141,24 @@ def processCSV(csv, write=False):
     
     return df
 
-def paramHistograms(df, minAcc=0.72):
+def paramHistograms(df, minAcc=0.60, minProportion=-1):
+    ''' If a minProportion is set to e.g. 0.1 then accurateSubset for that
+    model will be the most accurate 10% of runs for that model.
+    If no minProportion set, uses minAcc set or minAcc default
+    '''
     for model in ['NN','RF','SVM']:
         print('\nModel:',model)
         modelSubset = df[df[model]==1]
+        
+        if minProportion > 0:
+            minAcc=1
+        
         accurateSubset = modelSubset[modelSubset['acc']>minAcc]
+        
+        while (len(accurateSubset)/len(modelSubset)) < minProportion:
+            minAcc -= 0.001
+            accurateSubset = modelSubset[modelSubset['acc']>minAcc]
+        print('minAcc:',minAcc)   
         for param in ['p1','p2','p3','p4']:
             print('\n',param,':')
             accCounts = accurateSubset[param].value_counts(sort=False)
@@ -144,9 +195,13 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
+#listofcsvs = makeCSVlistFromFolderName('paramsearch31Aug')
+#outFile = 'fullBashAug31.csv'
+#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+#df = processCSV(outFile, True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
 # ^ This one used for choosing parameters
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
-paramHistograms(df1)
-
+paramHistograms(df, minProportion=0.01)
+#
         
