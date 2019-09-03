@@ -195,8 +195,8 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
-#listofcsvs = makeCSVlistFromFolderName('paramsearch31Aug')
-#outFile = 'fullBashAug31.csv'
+#listofcsvs = makeCSVlistFromFolderName('paramsearch03Sep')
+#outFile = 'fullBashSep03.csv'
 #df = combineIntermediateResultsCSVs(listofcsvs, outFile)
 #df = processCSV(outFile, True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
