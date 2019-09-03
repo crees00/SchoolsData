@@ -1,0 +1,116 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Sep  3 17:21:37 2019
+
+@author: reesc1
+"""
+import pandas as pd
+
+# Make lessCols list
+df = pd.read_csv('bbbbVgsbbbs6.csv')
+final=[]
+cols = df.columns
+for col in cols:
+    if col[-5:]!='.2018':
+        if col[-6:]!='yrDiff':
+            final.append(col)
+
+lessCols=['ISPRIMARY',
+ 'GOR_North East',
+ 'PTMOBN__18',
+ 'Unnamed: 0.1',
+ 'HasGirlsNew',
+ 'Mean Gross FTE Salary of All Teachers (Â£s)',
+ 'PTKS1GROUP_M__18',
+ 'Class',
+ 'BoardingNew',
+ 'ISPOST16',
+ 'Total revenue balance (1) as a % of total revenue income (6) 2017-18',
+ 'GOR_West Midlands',
+ 'TotalRevBalance Change 7yr',
+ 'GOR_North West',
+ 'URN',
+ 'AGEL',
+ 'AcademyNew',
+ 'GOR_East of England',
+ 'GOR_East Midlands',
+ 'PTKS1GROUP_L__18',
+ 'PNUMFSM',
+ 'MaintainedNew',
+ 'Unnamed: 0',
+ 'Total revenue balance (1) 2017-18',
+ 'PSENELSE__18',
+ 'Pupil:     Teacher Ratio',
+ 'GOR_London',
+ 'PNUMEAL',
+ 'GOR_South East',
+ 'TotalRevBalance Change 2yr',
+ 'PTFSM6CLA1A__18',
+ 'TOTPUPS__18',
+ 'PerformancePctRank',
+ 'AGEH',
+ 'SixthFormNew',
+ 'GOR_Yorkshire and the Humber',
+ 'GOR_South West',
+ 'PERCTOT',
+ 'SpecialNew',
+ 'GOR_Not Applicable',
+ 'TotalRevBalance Change 4yr',
+ 'ISSECONDARY',
+ 'HasBoysNew',
+ 'PTKS1GROUP_H__18']
+
+chosenCols1 = [ 
+ 'PTRWM_EXP__18',
+ 'PTMOBN__18',
+ 'SixthFormNew',
+ 'Total.Spend.pp_2yrDiff',
+ 'Mean Gross FTE Salary of All Teachers (Â£s)',
+ 'PTKS1GROUP_M__18',
+ 'GOR_East of England',
+ 'PERCTOT',
+ 'GOR_South West',
+ 'AGEH',
+ 'PSENELSE__18',
+ 'PNUMFSM',
+ 'GOR_South East',
+ 'Teaching.Staff.2018',
+ 'TotalRevBalance Change 7yr',
+ 'ISPRIMARY',
+ 'Teaching.Staff_4yrDiff',
+ 'Total revenue balance (1) 2017-18',
+ 'ISSECONDARY',
+ 'GOR_North East',
+ 'Back.Office_4yrDiff',
+ 'Premises_2yrDiff',
+ 'Other_4yrDiff',
+ 'Consultancy.2018',
+ 'Premises.2018',
+ 'Premises_4yrDiff',
+ 'Learning.Resources_4yrDiff',
+ 'Other.2018',
+ 'AcademyNew',
+ 'Teaching.Staff_2yrDiff',
+ 'BoardingNew',
+ 'Other.Staff_2yrDiff',
+ 'Back.Office_2yrDiff',
+ 'Ed.Support.Staff.2018',
+ 'ICT_2yrDiff',
+ 'Catering_2yrDiff',
+ 'Energy.2018',
+ 'MaintainedNew',
+ 'Other_2yrDiff',
+ 'ICT.2018',
+ 'Total.Income.pp_4yrDiff',
+ 'HasBoysNew',
+ 'SpecialNew',
+ 'HasGirlsNew',
+ 'GOR_London',
+ 'TOTPUPS__18',
+ 'GOR_Not Applicable',
+ 'Supply.Staff_2yrDiff',
+ 'Supply.Staff.2018',
+ 'TotalRevBalance Change 2yr',
+ 'ISPOST16',
+ 'GOR_North West']

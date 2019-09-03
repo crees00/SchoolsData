@@ -166,3 +166,4 @@ listOfPickles = [
 outDict = processListOfPickles(listOfPickles)
 counts = findFeatureCounts(outDict)
 chosenCols = chooseColsBasedOnCount(counts, 6)
+

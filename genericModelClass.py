@@ -789,13 +789,13 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200, 220, 240, 260,280,500],
+        "n_estimators":[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
         "max_depth": [4,5,6,7,8,9,10,11,12,13,14,15,16],
         "criterion": ["gini", "entropy"],
         "bootstrap": [True, False],
     },
     SVM: {
-        "C": [1,1.5,2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": [1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
         "gamma": [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
@@ -812,42 +812,43 @@ runParams = {
 if __name__ == "__main__":
     import emailing
     for fileName in ['bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        modelDict={}
-        modelDataDict={}
-        df = pd.read_csv(fileName)
-#        xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
-        chosenCols.append('PerformancePctRank')
-        xCols = [x for x in (set(chosenCols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18'})]
-        x = df[xCols]
-        print(x.columns)
-        y = df["Class"]
-        try:
-            modelsAtStart = len(modelDict)
-        except NameError:
-            modelsAtStart = 0
-        # Generate data and model instances, run the models
-        modelDataDict, modelDict = runAGroup(
-            [
-                    True, 
-                    False
-             ],
-            [
-                    True,
-                    False
-                    ],
-            [
-                    LogReg, 
-                    SVM, 
-                    RandomForest,
-                    NN,
-                    GaussianBayes
-                    ],
-            [5,10,15,20],
-            numParamCombos=300,
-            nFolds = 5
-        )
-        modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
-        print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
+        for cols in [chosenCols1, lessCols]:   
+            modelDict={}
+            modelDataDict={}
+            df = pd.read_csv(fileName)
+    #        xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+#            chosenCols.append('PerformancePctRank')
+            xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18'})]
+            x = df[xCols]
+            print(x.columns)
+            y = df["Class"]
+            try:
+                modelsAtStart = len(modelDict)
+            except NameError:
+                modelsAtStart = 0
+            # Generate data and model instances, run the models
+            modelDataDict, modelDict = runAGroup(
+                [
+                        True, 
+                        False
+                 ],
+                [
+                        True,
+                        False
+                        ],
+                [
+                        LogReg, 
+                        SVM, 
+                        RandomForest,
+                        NN,
+                        GaussianBayes
+                        ],
+                [5,10,15,20],
+                numParamCombos=300,
+                nFolds = 5
+            )
+            modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
+            print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
 
 
 #    pass
