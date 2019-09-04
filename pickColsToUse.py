@@ -157,14 +157,14 @@ dfForModel = cam.dropColsFromList(df, toDrop)
 # Encode categorical cols with one-hot encoding
 dfForModelModified = fixCategoricalCols(dfForModel)
 ## Standardise all of the cols
-dfForModelModified = normalise(
-    dfForModelModified,
-    set(dfForModelModified.columns) - {"URN", "Stuck"},
-    normaliseSDcol,
-)
+#dfForModelModified = normalise(
+#    dfForModelModified,
+#    set(dfForModelModified.columns) - {"URN", "Stuck"},
+#    normaliseSDcol,
+#)
 #
-dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df6ForModelModifiedImputed.csv')
-makePickColsToUse(dfForModelModifiedImputed, "df6ForModelModifiedImputedAnalysed.csv")
+dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df6ForModelModifiedImputedNOTNORMALISED.csv')
+makePickColsToUse(dfForModelModifiedImputed, "df6ForModelModifiedImputedNOTNORMALISEDAnalysed.csv")
 
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
 #makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")

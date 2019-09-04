@@ -15,6 +15,7 @@ import setFolder as sf
 def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     '''Make a list of all the filenames in a folder'''
     fullPath = basePath + folderName
+    print(fullPath)
     listofcsvs = listdir(fullPath) 
     listofcsvs = [folderName+r"\\"+x for x in listofcsvs]
     return listofcsvs
@@ -50,7 +51,7 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
     
     return bigDF
 
-def processCSV(csv, write=False):
+def processCSV(csv, write=False, addCols=True):
     ''' Takes in avg results csv
     Reads run name and extracts run info, putting into cols to use later 
     for plotting etc.
@@ -64,80 +65,93 @@ def processCSV(csv, write=False):
     df.set_index('Unnamed: 0', inplace=True)
     df = df.sort_values(by='acc', axis=1, ascending=False)
     df = df.transpose()
-    
-    
-    print(f'Best accuracy in {csv}:')
-    print(df.loc[:,'acc'].max(),'for',df.loc[:,'acc'].idxmax())
+    print(f'Analysing {csv}:')
+    # Make subset of df that has the minimum scores in the dict
+    dfWithMins = df.copy()
+    minScores = {'acc':0.5, 'recall1':0.3, 'F0':0.1, 'F1':0.1, 'precision0':0.1}
+    for measure, score in minScores.items():
+        dfWithMins = df[df[measure]>score]
+
+        best = {}
+    for col in ['F0', 'F1', 'acc', 'auc', 'precision0', 'precision1',
+       'recall0', 'recall1']:
+        print(f"Best {col}:")
+        runName = dfWithMins.loc[:,col].idxmax()
+        best[col] = (dfWithMins.loc[:,col].max(),runName, dfWithMins.loc[runName, :])
+        print(best[col][0],'for',best[col][1])
+#        print(best[col][2])
+        
+
     
     df.columns.rename('Run', inplace=True)
     
 #    df=df.head(100)
+    if addCols:
+    #    df['RunName'] = df.index
+        df['Model'] = None
+        df['RFE'] = None
+        df['OS'] = None
+        df['p1'] , df['p2'], df['p3'], df['p4'] = None, None, None, None
+        for runName in df.index:
+            # Identify model type in 'Model' col
+            nameDict = {'SV':'SVM','NN':'NN','RF':'RF','GN':'GNB','LR':'LR'}
+            df.loc[runName,'Model'] = nameDict[runName[:2]]
+            end=3
+            if runName[:2] in ['GN','SV']:
+                end=4
     
-#    df['RunName'] = df.index
-    df['Model'] = None
-    df['RFE'] = None
-    df['OS'] = None
-    df['p1'] , df['p2'], df['p3'], df['p4'] = None, None, None, None
-    for runName in df.index:
-        # Identify model type in 'Model' col
-        nameDict = {'SV':'SVM','NN':'NN','RF':'RF','GN':'GNB','LR':'LR'}
-        df.loc[runName,'Model'] = nameDict[runName[:2]]
-        end=3
-        if runName[:2] in ['GN','SV']:
-            end=4
-
-#        end = len(df.loc[runName,'Model'])+1
-        # Put no. of RFE vals in RFE col - 0 if RFE not used
-        if len(re.findall('RFE',runName)) >0:
-            RFE= runName[runName.find('RFE')+3:runName.find('RFE')+5]
-            try:
-                RFE = int(RFE)
-                end+=6
-            except ValueError:
-                RFE = int(RFE[0])
-                end+=5
-        else:
-            RFE=0
-        df.loc[runName, 'RFE'] = RFE
-        
-        # Put 1 in 'OS' col if oversampled
-        if len(re.findall('OS',runName)) >0:
-            df.loc[runName,'OS']= 1
-            end+=3
-        else:
-            df.loc[runName,'OS']=0
-        # Fix for 'original'
-        if end <5:
-            end += 9
+    #        end = len(df.loc[runName,'Model'])+1
+            # Put no. of RFE vals in RFE col - 0 if RFE not used
+            if len(re.findall('RFE',runName)) >0:
+                RFE= runName[runName.find('RFE')+3:runName.find('RFE')+5]
+                try:
+                    RFE = int(RFE)
+                    end+=6
+                except ValueError:
+                    RFE = int(RFE[0])
+                    end+=5
+            else:
+                RFE=0
+            df.loc[runName, 'RFE'] = RFE
             
-        # Sort out params
-        if runName[:2] in ['SV', 'NN', 'RF']:
-            bits = []
-            string = ''
-            for char in runName[end:len(runName)]:
-                if char=='_':
-                    if string == 'None':
-                        string=20
-                    try:
-                        string = float(string)
-                        bits.append(string)
-                    except ValueError:
-                        bits.insert(0,string)
-                    string=''
-                else:
-                    string += char
-            if string =='False':
-                string=0
-            elif string=='True':
-                string=1
-            bits.append(float(string))
-            for i, param in enumerate(['p1','p2','p3','p4']):
-                df.loc[runName,param]=bits[i]
-    # Make model type one hot
-    df = pd.get_dummies(df,columns=['Model'], prefix='', prefix_sep='')
-    
-    if write:
-        df.to_csv(csv[:-4] + 'Added.csv')
+            # Put 1 in 'OS' col if oversampled
+            if len(re.findall('OS',runName)) >0:
+                df.loc[runName,'OS']= 1
+                end+=3
+            else:
+                df.loc[runName,'OS']=0
+            # Fix for 'original'
+            if end <5:
+                end += 9
+                
+            # Sort out params
+            if runName[:2] in ['SV', 'NN', 'RF']:
+                bits = []
+                string = ''
+                for char in runName[end:len(runName)]:
+                    if char=='_':
+                        if string == 'None':
+                            string=20
+                        try:
+                            string = float(string)
+                            bits.append(string)
+                        except ValueError:
+                            bits.insert(0,string)
+                        string=''
+                    else:
+                        string += char
+                if string =='False':
+                    string=0
+                elif string=='True':
+                    string=1
+                bits.append(float(string))
+                for i, param in enumerate(['p1','p2','p3','p4']):
+                    df.loc[runName,param]=bits[i]
+        # Make model type one hot
+        df = pd.get_dummies(df,columns=['Model'], prefix='', prefix_sep='')
+        
+        if write:
+            df.to_csv(csv[:-4] + 'Added.csv')
     
     return df
 
@@ -195,13 +209,13 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
-#listofcsvs = makeCSVlistFromFolderName('paramsearch31Aug')
-#outFile = 'fullBashAug31.csv'
+#listofcsvs = makeCSVlistFromFolderName('paramsearch3sep\chosenCols1',r"C:\Users\reesc1\Docs\Code"+'\\')
+outFile = 'fullBashsep3ChosenCols1.csv'
 #df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, True)
+df = processCSV(outFile, True, False)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
 # ^ This one used for choosing parameters
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
-paramHistograms(df, minProportion=0.01)
+#paramHistograms(df, minProportion=0.01)
 #
         
