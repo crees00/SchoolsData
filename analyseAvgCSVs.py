@@ -14,10 +14,13 @@ import setFolder as sf
 
 def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     '''Make a list of all the filenames in a folder'''
+    basePath = ''
     fullPath = basePath + folderName
     print(fullPath)
     listofcsvs = listdir(fullPath) 
-    listofcsvs = [folderName+r"\\"+x for x in listofcsvs]
+    print(listofcsvs)
+    listofcsvs = [folderName+r"/"+x for x in listofcsvs]
+    print(listofcsvs)
     return listofcsvs
 
 def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
@@ -209,9 +212,9 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
-#listofcsvs = makeCSVlistFromFolderName('paramsearch3sep\chosenCols1',r"C:\Users\reesc1\Docs\Code"+'\\')
-outFile = 'fullBashsep3ChosenCols1.csv'
-#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+listofcsvs = makeCSVlistFromFolderName('paramsearch5sepSFS1Cols')
+outFile = 'fullBashsep5SFS1Cols.csv'
+df = combineIntermediateResultsCSVs(listofcsvs, outFile)
 df = processCSV(outFile, True, False)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
 # ^ This one used for choosing parameters

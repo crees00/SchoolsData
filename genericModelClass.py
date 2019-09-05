@@ -785,8 +785,8 @@ def postProcess(modelDataDict, modelDict, pickleIt=True, emailIt=True, ROC=False
         plt.show()
     if emailIt:
         try:
-            content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model"
-            emailing.sendEmail(subject="Run complete", content=content)
+            content = f"finished genericModelClass - took {datetime.datetime.now() - start} and ran {len(modelDict)-modelsAtStart} models\ni.e. {(datetime.datetime.now() - start)/(len(modelDict)-modelsAtStart)} per model\n{currModAcc} {maxAcc}"
+            emailing.sendEmail(subject=f"{maxAcc}, {currModAcc}", content=content)
         except:
             print("\nEmail sending failed, carrying on..\n")
     return modelAvgDict, modelScoresDict
@@ -825,25 +825,25 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
-        "max_depth": [4,5,6,7,8,9,10,11,12,13,14,15,16],
-        "criterion": ["gini", "entropy"],
-        "bootstrap": [True, False],
+        "n_estimators":range(170,270,2),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
+        "max_depth": [11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "criterion": ['entropy'],#["gini", "entropy"],
+        "bootstrap": [False]#[True, False],
     },
     SVM: {
-        "C": [1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": np.linspace(1.6,2.4,100),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
-        "gamma": [0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
+        "gamma": np.linspace(0.01,0.1,100)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
-        'numLayers' : [3],
+        'numLayers' : [2,3,4],
         'nodesPerLayer' : list(range(4,8)),
         'solver' : ['adam'], 
         'alpha' : [1e-7, 5e-7, 1e-6, 5e-6, 1e-5,5e-5,1e-4,5e-4,1e-3,5e-3, 1e-2, 5e-2, 1e-1]
     },
     KNN: {
-        'n_neighbors':[1,2,3,4,5,6],
+        'n_neighbors':[1,2,3,4,6,8,12,15,20],
         'algorithm':['brute'],
         'p':[1,2,3]
     }    
@@ -852,14 +852,15 @@ runParams = {
 
 if __name__ == "__main__":
     import emailing
-    for fileName in ['bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-#        for cols in [chosenCols1, lessCols]:   
-            modelDict={}
-            modelDataDict={}
+    files = ['bbbbVgsbbbs6.csv']*100
+    for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+        for cols in [SFS1Cols]:#[chosenCols1, lessCols]:   
+#            modelDict={}
+#            modelDataDict={}
             df = pd.read_csv(fileName)
-            cols = df.columns
-    #        xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
-#            chosenCols.append('PerformancePctRank')
+#            cols = df.columns
+#            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+            cols.append('PerformancePctRank')
             xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18'})]
             x = df[xCols]
             print(x.columns)
@@ -871,23 +872,23 @@ if __name__ == "__main__":
             # Generate data and model instances, run the models
             modelDataDict, modelDict = runAGroup(
                 [
-                        True, 
+#                        True, 
                         False
                  ],
                 [
-                        True,
+#                        True,
                         False
                         ],
                 [
-#                        LogReg, 
-#                        SVM, 
-#                        RandomForest,
-#                        NN,
-#                        GaussianBayes
+                        LogReg, 
+                        SVM, 
+                        RandomForest,
+                        NN,
+                        GaussianBayes,
                         KNN
                         ],
                 [5,10,15,20],
-                numParamCombos=300,
+                numParamCombos=100,
                 nFolds = 5
             )
             modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)

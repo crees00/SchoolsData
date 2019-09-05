@@ -5,7 +5,7 @@ Created on Wed Jul 10 13:32:43 2019
 @author: reesc1
 """
 
-where = 'home'
+where = 'mac'
 
 
 from os.path import exists
@@ -23,6 +23,8 @@ from os.path import exists
     
 if where in ["ONS", 'Cdrive']:
     folderPath = r"C:\Users\reesc1\Docs" + "\\"
+elif where in ['mac']:
+    folderPath = r"Macintosh HD\Users\reesc1\Documents\personal\personal\code"
 else:
     folderPath = r"C:\Users\Chris\Documents\Documents\ONS\\"
 
@@ -58,6 +60,6 @@ if where == "ONS":
 if where == "Cdrive":
     homeFolder = r"C:\Users\reesc1\Docs\Data\DfE Data"
     
-
-if not exists(spineFolder):
-    raise FileNotFoundError
+#
+#if not exists(spineFolder):
+#    raise FileNotFoundError
