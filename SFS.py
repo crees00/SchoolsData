@@ -13,41 +13,43 @@ from mlxtend.feature_selection import SequentialFeatureSelector
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.svm import SVC
 import pickling
-csv ='bbbbVgsbbbsWithPTRWM.csv'#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+import os
+csv ='bbbbVgsbbbs6.csv'#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 df = pd.read_csv(csv)
 xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
 x = df[xCols]
 y = df["Class"]
 
-#runDict = {
-#     'RF_original_260_14_entropy_False':{'clf':RandomForestClassifier(n_estimators=260, max_depth=14, criterion='entropy', bootstrap=False)},
-#     'RF_original_200_15_entropy_False':{'clf':RandomForestClassifier(n_estimators=200, max_depth=15, criterion='entropy', bootstrap=False)},
-#     'RF_original_180_12_entropy_False':{'clf':RandomForestClassifier(n_estimators=180, max_depth=12, criterion='entropy', bootstrap=False)},        
+runDict = {
+     'RF_original_204_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=204, max_depth=16, criterion='entropy', bootstrap=False)},
+     'RF_original_242_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=242, max_depth=16, criterion='entropy', bootstrap=False)},
+     'RF_original_174_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=174, max_depth=16, criterion='entropy', bootstrap=False)},        
 #     'SVM_original_2_rbf_2_0.04':{'clf':SVC(C=2, gamma=0.04)},
 ##       'SVM_RFE10_2_rbf_3_0.09' :{'clf':SVC(C=2, gamma=0.09)},
 ##       'SVM_RFE10_1.4_rbf_5_0.06':{'clf': SVC(C=1.4, gamma=0.06)},
 ##        'RF_OS_10_5_entropy_True':{'clf':RandomForestClassifier(n_estimators=10, max_depth=5, criterion='entropy', bootstrap=True)}
 #
-#     }
+     }
 #
-#for runName, subDict in runDict.items():
-#    for forward in [True,False]:
-#        featureSelector = SequentialFeatureSelector(
-#         subDict['clf'],
-#         k_features=(3,40),
-#         forward=forward,
-#         verbose=2,
-#         scoring="accuracy",
-#         cv=5,
-#         n_jobs=-1
-#         )
-#        if forward:
-#            subDict['Ffeatures'] = featureSelector.fit(x,y)
-#            subDict['FfilteredFeatures'] = x.columns[list(subDict['Ffeatures'].k_feature_idx_)]
-#        else:
-#            subDict['Bfeatures'] = featureSelector.fit(x,y)
-#            subDict['BfilteredFeatures'] = x.columns[list(subDict['Bfeatures'].k_feature_idx_)]
-        
+def doSFS(runDict):
+    for runName, subDict in runDict.items():
+        for forward in [True,False]:
+            featureSelector = SequentialFeatureSelector(
+             subDict['clf'],
+             k_features=(1,50),
+             forward=forward,
+             verbose=2,
+             scoring="accuracy",
+             cv=5,
+             n_jobs=-1
+             )
+            if forward:
+                subDict['Ffeatures'] = featureSelector.fit(x,y)
+                subDict['FfilteredFeatures'] = x.columns[list(subDict['Ffeatures'].k_feature_idx_)]
+            else:
+                subDict['Bfeatures'] = featureSelector.fit(x,y)
+                subDict['BfilteredFeatures'] = x.columns[list(subDict['Bfeatures'].k_feature_idx_)]
+    return runDict
 #print(filteredFeatures)
 
 def showBestFeaturesOfRunDict(runDict, printOut=True, save=False):
@@ -90,14 +92,24 @@ def showBestFeaturesOfRunDict(runDict, printOut=True, save=False):
     return runDict
 
 def showBestFeaturesOfLoadedDict(loadedDict, printOut=True):
+    ''' Process the dict for a single run (forwards or backwards) 
+    Fed by processListOfPickles'''
     minFeatures = min(loadedDict.keys())
     maxFeatures = max(loadedDict.keys())
     bestAvg = 0
     listOfUsedFeatures, outList = [],[]
-    
+    # Do initial bit for first few features because it starts at e.g. 3
+    # Only for backwards as forwards has minFeatures=1
+    for numFeatures in range(1,minFeatures):
+        outList.append((numFeatures, 
+                        loadedDict[minFeatures]['avg_score'],
+                        loadedDict[minFeatures]['feature_names'][numFeatures-1]
+                        ))
+        listOfUsedFeatures.append(loadedDict[minFeatures]['feature_names'][numFeatures-1])
+#        outList.append((numFeatures,loadedDict)
     # Find best number of features
     for numOfFeatures in range(minFeatures, maxFeatures+1):
-        if loadedDict[numOfFeatures]['avg_score'] > bestAvg:
+        if loadedDict[numOfFeatures]['avg_score'] >= bestAvg:
             bestAvg = loadedDict[numOfFeatures]['avg_score']
             bestNumFeatures = numOfFeatures
     print('best score',bestAvg,'with',bestNumFeatures,'features')
@@ -115,12 +127,25 @@ def showBestFeaturesOfLoadedDict(loadedDict, printOut=True):
                 print(group)
     return outList
 
-def processListOfPickles(listOfPickles, printOut=True):
+def processListOfPickles(listOfPickles, folderName='',printOut=True):
+    ''' Feeds to showBestFeaturesOfLoadedDict '''
     dictOfPickleNamesAndOutLists = {}
     for pickle in listOfPickles:    
-        newDict = pickling.load_dill(pickle)
+        newDict = pickling.load_dill(os.path.join(folderName, pickle))
         print('\nunpacking', pickle)
         dictOfPickleNamesAndOutLists[pickle] = showBestFeaturesOfLoadedDict(newDict, printOut)
+    if printOut:
+        bestAcc, numFeatures, bestRun = 0,0, ''
+        for runName, outList in dictOfPickleNamesAndOutLists.items():
+            for group in outList:
+                if group[1] > bestAcc:
+                    bestAcc = group[1]
+                    numFeatures = group[0]
+                    bestRun = runName
+        print('\nBest Results:')
+        print('best accuracy, num features, best run')
+        print(bestAcc, numFeatures, bestRun)
+        print()
     return dictOfPickleNamesAndOutLists
 
 def findFeatureCounts(dictOfPickleNamesAndOutLists, printOut=True):
@@ -129,11 +154,19 @@ def findFeatureCounts(dictOfPickleNamesAndOutLists, printOut=True):
     counts = {}
     # Make dict with counts of each feature between runs in the input dict
     for outList in outDict.values():
+        # Find optimum number of features for that run first
+        maxAcc, numFeatures = 0,0
         for group in outList:
-            if group[2] in counts.keys():
-                counts[group[2]] +=1
-            else:
-                counts[group[2]] = 1
+            if group[1] > maxAcc:
+                maxAcc = group[1]
+                numFeatures = group[0]
+        # Do the counts, just for features in optimum group for run
+        for group in outList:
+            if group[0] <= numFeatures:
+                if group[2] in counts.keys():
+                    counts[group[2]] +=1
+                else:
+                    counts[group[2]] = 1
     if printOut:
         featuresSoFar=0
         for count in reversed(range(len(dictOfPickleNamesAndOutLists)+1)):
@@ -141,7 +174,7 @@ def findFeatureCounts(dictOfPickleNamesAndOutLists, printOut=True):
                 if val == count:
                     print(val, key)
                     featuresSoFar +=1
-            print(featuresSoFar, 'features so far')
+            print('---',featuresSoFar, 'features so far ---')
     return counts
 
 def chooseColsBasedOnCount(counts, minCount):
@@ -153,17 +186,53 @@ def chooseColsBasedOnCount(counts, minCount):
     print('\n',len(chosenCols),'cols added to chosenCols')
     return chosenCols
 
-listOfPickles = [
-                'SVM_original_2_rbf_2_0.04_Bfeatures.pik',
-                'SVM_original_2_rbf_2_0.04_Ffeatures.pik',
-                'RF_original_180_12_entropy_False_Bfeatures.pik',
-                'RF_original_180_12_entropy_False_Ffeatures.pik',
-                'RF_original_200_15_entropy_False_Bfeatures.pik',
-                'RF_original_200_15_entropy_False_Ffeatures.pik',
-                'RF_original_260_14_entropy_False_Bfeatures.pik',
-                'RF_original_260_14_entropy_False_Ffeatures.pik']
+def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
+    # Find best group of features and best score for each run
+    results={}
+    for runName, outList in dictOfPickleNamesAndOutLists.items():
+        results[runName] = {'features':[],'score':0, 'numFeatures':0}
+        # Find best score for run
+        for group in outList:
+            if group[1] > results[runName]['score']:
+                results[runName]['score'] = group[1]
+                results[runName]['numFeatures'] = group[0]
+        # Find list of features for best score
+        for group in outList:
+            if group[0] <= results[runName]['numFeatures']:
+                results[runName]['features'].append(group[2])
+    
+    # Combine results from all runs into one
+    featureDict = {} # {'featureName':BestScoreForFeature}
+    for runName, subDict in results.items():
+        for feature in subDict['features']:
+            if feature in featureDict.keys():
+                if subDict['score'] > featureDict[feature]:
+                    featureDict[feature] = subDict['score']
+            else:
+                featureDict[feature] = subDict['score']
+    acc=1
+    while acc > 0:
+        for feature in featureDict.keys():
+            score = featureDict[feature]
+            if round(score,3) == round(acc,3):
+                print((feature,))
+        acc -= 1e-3
+            
 
-outDict = processListOfPickles(listOfPickles)
+#listOfPickles = [
+#                'SVM_original_2_rbf_2_0.04_Bfeatures.pik',
+#                'SVM_original_2_rbf_2_0.04_Ffeatures.pik',
+#                'RF_original_180_12_entropy_False_Bfeatures.pik',
+#                'RF_original_180_12_entropy_False_Ffeatures.pik',
+#                'RF_original_200_15_entropy_False_Bfeatures.pik',
+#                'RF_original_200_15_entropy_False_Ffeatures.pik',
+#                'RF_original_260_14_entropy_False_Bfeatures.pik',
+#                'RF_original_260_14_entropy_False_Ffeatures.pik']
+
+folderName = r"SFSiter2"
+listOfPickles2 = os.listdir(folderName)
+#
+outDict = processListOfPickles(listOfPickles2, folderName)
 counts = findFeatureCounts(outDict)
-chosenCols = chooseColsBasedOnCount(counts, 6)
-
+#chosenCols = chooseColsBasedOnCount(counts, 6)
+findFeatureAccuracy(outDict)

@@ -10,7 +10,7 @@ import pandas as pd
 # Make lessCols list
 df = pd.read_csv('bbbbVgsbbbs6.csv')
 final=[]
-cols = df.columns
+cols = list(df.columns)
 for col in cols:
     if col[-5:]!='.2018':
         if col[-6:]!='yrDiff':
@@ -55,7 +55,6 @@ lessCols=['ISPRIMARY',
  'GOR_South West',
  'PERCTOT',
  'SpecialNew',
- 'GOR_Not Applicable',
  'TotalRevBalance Change 4yr',
  'ISSECONDARY',
  'HasBoysNew',
@@ -108,7 +107,6 @@ chosenCols1 = [
  'HasGirlsNew',
  'GOR_London',
  'TOTPUPS__18',
- 'GOR_Not Applicable',
  'Supply.Staff_2yrDiff',
  'Supply.Staff.2018',
  'TotalRevBalance Change 2yr',
@@ -156,3 +154,46 @@ SFS1Cols = [
 'GOR_South East',
 'Ed.Support.Staff.2018'
 ]
+
+SFS2Cols = [
+        'MaintainedNew',
+'GOR_Not Applicable',
+'AGEH',
+'TOTPUPS__18',
+'PerformancePctRank',
+'PTKS1GROUP_H__18',
+'PTKS1GROUP_M__18',
+'Learning.Resources.2018',
+'Self.Income_4yrDiff',
+'Ed.Support.Staff_2yrDiff',
+'PERCTOT',
+'Other_2yrDiff',
+'Total revenue balance (1) 2017-18',
+'Mean Gross FTE Salary of All Teachers (Â£s)',
+'Catering_4yrDiff',
+'ICT_2yrDiff',
+'Learning.Resources_4yrDiff',
+'PTMOBN__18',
+'TotalRevBalance Change 7yr',
+'Supply.Staff_2yrDiff',
+'TotalRevBalance Change 4yr',
+'Self.Income.2018',
+'Consultancy_4yrDiff',
+'Supply.Staff.2018',
+'Total revenue balance (1) as a % of total revenue income (6) 2017-18']
+
+groupDict = {'SFS1Cols':SFS1Cols,'SFS2Cols': SFS2Cols,'chosenCols1': chosenCols1,'lessCols': lessCols}
+
+for name1 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
+    for name2 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
+        if name1==name2:
+            continue
+        group1 = groupDict[name1]
+        group2 = groupDict[name2]
+        shared = set(group1) & set(group2)
+        just1 = set(group1) - set(group2)
+        just2 = set(group2) - set(group1)
+        print('\n\n\n\n\n',name1, name2)
+        print('shared',len(shared),'\n',shared)
+        print('\njust',name1,len(just1), '\n',just1)
+        print('\njust',name2,len(just2), '\n',just2)

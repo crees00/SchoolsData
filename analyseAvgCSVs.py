@@ -18,9 +18,9 @@ def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     fullPath = basePath + folderName
     print(fullPath)
     listofcsvs = listdir(fullPath) 
-    print(listofcsvs)
+#    print(listofcsvs)
     listofcsvs = [folderName+r"/"+x for x in listofcsvs]
-    print(listofcsvs)
+#    print(listofcsvs)
     return listofcsvs
 
 def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
@@ -33,9 +33,13 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
     allDups = []
     bigDF = pd.read_csv(listOfCSVFilenames[0])
     bigDF.set_index(keys='Unnamed: 0')
+    droppedCols = {'test'}
     for fileName in listOfCSVFilenames[1:]:
         nextDFtoJoin = pd.read_csv(fileName)
-        colsToDrop = ['Unnamed: 0']
+        colsToDrop = set(bigDF.columns) & set(nextDFtoJoin.columns)
+        colsToDrop = colsToDrop | {'Unnamed: 0'}
+        droppedCols = droppedCols | colsToDrop
+#        print(colsToDrop)
         for col in colsToDrop:
             if col in nextDFtoJoin.columns:
                 nextDFtoJoin.drop(col, axis=1, inplace=True)
@@ -51,7 +55,8 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
                         dupLists[fileName] = [col]
     if outFile !='':
         bigDF.to_csv(outFile, index=False)
-    
+    print('any missed..?')
+    print(droppedCols - (set(bigDF.columns) | {'test'}))
     return bigDF
 
 def processCSV(csv, write=False, addCols=True):
@@ -97,10 +102,10 @@ def processCSV(csv, write=False, addCols=True):
         df['p1'] , df['p2'], df['p3'], df['p4'] = None, None, None, None
         for runName in df.index:
             # Identify model type in 'Model' col
-            nameDict = {'SV':'SVM','NN':'NN','RF':'RF','GN':'GNB','LR':'LR'}
+            nameDict = {'SV':'SVM','NN':'NN','RF':'RF','GN':'GNB','LR':'LR','KN':'KNN'}
             df.loc[runName,'Model'] = nameDict[runName[:2]]
             end=3
-            if runName[:2] in ['GN','SV']:
+            if runName[:2] in ['GN','SV','KN']:
                 end=4
     
     #        end = len(df.loc[runName,'Model'])+1
@@ -128,7 +133,7 @@ def processCSV(csv, write=False, addCols=True):
                 end += 9
                 
             # Sort out params
-            if runName[:2] in ['SV', 'NN', 'RF']:
+            if runName[:2] in ['SV', 'NN', 'RF','KN']:
                 bits = []
                 string = ''
                 for char in runName[end:len(runName)]:
@@ -149,7 +154,10 @@ def processCSV(csv, write=False, addCols=True):
                     string=1
                 bits.append(float(string))
                 for i, param in enumerate(['p1','p2','p3','p4']):
-                    df.loc[runName,param]=bits[i]
+                    if (runName[:2] == 'KN') and i==3:
+                        df.loc[runName,param]=0
+                    else:
+                        df.loc[runName,param]=bits[i]
         # Make model type one hot
         df = pd.get_dummies(df,columns=['Model'], prefix='', prefix_sep='')
         
@@ -163,7 +171,7 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
     model will be the most accurate 10% of runs for that model.
     If no minProportion set, uses minAcc set or minAcc default
     '''
-    for model in ['NN','RF','SVM']:
+    for model in ['NN','RF','SVM','KNN']:
         print('\nModel:',model)
         modelSubset = df[df[model]==1]
         
@@ -197,12 +205,13 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
 
             
 def paramScatterPlots(df):
-    for model in ['NN','RF','SVM']:
+    for model in ['NN','RF','SVM','KNN']:
         print('\nModel:',model)
-        modelSubset = df1[df1[model]==1]
+        modelSubset = df[df[model]==1]
         accurateSubset = modelSubset[modelSubset['acc']>0.72]
         for param in ['p1','p2','p3','p4']:
-    #        print(model, param)
+            
+            print(model, param)
             try:
                 plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
                 plt.show()
@@ -212,13 +221,14 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
-listofcsvs = makeCSVlistFromFolderName('paramsearch5sepSFS1Cols')
-outFile = 'fullBashsep5SFS1Cols.csv'
-df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-df = processCSV(outFile, True, False)
+#listofcsvs = makeCSVlistFromFolderName('bigparamsearch6sepSFS1Cols')
+outFile = 'fullBashsep6SFS1Cols.csv'
+#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+#df = processCSV(outFile, True, True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
 # ^ This one used for choosing parameters
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
+paramScatterPlots(df)
