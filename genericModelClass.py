@@ -835,10 +835,10 @@ runParams = {
         "bootstrap": [False]#[True, False],
     },
     SVM: {
-        "C": np.linspace(1,4,10000),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": np.linspace(1,4,100),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
-        "gamma": np.linspace(0.001,1,100000)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
+        "gamma": np.linspace(0.001,1,500)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
         'numLayers' : [2,3,4],
@@ -856,10 +856,11 @@ runParams = {
 
 if __name__ == "__main__":
     import emailing
+    import colSubsets as CS
     doneRuns=[]
     files = ['bbbbVgsbbbs6.csv']*100
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        for cols in [SFS2Cols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+        for cols in [CS.SFS2Cols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
             modelDict={}
             modelDataDict={}
             df = pd.read_csv(fileName)
