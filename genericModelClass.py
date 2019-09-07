@@ -825,8 +825,8 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":range(170,270,2),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
-        "max_depth": [11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "n_estimators":[242],#range(170,270,2),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
+        "max_depth": [16],#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
         "criterion": ['entropy'],#["gini", "entropy"],
         "bootstrap": [False]#[True, False],
     },
@@ -852,16 +852,16 @@ runParams = {
 
 if __name__ == "__main__":
     import emailing
-    files = ['bbbbVgsbbbs6.csv']*100
+    files = ['bbbbVgsbbbs6.csv']#*100
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        for cols in [SFS1Cols]:#[chosenCols1, lessCols]:   
-#            modelDict={}
-#            modelDataDict={}
+        for cols in [SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+            modelDict={}
+            modelDataDict={}
             df = pd.read_csv(fileName)
 #            cols = df.columns
 #            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
             cols.append('PerformancePctRank')
-            xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18'})]
+            xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18','GOR_Not Applicable'})]
             x = df[xCols]
             print(x.columns)
             y = df["Class"]
@@ -880,18 +880,19 @@ if __name__ == "__main__":
                         False
                         ],
                 [
-                        LogReg, 
-                        SVM, 
+#                        LogReg, 
+#                        SVM, 
                         RandomForest,
-                        NN,
-                        GaussianBayes,
-                        KNN
+#                        NN,
+#                        GaussianBayes,
+#                        KNN
                         ],
                 [5,10,15,20],
                 numParamCombos=100,
                 nFolds = 5
             )
             modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
+            findFIsFromDict(modelDict)
             print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
 
 
