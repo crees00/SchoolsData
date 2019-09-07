@@ -520,10 +520,12 @@ def oneFullRun(
     for a single run.
     Implements k-fold cross validation
     '''
+    global doneRuns
     print(
         f"Running oneFullRun",
         "with oversampling" if doOverSample else "",
         f"with RFE with {numColsToKeep} cols" if doRFE else "",
+        f" -- {len(doneRuns)} runs done"
     )
     dataName = ""
     #    os_data_x, os_data_y, x_train, x_test, y_train, y_test = overSample(x, y)
@@ -554,9 +556,10 @@ def oneFullRun(
             modelDataDict[newDataName] = data
         mod = modelClass(newDataName, modelDataDict[newDataName], runParams)
     
-        if mod.getRunCode() not in modelDict:
+        if (mod.getRunCode() not in modelDict) and (mod.getRunCode() not in doneRuns):
             mod.fitModel(**runParams)
             modelDict[mod.getRunCode()] = mod
+            doneRuns.append(mod.getRunCode())
     return modelDataDict, modelDict
 
 
@@ -614,6 +617,7 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
     )
     global modelDataDict  # modelDataDict = {}
     global modelDict  # modelDict = {}
+    global doneRuns
     try:
         modelDataDict
     except NameError:
@@ -648,7 +652,7 @@ def runAGroup(doOverSample, doRFE, modelClasses, numColsToKeep=0,
                         break  # stop it doing the same thing 5x if RFE not used
         
         try:
-            content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(modelDict)} models"
+            content = f"finished {modelClass} runs - took {datetime.datetime.now() - start} and now there are {len(doneRuns)} models"
             emailing.sendEmail(subject="Some runs done", content=content)
         except:
             print("\nEmail sending  for run type failed, carrying on..\n")
@@ -825,25 +829,25 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[242],#range(170,270,2),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
-        "max_depth": [16],#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "n_estimators":list(range(170,270,2))+ list(range(2,1000,20)),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
+        "max_depth": list(range(1,30)) + list(range(13,18)),#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
         "criterion": ['entropy'],#["gini", "entropy"],
         "bootstrap": [False]#[True, False],
     },
     SVM: {
-        "C": np.linspace(1.6,2.4,100),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": np.linspace(1,4,10000),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
-        "gamma": np.linspace(0.01,0.1,100)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
+        "gamma": np.linspace(0.001,1,100000)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
         'numLayers' : [2,3,4],
-        'nodesPerLayer' : list(range(4,8)),
+        'nodesPerLayer' : list(range(4,10)),
         'solver' : ['adam'], 
         'alpha' : [1e-7, 5e-7, 1e-6, 5e-6, 1e-5,5e-5,1e-4,5e-4,1e-3,5e-3, 1e-2, 5e-2, 1e-1]
     },
     KNN: {
-        'n_neighbors':[1,2,3,4,6,8,12,15,20],
+        'n_neighbors':[1,2,3,4,6,8,12,15,20,25],
         'algorithm':['brute'],
         'p':[1,2,3]
     }    
@@ -852,9 +856,10 @@ runParams = {
 
 if __name__ == "__main__":
     import emailing
-    files = ['bbbbVgsbbbs6.csv']#*100
+    doneRuns=[]
+    files = ['bbbbVgsbbbs6.csv']*100
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        for cols in [SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+        for cols in [SFS2Cols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
             modelDict={}
             modelDataDict={}
             df = pd.read_csv(fileName)
@@ -880,12 +885,12 @@ if __name__ == "__main__":
                         False
                         ],
                 [
-#                        LogReg, 
-#                        SVM, 
+                        LogReg, 
+                        SVM, 
                         RandomForest,
-#                        NN,
-#                        GaussianBayes,
-#                        KNN
+                        NN,
+                        GaussianBayes,
+                        KNN
                         ],
                 [5,10,15,20],
                 numParamCombos=100,
