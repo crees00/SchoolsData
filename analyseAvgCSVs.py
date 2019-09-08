@@ -29,15 +29,19 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
     stitch the csv files together so the results are all in one place
     '''
     global dupLists
+#    global droppedCols
     dupLists = {}
     allDups = []
     bigDF = pd.read_csv(listOfCSVFilenames[0])
     bigDF.set_index(keys='Unnamed: 0')
     droppedCols = {'test'}
+    droppedTingsTest = []
     for fileName in listOfCSVFilenames[1:]:
         nextDFtoJoin = pd.read_csv(fileName)
         colsToDrop = set(bigDF.columns) & set(nextDFtoJoin.columns)
+        
         colsToDrop = colsToDrop | {'Unnamed: 0'}
+        droppedTingsTest.append(colsToDrop)
         droppedCols = droppedCols | colsToDrop
 #        print(colsToDrop)
         for col in colsToDrop:
@@ -55,8 +59,6 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
                         dupLists[fileName] = [col]
     if outFile !='':
         bigDF.to_csv(outFile, index=False)
-    print('any missed..?')
-    print(droppedCols - (set(bigDF.columns) | {'test'}))
     return bigDF
 
 def processCSV(csv, write=False, addCols=True):
@@ -221,14 +223,14 @@ def paramScatterPlots(df):
                 print("matplotlib doesn't like strings")
 
 
-#listofcsvs = makeCSVlistFromFolderName('bigparamsearch6sepSFS1Cols')
-outFile = 'fullBashsep6SFS1Cols.csv'
-#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, True, True)
+listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+outFile = 'fullBashsep8SFS2Cols.csv'
+df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+df = processCSV(outFile, write=True, addCols=True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
 # ^ This one used for choosing parameters
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-paramScatterPlots(df)
+#paramScatterPlots(df)
