@@ -215,22 +215,38 @@ def paramScatterPlots(df):
             
             print(model, param)
             try:
-                plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
+                plt.figure(figsize=(10,6))
+                plt.scatter(modelSubset[param],modelSubset['acc'], marker='x', s=3)
+                title = f"{longNames[model]} - {paramDict[model][param]}"
+                plt.title(title)
+                plt.ylabel('Accuracy')
+                plt.grid(b=True, which='major', color='black', alpha=0.2)
                 plt.show()
     #            plt.boxplot(modelSubset[param],modelSubset['acc'])
     #            plt.show()
             except ValueError:
                 print("matplotlib doesn't like strings")
 
-
-listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
-outFile = 'fullBashsep8SFS2Cols.csv'
-df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-df = processCSV(outFile, write=True, addCols=True)
-#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
+#RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
+#NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
+paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used'],
+             'NN': ['Solver','Number of Layers','Nodes per layer','Alpha'],
+             'SVM':['Kernel Function','C value','Degree of Polynomial','Gamma value'],
+             'KNN':['Algorithm','k value','p parameter','n/a'],
+             }
+longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine','KNN':'k-Nearest Neighboours'}
+for item in paramDict.keys():
+    paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
+#RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
+#listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+#outFile = 'fullBashsep8SFS2Cols.csv'
+#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+#df = processCSV(outFile, write=False, addCols=True)
+#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 # ^ This one used for choosing parameters
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-#paramScatterPlots(df)
+paramScatterPlots(df)
+#paramScatterPlots(df1)
