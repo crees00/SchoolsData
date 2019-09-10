@@ -150,8 +150,10 @@ def showBestFeaturesOfLoadedDict(loadedDict, printOut=True):
 
 def processListOfPickles(listOfPickles, folderName='',printOut=True):
     ''' Feeds to showBestFeaturesOfLoadedDict '''
+    folderName = sf.addFolderPath(folderName)
     dictOfPickleNamesAndOutLists = {}
-    for pickle in listOfPickles:    
+    for pickle in listOfPickles:  
+        print(os.path.join(folderName, pickle))
         newDict = pickling.load_dill(os.path.join(folderName, pickle))
         print('\nunpacking', pickle)
         dictOfPickleNamesAndOutLists[pickle] = showBestFeaturesOfLoadedDict(newDict, printOut)
@@ -174,7 +176,7 @@ def findFeatureCounts(dictOfPickleNamesAndOutLists, printOut=True):
     in optimum output from SFS runs in input dict'''
     counts = {}
     # Make dict with counts of each feature between runs in the input dict
-    for outList in outDict.values():
+    for outList in dictOfPickleNamesAndOutLists.values():
         # Find optimum number of features for that run first
         maxAcc, numFeatures = 0,0
         for group in outList:
@@ -250,12 +252,12 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-#folderName = r"SFSiter1"
-#listOfPickles2 = os.listdir(folderName)
+folderName = r"putthefolderhre"
+listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
 ##
-#outDict = processListOfPickles(listOfPickles2, folderName)
+outDict = processListOfPickles(listOfPickles2, folderName)
 #counts = findFeatureCounts(outDict)
 #chosenCols = chooseColsBasedOnCount(counts, 6)
-#findFeatureAccuracy(outDict)
-runDict = doSFS(runDict)
-showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
+findFeatureAccuracy(outDict)
+#runDict = doSFS(runDict)
+#showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
