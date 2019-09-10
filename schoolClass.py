@@ -243,13 +243,12 @@ def calcStuck(SchoolDict):
 
 
 def setAllStatuses(SchoolDict):
-    folderPath = sf.folderPath
     openAndUninspected = []
     if where in ["ONS", "Cdrive"]:
         file = "Data\edubaseallstatefunded20190704.csv"
     else:
         file = "edubaseallstatefunded20190627.csv"
-    openSchools = pd.read_csv(folderPath + file, encoding="latin-1")
+    openSchools = pd.read_csv(sf.addFolderPath(file), encoding="latin-1")
     openSchoolsSet = set(openSchools["URN"])
     for URN in openSchoolsSet:
         try:
@@ -472,7 +471,7 @@ def runAll():
     global inspList
     global SchoolDict
     inspList = []
-    df = pd.read_csv("bigDFnoDups1.csv")
+    df = pd.read_csv(sf.addFolderPath("bigDFnoDups1.csv"))
     df = df.apply(loadInspections, axis=1)
     SchoolDict, allInspNos, dupInsps = assignInspectionsToSchools(inspList)
     df = df.apply(addPredecessorURNsFromDF, axis=1)
@@ -481,9 +480,9 @@ def runAll():
     SchoolDict, openAndUninspected = setAllStatuses(SchoolDict)
     openStuck = whichStuckAreOpen(stuck)
     SchoolDict = feedToSort(SchoolDict)
-    dfForClustering = clusterDF(SchoolDict, "clusterDF.csv")
+    dfForClustering = clusterDF(SchoolDict,sf.addFolderPath("clusterDF.csv"))
     SchoolDict = makeGoodsAndBadsLists(SchoolDict)
-    dfOut = makeURNvsYearInspCats(SchoolDict, "dfOut.csv")
+    dfOut = makeURNvsYearInspCats(SchoolDict, sf.addFolderPath("dfOut.csv"))
 #    finalPt, steps = makeMatrices(SchoolDict)
     openSchoolDict = findOpenSchools(SchoolDict)
     threeGenerations = findGrandParents(SchoolDict)

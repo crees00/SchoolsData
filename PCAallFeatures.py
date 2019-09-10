@@ -4,16 +4,16 @@ Created on Tue Jul 23 14:47:51 2019
 
 @author: reesc1
 """
-
+import setFolder as sf
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-sns.set()
+#sns.set()
 ################# ADD MORE FEATURES TO INPUT DATA ###############################
-dfIn = pd.read_csv("bbbbVgsbbbsAllCols.csv")
+dfIn = pd.read_csv(sf.addFolderPath("bbbbVgsbbbsAllCols.csv"))
 dfIn.drop(["Unnamed: 0","Unnamed: 0.1"], inplace=True, axis=1)
 originalCols = dfIn.columns
 #print(originalCols)
@@ -149,20 +149,23 @@ def plotClassesOnPCA(newDFwithPCs):
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel("Principal Component 1", fontsize=15)
     ax.set_ylabel("Principal Component 2", fontsize=15)
-    ax.set_title("Plotting Class1 vs Class0", fontsize=20)
+    ax.set_title("Comparison of the two classes using PCA\nUpdated definition of stuck", fontsize=20)
+    ax.set_ylim([-7,15])
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 2"],
         s=2,
+        c='r'
     )
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 2"],
         s=2,
+        c='c'
     )
-
+    ax.legend(['Stuck','Escaped Stuck'],loc='lower right', fontsize='large')
     # ax.legend(targets)
-    ax.grid()
+#    ax.grid()
 ################# RUN IT ######################################################################
 newDFwithPCs = doPCA(60)
 #finalDF = doClustering()
