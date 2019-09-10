@@ -863,13 +863,13 @@ colDict = {'SVM':{'cols':CS.SVMcols, 'model':SVM},
 if __name__ == "__main__":
     import emailing
 #    doneRuns=[]
-    files = [sf.addFolderPath( 'bbbbVgsbbbsdf7.csv')]*10
+    files = ['bbbbVgsbbbsdf7.csv']*10
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 #        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
         for modelType in ['KNN']:
 #            modelDict={}
 #            modelDataDict={}
-            df = pd.read_csv(fileName)
+            df = pd.read_csv(sf.addFolderPath( fileName))
 #            cols = colDict[modelType]['cols']
             cols = list(df.columns)
 #            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
