@@ -6,7 +6,7 @@ Sequential Forward Selection of features
 
 @author: Chris
 """
-
+import setFolder as sf
 import genericModelClass as gmc
 import pandas as pd
 from mlxtend.feature_selection import SequentialFeatureSelector
@@ -18,17 +18,23 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 import pickling
 import os
-csv ='bbbbVgsbbbs6.csv'#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+csv =sf.addFolderPath('bbbbVgsbbbsdf7.csv')#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 df = pd.read_csv(csv)
 xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
 x = df[xCols]
 y = df["Class"]
 
 runDict = {
+             'SVM_original_3.6_rbf_2_0.005':{'clf':SVC(C=3.6, gamma=0.005)},
+        'NN_original_1_1_lbfgs_0.001':{'clf':MLPClassifier(hidden_layer_sizes=(1,), solver='lbfgs', max_iter=1000)},
+        'LR_original':{'clf':LogisticRegression(solver='lbfgs', max_iter=10000)},
+        'GNB_original':{'clf':GaussianNB()},
+     'RF_original_100_10_entropy_True':{'clf':RandomForestClassifier(n_estimators=100, max_depth=10, criterion='entropy', bootstrap=True)},
+
 #        'GNB_original':{'clf':GaussianNB()},
 #        'KNN_original_20_brute_3':{'clf':KNeighborsClassifier(n_neighbors=20, algorithm='brute', p=3)},
 #        'LR_original':{'clf':LogisticRegression(solver='lbfgs', max_iter=10000)},
-        'NN_original_4_5_adam_0.01':{'clf':MLPClassifier(hidden_layer_sizes=(5,5,5,5), solver='adam', max_iter=1000)}
+#        'NN_original_4_5_adam_0.01':{'clf':MLPClassifier(hidden_layer_sizes=(5,5,5,5), solver='adam', max_iter=1000)}
 #     'RF_original_204_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=204, max_depth=16, criterion='entropy', bootstrap=False)},
 #     'RF_original_242_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=242, max_depth=16, criterion='entropy', bootstrap=False)},
 #     'RF_original_174_16_entropy_False':{'clf':RandomForestClassifier(n_estimators=174, max_depth=16, criterion='entropy', bootstrap=False)},        
@@ -244,12 +250,12 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-folderName = r"SFSiter1"
-listOfPickles2 = os.listdir(folderName)
+#folderName = r"SFSiter1"
+#listOfPickles2 = os.listdir(folderName)
 ##
-outDict = processListOfPickles(listOfPickles2, folderName)
+#outDict = processListOfPickles(listOfPickles2, folderName)
 #counts = findFeatureCounts(outDict)
 #chosenCols = chooseColsBasedOnCount(counts, 6)
-findFeatureAccuracy(outDict)
-#runDict = doSFS(runDict)
-#showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
+#findFeatureAccuracy(outDict)
+runDict = doSFS(runDict)
+showBestFeaturesOfRunDict(runDict, printOut=True, save=False)

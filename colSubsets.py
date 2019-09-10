@@ -6,9 +6,9 @@ Created on Tue Sep  3 17:21:37 2019
 @author: reesc1
 """
 import pandas as pd
-
+import setFolder as sf
 # Make lessCols list
-df = pd.read_csv('bbbbVgsbbbs6.csv')
+df = pd.read_csv(sf.addFolderPath( 'bbbbVgsbbbsdf7.csv'))
 final=[]
 cols = list(df.columns)
 for col in cols:

@@ -5,11 +5,15 @@ Created on Wed Jul 10 13:32:43 2019
 @author: reesc1
 """
 
-where = 'mac'
+where = 'laptop'
 
 
 from os.path import exists
 
+def addFolderPath(fileName):
+    ''' put in a filename, out comes folderpath\filename'''
+    import os
+    return os.path.join(folderPath, fileName)
 #def findWhere():
 #    where = input('put in a where:\n')
 #    return where
