@@ -20,9 +20,12 @@ def save_dill(obj, name):
 
 def load_dill(name):
     '''Doesn't do the path'''
-    with open(name , 'rb') as f:
-        return dill.load(f)
-
+    try:
+        with open(name , 'rb') as f:
+            return dill.load(f)
+    except FileNotFoundError:
+        with open(sf.addFolderPath(name), 'rb') as f:
+            return dill.load(f)
 #if __name__ == "__main__":
 #    save_dill(modelDict, 'modelDictAllFeatures0908')
 #    aReloaded = load_dill('modelDictWithDill')

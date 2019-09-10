@@ -14,12 +14,13 @@ import setFolder as sf
 
 def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     '''Make a list of all the filenames in a folder'''
-    basePath = ''
-    fullPath = basePath + folderName
-    print(fullPath)
-    listofcsvs = listdir(fullPath) 
+#    basePath = ''
+#    fullPath = basePath + folderName
+#    print(fullPath)
+    listofcsvs = listdir(sf.addFolderPath(folderName) )
+    
 #    print(listofcsvs)
-    listofcsvs = [folderName+r"/"+x for x in listofcsvs]
+    listofcsvs = [sf.addFolderPath(x, folderName=folderName) for x in listofcsvs]
 #    print(listofcsvs)
     return listofcsvs
 
@@ -58,7 +59,7 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
                     except KeyError:
                         dupLists[fileName] = [col]
     if outFile !='':
-        bigDF.to_csv(outFile, index=False)
+        bigDF.to_csv(sf.addFolderPath(outFile), index=False)
     return bigDF
 
 def processCSV(csv, write=False, addCols=True):
@@ -69,7 +70,7 @@ def processCSV(csv, write=False, addCols=True):
     Adds p1/2/3/4 cols with the param values for that run
     '''
     if type(csv)==str:
-        df = pd.read_csv(csv)
+        df = pd.read_csv(sf.addFolderPath(csv))
     else:
         df = csv
     df.set_index('Unnamed: 0', inplace=True)
@@ -164,7 +165,7 @@ def processCSV(csv, write=False, addCols=True):
         df = pd.get_dummies(df,columns=['Model'], prefix='', prefix_sep='')
         
         if write:
-            df.to_csv(csv[:-4] + 'Added.csv')
+            df.to_csv(sf.addFolderPath(csv[:-4] + 'Added.csv'))
     
     return df
 
@@ -206,29 +207,41 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
                 print("can't divide strings")
 
             
-def paramScatterPlots(df, scoreToPlot='acc'):
+def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
     for model in ['NN','RF','SVM','KNN']:
-        print('\nModel:',model)
-        modelSubset = df[df[model]==1]
-        modelSubset = modelSubset[modelSubset['OS']==0]
-        modelSubset = modelSubset[modelSubset['RFE']==0]
-        accurateSubset = modelSubset[modelSubset['acc']>0.72]
+        if model not in df.columns:
+            continue
+#        print('\nModel:',model)
+        if subplots:
+            plt.figure(figsize=(15,9))
         for param in ['p1','p2','p3','p4']:
+            modelSubset = df[df[model]==1]
+            modelSubset = modelSubset[modelSubset['OS']==0]
+            modelSubset = modelSubset[modelSubset['RFE']==0]
+            accurateSubset = modelSubset[modelSubset['acc']>0.72]
             labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
-            print(model, param)
+            if (model == 'SVM') and (param == 'p3'):
+                modelSubset = modelSubset[modelSubset['p1']=='poly']
             try:
-                plt.figure(figsize=(15,9))
-                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=6)
+                if subplots:
+                    plt.subplot(2,2,int(param[1]))
+                else:
+                    plt.figure(figsize=(10,6))
+                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=15)
                 title = f"{longNames[model]} - {paramDict[model][param]}"
-                plt.title(title)
+                xlabel = f"{paramDict[model][param]}"
+                if subplots and (int(param[1])>2):
+                    plt.xlabel(xlabel)
+                else:
+                    plt.title(title)
                 plt.ylabel(labelDict[scoreToPlot])
                 plt.grid(b=True, which='major', color='black', alpha=0.2)
-                plt.show()
-    #            plt.boxplot(modelSubset[param],modelSubset['acc'])
-    #            plt.show()
+                if not subplots:
+                    plt.show()
             except ValueError:
                 print("matplotlib doesn't like strings")
-
+        if subplots:
+            plt.show()
 #RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
 #NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
 paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used'],
@@ -240,17 +253,18 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-#listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+#listofcsvs = makeCSVlistFromFolderName('KNNinitialparamsearch')
 #outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
+outFile='KNNinitialSearch.csv'
 #outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
-#df = pd.read_csv('AVG26_8_119bbbbVgsbbbsLessColsAdded.csv')
-#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, write=False, addCols=True)
+#df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
+df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+df = processCSV(outFile, write=True, addCols=True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 # ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-#paramScatterPlots(df, 'acc')
-paramScatterPlots(df1, 'acc')
+paramScatterPlots(df, 'acc', subplots=True)
+#paramScatterPlots(df1, 'acc', subplots=True)
