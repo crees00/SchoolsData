@@ -169,7 +169,7 @@ GNBcols=[
 'Consultancy_2yrDiff',
 ]
 
-KNNcols=[
+KNNcols1=[
 'Total revenue balance (1) 2017-18',
 'TotalRevBalance Change 4yr',
 'HasGirlsNew',
@@ -212,7 +212,7 @@ LRcols=[
 'Ed.Support.Staff.2018',
 ]
 
-NNcols=[
+NNcols1=[
 'Total revenue balance (1) 2017-18',
 'Other.Staff_2yrDiff',
 'Premises_4yrDiff',
@@ -234,7 +234,7 @@ NNcols=[
 'ICT.2018',
 ]
 
-RFcols=[
+RFcols1=[
         'TotalRevBalance Change 4yr',
 'PerformancePctRank',
 'Supply.Staff_4yrDiff',
@@ -246,7 +246,7 @@ RFcols=[
 ]
 
 
-SVMcols=[
+SVMcols1=[
         'TotalRevBalance Change 7yr',
 'Total revenue balance (1) as a % of total revenue income (6) 2017-18',
 'Supply.Staff_2yrDiff',

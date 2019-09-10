@@ -25,12 +25,18 @@ x = df[xCols]
 y = df["Class"]
 
 runDict = {
+         'NN_original_2_5_adam_0.0001':{'clf':MLPClassifier(hidden_layer_sizes=(5,5), solver='adam', max_iter=1000)},
+     'RF_original_200_11_gini_True':{'clf':RandomForestClassifier(n_estimators=200, max_depth=11, criterion='gini', bootstrap=True)},
+              'SVM_original_4_rbf_2_0.016':{'clf':SVC(C=4, gamma=0.016)},
+         'KNN_original_34_auto_1':{'clf':KNeighborsClassifier(n_neighbors=34, algorithm='auto', p=1)},
+    
+        
 #             'SVM_original_3.6_rbf_2_0.005':{'clf':SVC(C=3.6, gamma=0.005)},
 #        'NN_original_1_1_lbfgs_0.001':{'clf':MLPClassifier(hidden_layer_sizes=(1,), solver='lbfgs', max_iter=1000)},
 #        'LR_original':{'clf':LogisticRegression(solver='lbfgs', max_iter=10000)},
 #        'GNB_original':{'clf':GaussianNB()},
 #     'RF_original_100_10_entropy_True':{'clf':RandomForestClassifier(n_estimators=100, max_depth=10, criterion='entropy', bootstrap=True)},
-        'KNN_original_18_auto_1':{'clf':KNeighborsClassifier(n_neighbors=18, algorithm='auto', p=1)},
+#        'KNN_original_18_auto_1':{'clf':KNeighborsClassifier(n_neighbors=18, algorithm='auto', p=1)},
 
 #        'GNB_original':{'clf':GaussianNB()},
 #        'KNN_original_20_brute_3':{'clf':KNeighborsClassifier(n_neighbors=20, algorithm='brute', p=3)},
@@ -253,12 +259,12 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-folderName = r"SFS1df7"
-listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
+#folderName = r"SFS1df7"
+#listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
 ##
-outDict = processListOfPickles(listOfPickles2, folderName)
-counts = findFeatureCounts(outDict)
+#outDict = processListOfPickles(listOfPickles2, folderName)
+#counts = findFeatureCounts(outDict)
 #chosenCols = chooseColsBasedOnCount(counts, 6)
 #findFeatureAccuracy(outDict)
-#runDict = doSFS(runDict)
+runDict = doSFS(runDict)
 #showBestFeaturesOfRunDict(runDict, printOut=True, save=False)

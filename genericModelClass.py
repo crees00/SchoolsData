@@ -855,10 +855,10 @@ runParams = {
     }    
 }
 
-colDict = {'SVM':{'cols':CS.SVMcols, 'model':SVM},
-           'NN' :{'cols':CS.NNcols, 'model':NN},
-           'KNN':{'cols':CS.KNNcols, 'model':KNN},
-           'RF' :{'cols':CS.RFcols, 'model':RandomForest}}
+colDict = {'SVM':{'cols':CS.SVMcols1, 'model':SVM},
+           'NN' :{'cols':CS.NNcols1, 'model':NN},
+           'KNN':{'cols':CS.KNNcols1, 'model':KNN},
+           'RF' :{'cols':CS.RFcols1, 'model':RandomForest}}
 
 if __name__ == "__main__":
     import emailing
