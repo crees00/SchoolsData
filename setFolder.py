@@ -5,7 +5,7 @@ Created on Wed Jul 10 13:32:43 2019
 @author: reesc1
 """
 
-where = 'mac'
+where = 'laptop'
 
 
 from os.path import exists

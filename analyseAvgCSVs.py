@@ -256,12 +256,12 @@ for item in paramDict.keys():
 #listofcsvs = makeCSVlistFromFolderName('KNNinitialparamsearch')
 #outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
 outFile='KNNinitialSearch.csv'
-#outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
-#df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
-df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-df = processCSV(outFile, write=True, addCols=True)
-#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
-# ^ This one used for choosing parameters..mysteriously high results
+##outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
+##df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
+#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+df = processCSV(outFile, write=False, addCols=True)
+##df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
+## ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #

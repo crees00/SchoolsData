@@ -253,12 +253,12 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-folderName = r"putthefolderhre"
-#listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
+folderName = r"SFS1df7"
+listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
 ##
-#outDict = processListOfPickles(listOfPickles2, folderName)
-#counts = findFeatureCounts(outDict)
+outDict = processListOfPickles(listOfPickles2, folderName)
+counts = findFeatureCounts(outDict)
 #chosenCols = chooseColsBasedOnCount(counts, 6)
 #findFeatureAccuracy(outDict)
-runDict = doSFS(runDict)
+#runDict = doSFS(runDict)
 #showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
