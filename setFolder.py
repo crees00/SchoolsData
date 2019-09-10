@@ -10,10 +10,11 @@ where = 'laptop'
 
 from os.path import exists
 
-def addFolderPath(fileName):
-    ''' put in a filename, out comes folderpath\filename'''
+def addFolderPath(fileName, folderName=""):
+    ''' put in a filename, out comes folderpath\filename
+    put in a foldername and a filename, out comes folderpath\folder\filename'''
     import os
-    return os.path.join(folderPath, fileName)
+    return os.path.join(folderPath, folderName,fileName)
 #def findWhere():
 #    where = input('put in a where:\n')
 #    return where

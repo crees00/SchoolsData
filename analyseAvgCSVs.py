@@ -14,12 +14,13 @@ import setFolder as sf
 
 def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     '''Make a list of all the filenames in a folder'''
-    basePath = ''
-    fullPath = basePath + folderName
-    print(fullPath)
-    listofcsvs = listdir(fullPath) 
+#    basePath = ''
+#    fullPath = basePath + folderName
+#    print(fullPath)
+    listofcsvs = listdir(sf.addFolderPath(folderName) )
+    
 #    print(listofcsvs)
-    listofcsvs = [folderName+r"/"+x for x in listofcsvs]
+    listofcsvs = [sf.addFolderPath(x, folderName=folderName) for x in listofcsvs]
 #    print(listofcsvs)
     return listofcsvs
 
@@ -58,7 +59,7 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
                     except KeyError:
                         dupLists[fileName] = [col]
     if outFile !='':
-        bigDF.to_csv(outFile, index=False)
+        bigDF.to_csv(sf.addFolderPath(outFile), index=False)
     return bigDF
 
 def processCSV(csv, write=False, addCols=True):
@@ -69,7 +70,7 @@ def processCSV(csv, write=False, addCols=True):
     Adds p1/2/3/4 cols with the param values for that run
     '''
     if type(csv)==str:
-        df = pd.read_csv(csv)
+        df = pd.read_csv(sf.addFolderPath(csv))
     else:
         df = csv
     df.set_index('Unnamed: 0', inplace=True)
@@ -164,7 +165,7 @@ def processCSV(csv, write=False, addCols=True):
         df = pd.get_dummies(df,columns=['Model'], prefix='', prefix_sep='')
         
         if write:
-            df.to_csv(csv[:-4] + 'Added.csv')
+            df.to_csv(sf.addFolderPath(csv[:-4] + 'Added.csv'))
     
     return df
 
@@ -208,6 +209,8 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
             
 def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
     for model in ['NN','RF','SVM','KNN']:
+        if model not in df.columns:
+            continue
 #        print('\nModel:',model)
         if subplots:
             plt.figure(figsize=(15,9))
@@ -250,17 +253,18 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-#listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+#listofcsvs = makeCSVlistFromFolderName('KNNinitialparamsearch')
 #outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
+outFile='KNNinitialSearch.csv'
 #outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
-df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
-#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, write=False, addCols=True)
+#df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
+df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+df = processCSV(outFile, write=True, addCols=True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 # ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-#paramScatterPlots(df, 'acc')
-paramScatterPlots(df1, 'acc', subplots=True)
+paramScatterPlots(df, 'acc', subplots=True)
+#paramScatterPlots(df1, 'acc', subplots=True)
