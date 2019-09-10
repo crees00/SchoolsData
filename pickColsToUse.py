@@ -146,7 +146,7 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-df = pd.read_csv("df6.csv")
+df = pd.read_csv("df5AllColsPreImputed.csv")
 df = makeFinanceCols(df)
 #outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
 # outDF.to_csv('pickColsToUse.csv')
@@ -157,14 +157,14 @@ dfForModel = cam.dropColsFromList(df, toDrop)
 # Encode categorical cols with one-hot encoding
 dfForModelModified = fixCategoricalCols(dfForModel)
 ## Standardise all of the cols
-#dfForModelModified = normalise(
-#    dfForModelModified,
-#    set(dfForModelModified.columns) - {"URN", "Stuck"},
-#    normaliseSDcol,
-#)
+dfForModelModified = normalise(
+    dfForModelModified,
+    set(dfForModelModified.columns) - {"URN", "Stuck"},
+    normaliseSDcol,
+)
 #
-dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df6ForModelModifiedImputedNOTNORMALISED.csv')
-makePickColsToUse(dfForModelModifiedImputed, "df6ForModelModifiedImputedNOTNORMALISEDAnalysed.csv")
+dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df5AddedJoeColsForModelModifiedImputed.csv')
+makePickColsToUse(dfForModelModifiedImputed, "df5AddedJoeColsForModelModifiedImputedAnalysed.csv")
 
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
 #makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")

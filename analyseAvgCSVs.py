@@ -29,15 +29,19 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
     stitch the csv files together so the results are all in one place
     '''
     global dupLists
+#    global droppedCols
     dupLists = {}
     allDups = []
     bigDF = pd.read_csv(listOfCSVFilenames[0])
     bigDF.set_index(keys='Unnamed: 0')
     droppedCols = {'test'}
+    droppedTingsTest = []
     for fileName in listOfCSVFilenames[1:]:
         nextDFtoJoin = pd.read_csv(fileName)
         colsToDrop = set(bigDF.columns) & set(nextDFtoJoin.columns)
+        
         colsToDrop = colsToDrop | {'Unnamed: 0'}
+        droppedTingsTest.append(colsToDrop)
         droppedCols = droppedCols | colsToDrop
 #        print(colsToDrop)
         for col in colsToDrop:
@@ -55,8 +59,6 @@ def combineIntermediateResultsCSVs(listOfCSVFilenames, outFile=''):
                         dupLists[fileName] = [col]
     if outFile !='':
         bigDF.to_csv(outFile, index=False)
-    print('any missed..?')
-    print(droppedCols - (set(bigDF.columns) | {'test'}))
     return bigDF
 
 def processCSV(csv, write=False, addCols=True):
@@ -204,31 +206,51 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
                 print("can't divide strings")
 
             
-def paramScatterPlots(df):
+def paramScatterPlots(df, scoreToPlot='acc'):
     for model in ['NN','RF','SVM','KNN']:
         print('\nModel:',model)
         modelSubset = df[df[model]==1]
+        modelSubset = modelSubset[modelSubset['OS']==0]
+        modelSubset = modelSubset[modelSubset['RFE']==0]
         accurateSubset = modelSubset[modelSubset['acc']>0.72]
         for param in ['p1','p2','p3','p4']:
-            
+            labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
             print(model, param)
             try:
-                plt.scatter(modelSubset[param],modelSubset['acc'], marker='x')
+                plt.figure(figsize=(15,9))
+                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=6)
+                title = f"{longNames[model]} - {paramDict[model][param]}"
+                plt.title(title)
+                plt.ylabel(labelDict[scoreToPlot])
+                plt.grid(b=True, which='major', color='black', alpha=0.2)
                 plt.show()
     #            plt.boxplot(modelSubset[param],modelSubset['acc'])
     #            plt.show()
             except ValueError:
                 print("matplotlib doesn't like strings")
 
-
-#listofcsvs = makeCSVlistFromFolderName('bigparamsearch6sepSFS1Cols')
-outFile = 'fullBashsep6SFS1Cols.csv'
+#RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
+#NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
+paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used'],
+             'NN': ['Solver','Number of Layers','Nodes per layer','Alpha'],
+             'SVM':['Kernel Function','C value','Degree of Polynomial','Gamma value'],
+             'KNN':['Algorithm','k value','p parameter','n/a'],
+             }
+longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine','KNN':'k-Nearest Neighboours'}
+for item in paramDict.keys():
+    paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
+#RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
+#listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+#outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
+#outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
+#df = pd.read_csv('AVG26_8_119bbbbVgsbbbsLessColsAdded.csv')
 #df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, True, True)
-#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv')
-# ^ This one used for choosing parameters
+#df = processCSV(outFile, write=False, addCols=True)
+#df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
+# ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-paramScatterPlots(df)
+#paramScatterPlots(df, 'acc')
+paramScatterPlots(df1, 'acc')
