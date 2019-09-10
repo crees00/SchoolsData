@@ -217,8 +217,8 @@ def paramScatterPlots(df, scoreToPlot='acc'):
             labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
             print(model, param)
             try:
-                plt.figure(figsize=(15,9))
-                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=6)
+                plt.figure(figsize=(10,6))
+                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=15)
                 title = f"{longNames[model]} - {paramDict[model][param]}"
                 plt.title(title)
                 plt.ylabel(labelDict[scoreToPlot])
@@ -243,7 +243,7 @@ for item in paramDict.keys():
 #listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
 #outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
 #outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
-#df = pd.read_csv('AVG26_8_119bbbbVgsbbbsLessColsAdded.csv')
+df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
 #df = combineIntermediateResultsCSVs(listofcsvs, outFile)
 #df = processCSV(outFile, write=False, addCols=True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
