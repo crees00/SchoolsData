@@ -157,7 +157,6 @@ SFS1Cols = [
 
 SFS2Cols = [
         'MaintainedNew',
-'GOR_Not Applicable',
 'AGEH',
 'TOTPUPS__18',
 'PerformancePctRank',
