@@ -206,29 +206,39 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
                 print("can't divide strings")
 
             
-def paramScatterPlots(df, scoreToPlot='acc'):
+def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
     for model in ['NN','RF','SVM','KNN']:
-        print('\nModel:',model)
-        modelSubset = df[df[model]==1]
-        modelSubset = modelSubset[modelSubset['OS']==0]
-        modelSubset = modelSubset[modelSubset['RFE']==0]
-        accurateSubset = modelSubset[modelSubset['acc']>0.72]
+#        print('\nModel:',model)
+        if subplots:
+            plt.figure(figsize=(15,9))
         for param in ['p1','p2','p3','p4']:
+            modelSubset = df[df[model]==1]
+            modelSubset = modelSubset[modelSubset['OS']==0]
+            modelSubset = modelSubset[modelSubset['RFE']==0]
+            accurateSubset = modelSubset[modelSubset['acc']>0.72]
             labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
-            print(model, param)
+            if (model == 'SVM') and (param == 'p3'):
+                modelSubset = modelSubset[modelSubset['p1']=='poly']
             try:
-                plt.figure(figsize=(10,6))
+                if subplots:
+                    plt.subplot(2,2,int(param[1]))
+                else:
+                    plt.figure(figsize=(10,6))
                 plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=15)
                 title = f"{longNames[model]} - {paramDict[model][param]}"
-                plt.title(title)
+                xlabel = f"{paramDict[model][param]}"
+                if subplots and (int(param[1])>2):
+                    plt.xlabel(xlabel)
+                else:
+                    plt.title(title)
                 plt.ylabel(labelDict[scoreToPlot])
                 plt.grid(b=True, which='major', color='black', alpha=0.2)
-                plt.show()
-    #            plt.boxplot(modelSubset[param],modelSubset['acc'])
-    #            plt.show()
+                if not subplots:
+                    plt.show()
             except ValueError:
                 print("matplotlib doesn't like strings")
-
+        if subplots:
+            plt.show()
 #RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
 #NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
 paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used'],
@@ -253,4 +263,4 @@ df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
 #
         
 #paramScatterPlots(df, 'acc')
-paramScatterPlots(df1, 'acc')
+paramScatterPlots(df1, 'acc', subplots=True)
