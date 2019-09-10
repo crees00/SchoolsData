@@ -28,6 +28,7 @@ from sklearn.feature_selection import RFE
 import itertools
 from random import sample
 import datetime
+import colSubsets as CS
 
 
 
@@ -836,35 +837,39 @@ runParams = {
         "bootstrap": [False]#[True, False],
     },
     SVM: {
-        "C": np.linspace(1,4,100),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": np.linspace(0.8,4,100),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
         "gamma": np.linspace(0.001,1,500)#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
         'numLayers' : [2,3,4,5,6],
-        'nodesPerLayer' : list(range(4,10)),
+        'nodesPerLayer' : list(range(2,10)),
         'solver' : ['adam'], 
         'alpha' : [1e-7, 5e-7, 1e-6, 5e-6, 1e-5,5e-5,1e-4,5e-4,1e-3,5e-3, 1e-2, 5e-2, 1e-1]
     },
     KNN: {
-        'n_neighbors':[1,2,3,4,6,8,12,15,20,25],
+        'n_neighbors':range(1,30),#[1,2,3,4,6,8,12,15,20,25],
         'algorithm':['brute'],
         'p':[1,2,3]
     }    
 }
 
+colDict = {'SVM':{'cols':CS.SVMcols, 'model':SVM},
+           'NN' :{'cols':CS.NNcols, 'model':NN},
+           'KNN':{'cols':CS.KNNcols, 'model':KNN}}
 
 if __name__ == "__main__":
     import emailing
-    import colSubsets as CS
 #    doneRuns=[]
-    files = ['bbbbVgsbbbs6.csv']*1000
+    files = ['bbbbVgsbbbs6.csv']*100
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-        for cols in [CS.SFS2Cols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+#        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+        for modelType in ['SVM','NN']:
 #            modelDict={}
-#            modelDataDict={}
+            modelDataDict={}
             df = pd.read_csv(fileName)
+            cols = colDict[modelType]['cols']
 #            cols = df.columns
 #            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
             cols.append('PerformancePctRank')
@@ -879,20 +884,21 @@ if __name__ == "__main__":
             # Generate data and model instances, run the models
             modelDataDict, modelDict = runAGroup(
                 [
-#                        True, 
+                        True, 
                         False
                  ],
                 [
-#                        True,
+                        True,
                         False
                         ],
                 [
-                        LogReg, 
-                        SVM, 
-                        RandomForest,
-                        NN,
-                        GaussianBayes,
-                        KNN
+                        colDict[modelType]['model']
+#                        LogReg, 
+#                        SVM, 
+#                        RandomForest,
+#                        NN,
+#                        GaussianBayes,
+#                        KNN
                         ],
                 [5,10,15,20],
                 numParamCombos=100,
