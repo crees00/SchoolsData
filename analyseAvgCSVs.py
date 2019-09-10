@@ -14,12 +14,12 @@ import setFolder as sf
 
 def makeCSVlistFromFolderName(folderName, basePath = sf.folderPath):
     '''Make a list of all the filenames in a folder'''
-    basePath = ''
-    fullPath = basePath + folderName
-    print(fullPath)
-    listofcsvs = listdir(fullPath) 
+#    basePath = ''
+#    fullPath = basePath + folderName
+#    print(fullPath)
+    listofcsvs = listdir(sf.addFolderPath(folderName)) 
 #    print(listofcsvs)
-    listofcsvs = [folderName+r"/"+x for x in listofcsvs]
+    listofcsvs = [sf.addFolderPath(x) for x in listofcsvs]
 #    print(listofcsvs)
     return listofcsvs
 
@@ -240,7 +240,7 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-#listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
+listofcsvs = makeCSVlistFromFolderName('KNNinitialparamsearch')
 #outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
 #outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
 #df = pd.read_csv('AVG26_8_119bbbbVgsbbbsLessColsAdded.csv')
