@@ -278,7 +278,7 @@ def runAll(dataDict, dfToAddTo, write=False):
     print(f"runAll took {datetime.datetime.now()-startOfRunAll}")
     return df
 
-df14 = fixPerfCol(pd.read_csv('df5.csv'), 'df6.csv')
+
 
 #df4 = pd.read_csv("df4.csv")
 #df5 = runAll(perfDict, df4)
@@ -288,7 +288,8 @@ df14 = fixPerfCol(pd.read_csv('df5.csv'), 'df6.csv')
 #df9 = runAll(swfDict, df8)
 ##df10 = runAll(cfrDict, df9, True)
 ##df11 = runAll(sfbDict, df9, True)
-#df12 = runAll(fin18Dict, df9)
-#df13 = runAll(fin17Dict, df12, True)
+df12 = runAll(fin18Dict, pd.read_csv("df5 - copy.csv"))
+df13 = runAll(fin17Dict, df12, True)
+df14 = fixPerfCol(df13, 'df5AllColsPreImputed.csv')
 
 print(f"genericDataIn complete - took {datetime.datetime.now()-start}")

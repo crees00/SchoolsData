@@ -206,20 +206,22 @@ def paramHistograms(df, minAcc=0.60, minProportion=-1):
                 print("can't divide strings")
 
             
-def paramScatterPlots(df):
+def paramScatterPlots(df, scoreToPlot='acc'):
     for model in ['NN','RF','SVM','KNN']:
         print('\nModel:',model)
         modelSubset = df[df[model]==1]
+        modelSubset = modelSubset[modelSubset['OS']==0]
+        modelSubset = modelSubset[modelSubset['RFE']==0]
         accurateSubset = modelSubset[modelSubset['acc']>0.72]
         for param in ['p1','p2','p3','p4']:
-            
+            labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
             print(model, param)
             try:
-                plt.figure(figsize=(10,6))
-                plt.scatter(modelSubset[param],modelSubset['acc'], marker='x', s=3)
+                plt.figure(figsize=(15,9))
+                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=6)
                 title = f"{longNames[model]} - {paramDict[model][param]}"
                 plt.title(title)
-                plt.ylabel('Accuracy')
+                plt.ylabel(labelDict[scoreToPlot])
                 plt.grid(b=True, which='major', color='black', alpha=0.2)
                 plt.show()
     #            plt.boxplot(modelSubset[param],modelSubset['acc'])
@@ -239,14 +241,16 @@ for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
 #listofcsvs = makeCSVlistFromFolderName('paramsearch8sepSFS2Cols')
-#outFile = 'fullBashsep8SFS2Cols.csv'
+#outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
+#outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
+#df = pd.read_csv('AVG26_8_119bbbbVgsbbbsLessColsAdded.csv')
 #df = combineIntermediateResultsCSVs(listofcsvs, outFile)
 #df = processCSV(outFile, write=False, addCols=True)
 #df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
-# ^ This one used for choosing parameters
+# ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
 #
         
-paramScatterPlots(df)
-#paramScatterPlots(df1)
+#paramScatterPlots(df, 'acc')
+paramScatterPlots(df1, 'acc')
