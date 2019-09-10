@@ -29,7 +29,7 @@ import itertools
 from random import sample
 import datetime
 import colSubsets as CS
-
+import setFolder as sf
 
 
 start = datetime.datetime.now()
@@ -674,7 +674,7 @@ def exportResultsDF(dic, write=''):
         dictToDF[name]=entry
     outDF = pd.DataFrame(dictToDF)
     if len(write)>0:
-        outDF.to_csv(write)
+        outDF.to_csv(sf.addFolderPath( write))
         print(write,'file written')
     return outDF
 
@@ -731,7 +731,7 @@ def makeAvgResults(modelDict, write=''):
     
     if len(write)>0:
         outDF = pd.DataFrame(modelAvgDict)
-        outDF.to_csv(write)
+        outDF.to_csv(sf.addFolderPath(write))
         print(write,'file written')
 #
     return modelAvgDict, modelScoresDict
@@ -850,27 +850,28 @@ runParams = {
     },
     KNN: {
         'n_neighbors':range(1,30),#[1,2,3,4,6,8,12,15,20,25],
-        'algorithm':['brute'],
-        'p':[1,2,3]
+        'algorithm':['auto'],
+        'p':[1,2,3,4]
     }    
 }
 
 colDict = {'SVM':{'cols':CS.SVMcols, 'model':SVM},
            'NN' :{'cols':CS.NNcols, 'model':NN},
-           'KNN':{'cols':CS.KNNcols, 'model':KNN}}
+           'KNN':{'cols':CS.KNNcols, 'model':KNN},
+           'RF' :{'cols':CS.RFcols, 'model':RandomForest}}
 
 if __name__ == "__main__":
     import emailing
 #    doneRuns=[]
-    files = ['bbbbVgsbbbs6.csv']*100
+    files = [sf.addFolderPath( 'bbbbVgsbbbsdf7.csv')]*10
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 #        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
-        for modelType in ['SVM','NN']:
+        for modelType in ['KNN']:
 #            modelDict={}
-            modelDataDict={}
+#            modelDataDict={}
             df = pd.read_csv(fileName)
-            cols = colDict[modelType]['cols']
-#            cols = df.columns
+#            cols = colDict[modelType]['cols']
+            cols = list(df.columns)
 #            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
             cols.append('PerformancePctRank')
             xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18','GOR_Not Applicable'})]
@@ -884,11 +885,11 @@ if __name__ == "__main__":
             # Generate data and model instances, run the models
             modelDataDict, modelDict = runAGroup(
                 [
-                        True, 
+#                        True, 
                         False
                  ],
                 [
-                        True,
+#                        True,
                         False
                         ],
                 [

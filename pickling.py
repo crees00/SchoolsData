@@ -4,19 +4,22 @@ Created on Fri Aug  9 10:14:39 2019
 
 @author: Chris
 """
+
 #import os
 #
 #currentFolder = os.path.dirname(os.path.abspath(__file__))
 #print('currentFolder:',currentFolder)
 
-
+import setFolder as sf
 import dill
 def save_dill(obj, name):
-    with open(name + '.pik', 'wb') as f:
+    '''Puts the path in for you'''
+    with open(sf.addFolderPath(name + '.pik'), 'wb') as f:
         dill.dump(obj, f)
     print('pickled')
 
 def load_dill(name):
+    '''Doesn't do the path'''
     with open(name , 'rb') as f:
         return dill.load(f)
 

@@ -155,7 +155,7 @@ SFS1Cols = [
 'Ed.Support.Staff.2018'
 ]
 
-SFS2Cols = [
+RFcols = [
         'MaintainedNew',
 'AGEH',
 'TOTPUPS__18',
@@ -324,20 +324,20 @@ SVMcols = [
 
 
 
-groupDict = {'SFS1Cols':SFS1Cols,'SFS2Cols': SFS2Cols,'chosenCols1': chosenCols1,'lessCols': lessCols}
+#
+#if __name__ == "__main__":
+##  groupDict = {'SFS1Cols':SFS1Cols,'SFS2Cols': SFS2Cols,'chosenCols1': chosenCols1,'lessCols': lessCols}
 
-if __name__ == "__main__":
-
-    for name1 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
-        for name2 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
-            if name1==name2:
-                continue
-            group1 = groupDict[name1]
-            group2 = groupDict[name2]
-            shared = set(group1) & set(group2)
-            just1 = set(group1) - set(group2)
-            just2 = set(group2) - set(group1)
-            print('\n\n\n\n\n',name1, name2)
-            print('shared',len(shared),'\n',shared)
-            print('\njust',name1,len(just1), '\n',just1)
-            print('\njust',name2,len(just2), '\n',just2)
+#    for name1 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
+#        for name2 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
+#            if name1==name2:
+#                continue
+#            group1 = groupDict[name1]
+#            group2 = groupDict[name2]
+#            shared = set(group1) & set(group2)
+#            just1 = set(group1) - set(group2)
+#            just2 = set(group2) - set(group1)
+#            print('\n\n\n\n\n',name1, name2)
+#            print('shared',len(shared),'\n',shared)
+#            print('\njust',name1,len(just1), '\n',just1)
+#            print('\njust',name2,len(just2), '\n',just2)
