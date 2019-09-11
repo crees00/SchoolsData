@@ -20,14 +20,14 @@ import pickling
 import os
 csv =sf.addFolderPath('bbbbVgsbbbsdf7.csv')#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 df = pd.read_csv(csv)
-xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','GOR_Not Applicable'})]
 x = df[xCols]
 y = df["Class"]
 
 runDict = {
-         'NN_original_2_5_adam_0.0001':{'clf':MLPClassifier(hidden_layer_sizes=(5,5), solver='adam', max_iter=1000)},
-     'RF_original_200_11_gini_True':{'clf':RandomForestClassifier(n_estimators=200, max_depth=11, criterion='gini', bootstrap=True)},
-              'SVM_original_4_rbf_2_0.016':{'clf':SVC(C=4, gamma=0.016)},
+#         'NN_original_2_5_adam_0.0001':{'clf':MLPClassifier(hidden_layer_sizes=(5,5), solver='adam', max_iter=1000)},
+#     'RF_original_200_11_gini_True':{'clf':RandomForestClassifier(n_estimators=200, max_depth=11, criterion='gini', bootstrap=True)},
+#              'SVM_original_4_rbf_2_0.016':{'clf':SVC(C=4, gamma=0.016)},
          'KNN_original_34_auto_1':{'clf':KNeighborsClassifier(n_neighbors=34, algorithm='auto', p=1)},
     
         
