@@ -864,11 +864,13 @@ colDict = {'SVM':{'cols':CS.SVMcols2, 'model':SVM},
 
 if __name__ == "__main__":
     import emailing
+    import pickling
 #    doneRuns=[]
     files = ['bbbbVgsbbbsdf7.csv']*1000
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 #        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
         for modelType in ['GNB','LR','KNN','SVM','NN','RF']:
+            pickling.save_dill(doneRuns, f"doneRuns_{len(doneRuns)}")
 #            modelDict={}
             modelDataDict={}
             df = pd.read_csv(sf.addFolderPath( fileName))
@@ -888,10 +890,12 @@ if __name__ == "__main__":
             modelDataDict, modelDict = runAGroup(
                 [
                         True, 
+                        False,
                         False
                  ],
                 [
                         True,
+                        False,
                         False
                         ],
                 [
