@@ -256,9 +256,86 @@ SVMcols1=[
 'Consultancy.2018',
 ]
 
+################## SFS2 with df7 #############################################
+KNNcols2=[
+'TotalRevBalance Change 4yr',
+'Total revenue balance (1) 2017-18',
+'Total revenue balance (1) as a % of total revenue income (6) 2017-18',
+'ISSECONDARY',
+'Premises_4yrDiff',
+'Learning.Resources.2018',
+'PerformancePctRank',
+'HasGirlsNew',
+'HasBoysNew',
+'BoardingNew',
+'Back.Office_4yrDiff',
+'Consultancy.2018',
+'Energy_2yrDiff',
+'Energy_4yrDiff',
+'Ed.Support.Staff_2yrDiff',
+'Premises_2yrDiff',
+'Learning.Resources_2yrDiff',
+'Supply.Staff_2yrDiff',
+'Catering_4yrDiff',
+'SpecialNew',
+'Self.Income.2018',
+'MaintainedNew',
+'GOR_South West',
+'GOR_North East',
+'ICT.2018',
+'Other.2018',
+'Energy.2018',
+'Consultancy_4yrDiff',
+]
+
+NNcols2=[
+        'TotalRevBalance Change 7yr',
+'Mean Gross FTE Salary of All Teachers (Â£s)',
+'Supply.Staff_2yrDiff',
+'Energy_4yrDiff',
+'Back.Office_2yrDiff',
+'Learning.Resources.2018',
+'PTFSM6CLA1A__18',
+'Other.Staff_2yrDiff',
+'Other_2yrDiff',
+'Energy_2yrDiff',
+'Total.Spend.pp_4yrDiff',
+]
 
 
+RFcols2=['TotalRevBalance Change 4yr',
+'Teaching.Staff.2018',
+'ISSECONDARY',
+'GOR_North West',
+'TotalRevBalance Change 7yr',
+'Catering.2018',
+'GOR_East Midlands',
+'HasGirlsNew',
+'AGEL',
+'ISPRIMARY',
+'Self.Income_2yrDiff',
+'SpecialNew',
+]
 
+SVMcols2=['Total revenue balance (1) 2017-18',
+'TotalRevBalance Change 2yr',
+'Supply.Staff_2yrDiff',
+'Teaching.Staff_4yrDiff',
+'Ed.Support.Staff.2018',
+'GOR_Not Applicable',
+'GOR_Yorkshire and the Humber',
+'Energy.2018',
+'Back.Office_4yrDiff',
+'Premises_4yrDiff',
+'HasBoysNew',
+'Supply.Staff.2018',
+'TotalRevBalance Change 7yr',
+'Consultancy_2yrDiff',
+'Other_2yrDiff',
+'Other.Staff.2018',
+'Energy_2yrDiff',
+'ICT_4yrDiff',
+]
 
 
 

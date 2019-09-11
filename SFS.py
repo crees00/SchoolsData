@@ -161,6 +161,9 @@ def processListOfPickles(listOfPickles, folderName='',printOut=True):
     dictOfPickleNamesAndOutLists = {}
     for pickle in listOfPickles:  
         print(os.path.join(folderName, pickle))
+        if pickle[-4:] != '.pik':
+            print(pickle,'not opened')
+            continue
         newDict = pickling.load_dill(os.path.join(folderName, pickle))
         print('\nunpacking', pickle)
         dictOfPickleNamesAndOutLists[pickle] = showBestFeaturesOfLoadedDict(newDict, printOut)
@@ -245,7 +248,7 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
         for feature in featureDict.keys():
             score = featureDict[feature]
             if round(score,3) == round(acc,3):
-                print((feature,))
+                print(acc,feature)
         acc -= 1e-3
             
 
@@ -259,12 +262,12 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-#folderName = r"SFS1df7"
-#listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
+folderName = r"SFS2forDF7"
+listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
 ##
-#outDict = processListOfPickles(listOfPickles2, folderName)
-#counts = findFeatureCounts(outDict)
+outDict = processListOfPickles(listOfPickles2, folderName)
+counts = findFeatureCounts(outDict)
 #chosenCols = chooseColsBasedOnCount(counts, 6)
-#findFeatureAccuracy(outDict)
-runDict = doSFS(runDict)
+findFeatureAccuracy(outDict)
+#runDict = doSFS(runDict)
 #showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
