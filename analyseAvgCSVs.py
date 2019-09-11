@@ -266,5 +266,5 @@ df = processCSV(outFile, write=True, addCols=True)
 #paramHistograms(df, minProportion=0.01)
 #
         
-paramScatterPlots(df, 'auc', subplots=True)
+paramScatterPlots(df, 'acc', subplots=True)
 #paramScatterPlots(df1, 'acc', subplots=True)
