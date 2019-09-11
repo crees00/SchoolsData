@@ -557,7 +557,9 @@ def oneFullRun(
             modelDataDict[newDataName] = data
         mod = modelClass(newDataName, modelDataDict[newDataName], runParams)
     
-        if (mod.getRunCode() not in modelDict) and (mod.getRunCode() not in doneRuns):
+        if (mod.getRunCode() not in modelDict) and (
+        mod.getRunCode() not in doneRuns) and (
+        ''.join(re.split('_[0-9]of[0-9]',mod.getRunCode())) not in doneRuns):
             mod.fitModel(**runParams)
             modelDict[mod.getRunCode()] = mod
             doneRuns.append(mod.getRunCode())

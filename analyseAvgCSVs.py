@@ -246,8 +246,10 @@ def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
 def makeNewDoneRunListFromOutFile(outFile):
     ''' Input .csv file which is combo of all csvs
     so each column is a new run'''
+    import re
     df = pd.read_csv(sf.addFolderPath(outFile))
     cols = [x for x in (set(df.columns) - {'Unnamed: 0'})]
+    cols = [re.sub('_[0-9]of5_','_',x) for x in cols]
     print('made newRunDoneList with',len(cols),'items')
     assert (len(cols) > 100),'df needs to be transposed - need col names to be run names' 
     return cols
