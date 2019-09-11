@@ -249,6 +249,7 @@ def makeNewDoneRunListFromOutFile(outFile):
     df = pd.read_csv(sf.addFolderPath(outFile))
     cols = [x for x in (set(df.columns) - {'Unnamed: 0'})]
     print('made newRunDoneList with',len(cols),'items')
+    assert (len(cols) > 100),'df needs to be transposed - need col names to be run names' 
     return cols
 #RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
 #NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
@@ -261,12 +262,12 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-#listofcsvs = makeCSVlistFromFolderName('paramsearch3fordf7')
+listofcsvs = makeCSVlistFromFolderName('paramsearch3fordf7')
 ##outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
-#outFile='paramsearch3forDF7.csv'
+outFile='paramsearch3forDF7.csv'
 ###outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
 ###df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
-#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+df = combineIntermediateResultsCSVs(listofcsvs, outFile)
 #df = processCSV(outFile, write=True, addCols=True)
 ###df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 ## ^ This one used for choosing parameters..mysteriously high results
@@ -274,5 +275,5 @@ for item in paramDict.keys():
 #paramHistograms(df, minProportion=0.01)
 newRunDoneList = makeNewDoneRunListFromOutFile(outFile)
         
-paramScatterPlots(df, 'acc', subplots=True)
+#paramScatterPlots(df, 'acc', subplots=True)
 #paramScatterPlots(df1, 'acc', subplots=True)
