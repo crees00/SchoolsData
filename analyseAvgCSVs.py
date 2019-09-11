@@ -255,7 +255,7 @@ def makeNewDoneRunListFromOutFile(outFile):
     return cols
 #RFparams = ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used']
 #NNparams = ['Solver','Number of Layers','Nodes per layer','Alpha']
-paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Depth','Bootstrap used'],
+paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number of Features to Consider','Bootstrap used'],
              'NN': ['Solver','Number of Layers','Nodes per layer','Alpha'],
              'SVM':['Kernel Function','C value','Degree of Polynomial','Gamma value'],
              'KNN':['Algorithm','k value','p parameter','n/a'],
