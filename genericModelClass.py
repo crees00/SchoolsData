@@ -22,6 +22,7 @@ from sklearn.metrics import (
     auc,
     classification_report,
 )
+import re
 import matplotlib.pyplot as plt
 from imblearn.over_sampling import SMOTE
 from sklearn.feature_selection import RFE
@@ -840,9 +841,9 @@ runParams = {
     },
     SVM: {
         "C": list(np.logspace(-3,3)) + list(np.linspace(0.4,12,100)),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
-        "kernel": ["rbf",'poly'],
-        "degree":range(3,20),
-        "gamma": list(np.linspace(0.001,0.05,200)) + list(np.logspace(-3,1)),#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
+        "kernel": ["rbf"],
+        "degree":[2],
+        "gamma": list(np.linspace(0.001,0.05,200)) + list(np.logspace(-3,0)),#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
         'numLayers' : [1,2,3,4,5],
