@@ -154,6 +154,37 @@ SFS1Cols = [
 'GOR_South East',
 'Ed.Support.Staff.2018'
 ]
+
+allCols = ['Total revenue balance (1) 2017-18',
+       'Total revenue balance (1) as a % of total revenue income (6) 2017-18',
+       'TotalRevBalance Change 7yr', 'TotalRevBalance Change 4yr',
+       'TotalRevBalance Change 2yr', 'TOTPUPS__18', 'PTKS1GROUP_L__18',
+       'PTKS1GROUP_M__18', 'PTKS1GROUP_H__18', 'PTFSM6CLA1A__18', 'PTMOBN__18',
+       'PSENELSE__18', 'PNUMEAL', 'PNUMFSM', 'PERCTOT', 'ISPRIMARY',
+       'ISSECONDARY', 'ISPOST16', 'AGEL', 'AGEH', 'Pupil:     Teacher Ratio',
+       'Mean Gross FTE Salary of All Teachers (Â£s)', 'BoardingNew',
+       'SixthFormNew', 'HasBoysNew', 'HasGirlsNew', 'MaintainedNew',
+       'AcademyNew', 'SpecialNew', 'GOR_East Midlands', 'GOR_East of England',
+       'GOR_London', 'GOR_North East', 'GOR_North West',
+       'GOR_South East', 'GOR_South West', 'GOR_West Midlands',
+       'GOR_Yorkshire and the Humber', 'Self.Income.2018',
+       'Total.Income.pp.2018', 'Teaching.Staff.2018', 'Supply.Staff.2018',
+       'Ed.Support.Staff.2018', 'Premises.2018', 'Back.Office.2018',
+       'Catering.2018', 'Other.Staff.2018', 'Energy.2018',
+       'Learning.Resources.2018', 'ICT.2018', 'Consultancy.2018', 'Other.2018',
+       'Total.Spend.pp.2018', 'PerformancePctRank', 'Self.Income_2yrDiff',
+       'Self.Income_4yrDiff', 'Total.Income.pp_2yrDiff',
+       'Total.Income.pp_4yrDiff', 'Teaching.Staff_2yrDiff',
+       'Teaching.Staff_4yrDiff', 'Supply.Staff_2yrDiff',
+       'Supply.Staff_4yrDiff', 'Ed.Support.Staff_2yrDiff',
+       'Ed.Support.Staff_4yrDiff', 'Premises_2yrDiff', 'Premises_4yrDiff',
+       'Back.Office_2yrDiff', 'Back.Office_4yrDiff', 'Catering_2yrDiff',
+       'Catering_4yrDiff', 'Other.Staff_2yrDiff', 'Other.Staff_4yrDiff',
+       'Energy_2yrDiff', 'Energy_4yrDiff', 'Learning.Resources_2yrDiff',
+       'Learning.Resources_4yrDiff', 'ICT_2yrDiff', 'ICT_4yrDiff',
+       'Consultancy_2yrDiff', 'Consultancy_4yrDiff', 'Other_2yrDiff',
+       'Other_4yrDiff', 'Total.Spend.pp_2yrDiff', 'Total.Spend.pp_4yrDiff',
+       'URN', 'Class']
 ############################################################################################
 # From round 1 of SFS with df7
 GNBcols=[
