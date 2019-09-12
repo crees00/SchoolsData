@@ -894,7 +894,7 @@ runParams = {
     KNN: {
         'n_neighbors':range(1,50),#[1,2,3,4,6,8,12,15,20,25],
         'algorithm':['brute','auto'],
-        'p':[1]
+        'p':[1,2,3]
     } ,
     AdaBoost: {
         'baseEstimator':[RandomForestClassifier(max_depth=11, n_estimators=200), 
@@ -920,7 +920,7 @@ if __name__ == "__main__":
     import emailing
     import pickling
 #    doneRuns=[]
-    files = ['bbbbVgsbbbsdf7.csv']#*1000
+    files = ['stuckForDF7.csv']*10#'bbbbVgsbbbsdf7.csv']#*1000
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 #        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
         for modelType in colDict.keys():#['GNB','LR','KNN','SVM','NN','RF']:
@@ -943,12 +943,12 @@ if __name__ == "__main__":
             # Generate data and model instances, run the models
             modelDataDict, modelDict = runAGroup(
                 [
-#                        True, 
+                        True, 
 #                        False,
                         False
                  ],
                 [
-#                        True,
+                        True,
 #                        False,
                         False
                         ],
@@ -961,8 +961,8 @@ if __name__ == "__main__":
 #                        GaussianBayes,
 #                        KNN
                         ],
-                [5,10,15,20,25],
-                numParamCombos=100,
+                [5,10,20],
+                numParamCombos=80,
                 nFolds = 5
             )
             modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)

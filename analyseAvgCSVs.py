@@ -88,10 +88,12 @@ def processCSV(csv, write=False, addCols=True):
        'recall0', 'recall1']:
         print(f"Best {col}:")
         runName = dfWithMins.loc[:,col].idxmax()
-        best[col] = (dfWithMins.loc[:,col].max(),runName, dfWithMins.loc[runName, :])
-        print(best[col][0],'for',best[col][1])
-#        print(best[col][2])
-        
+        try:
+            best[col] = (dfWithMins.loc[:,col].max(),runName, dfWithMins.loc[runName, :])
+            print(best[col][0],'for',best[col][1])
+#            print(best[col][2])
+        except KeyError:
+            pass
 
     
     df.columns.rename('Run', inplace=True)
@@ -264,7 +266,7 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-listofcsvs = makeCSVlistFromFolderName('paramsearch3fordf7')
+listofcsvs = makeCSVlistFromFolderName('paramsearch3forDF7')
 ##outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
 outFile='paramsearch3forDF7.csv'
 ###outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
