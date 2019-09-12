@@ -113,14 +113,20 @@ def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
         if subplots:
             plt.show()
 
-def bestModelsBarPlot(df, score='acc', mins={}):
+def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=True, bestRuns=None):
+    '''fed by makeSubplots or can be used on its own. 
+    Plots a single bar plot
+    sorts by value unless an ordering (xvals) is passed in
+    If sameRuns is used, then the individual runs in the first plot are 
+    saved in bestRuns and looked up and plotted in the rest of the charts'''
     assert 'OS' in df.columns, 'needs to be df with OS, p1 etc cols added'
+    from math import ceil
 #    plt.figure(figsize=(10,6))
     scores = {}
-    xvals=[]
+    newxvals=[]
     yvals=[]
     print('plotting',score)
-    for model in longNames.keys():     
+    for model in longRunNames.keys():     
         scores[model]={}
         modelSubset = df[df[model]==1]
         for crit, val in mins.items():
@@ -130,13 +136,43 @@ def bestModelsBarPlot(df, score='acc', mins={}):
         bestScore = modelSubset[score].max()
         scores[model][score] = bestScore
         scores[model]['runName']= df.iloc[modelSubset[score].idxmax(),0]
-        xvals.append(model)
+        newxvals.append(model)
         yvals.append(bestScore)
-    yvals, xvals = zip(*sorted(zip(yvals, xvals),reverse=True))
-    plt.plot(xvals, yvals)
-    plt.show()
-    return scores
+#    print(xvals)
+    # if xvals is true then it is not the first run and so use existing xvals
+    if xvals:
+        yvals = [scores[model][score] for model in xvals]
+        if sameRuns:
+            yvals = [float(df[df.iloc[:,0]==runName][score].values) for runName in bestRuns]
+    # if xvals=None then it is the first run so use newxvals generated in loop
+    else:
+        yvals, xvals = zip(*sorted(zip(yvals, newxvals),reverse=True))
+        bestRuns = [scores[model]['runName'] for model in xvals]
+#    print(yvals)
+    plt.bar(xvals, yvals)
+    plt.grid(axis='y')
+    plt.ylim([0,ceil((max(yvals))*10)/10])
+#    print(scores)
+    print(bestRuns)
+    if show:
+        plt.show()
+    return xvals, bestRuns
 
+def makeSubplots(df, measureList, figsize=(10,6), sameRuns=True):
+    ''' Takes a list of measures and makes subplots, each one being a bestModelsBarPlot
+    makes x order the same in all plots - first one sorted then the other plots follow'''
+    plt.figure(figsize=figsize)
+    xvals=None
+    bestRuns=None
+    for i,measure in enumerate(measureList):
+        i+=1
+        plt.subplot(1,len(measureList),i)
+        plt.title(longMeasureNames[measure])
+        xvals, bestRuns = bestModelsBarPlot(df,measure, show=False, xvals=xvals, sameRuns=sameRuns, bestRuns=bestRuns)
+    print(xvals)
+    
+    
+# plt.style.available
 mins = {'acc':0.6, 'auc':0.6,'F1':0.25,'F0':0.25}
 
 paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number of Features to Consider','Bootstrap used'],
@@ -144,12 +180,15 @@ paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number o
              'SVM':['Kernel Function','C value','Degree of Polynomial','Gamma value'],
              'KNN':['Algorithm','k value','p parameter','n/a'],
              }
-longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
+longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
              'KNN':'k-Nearest Neighboours','LR':'Logistic Regression','GNB':'Gaussian Naive Bayes'}
+longMeasureNames = {'acc':'Accuracy','auc':'Area Under the ROC curve'}
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 
 df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
         
+measureList=['auc','acc']
 #paramScatterPlots(df, 'acc', subplots=True)
-scores= bestModelsBarPlot(df, mins=mins)
+#scores= bestModelsBarPlot(df, mins=mins)
+makeSubplots(df, measureList)
