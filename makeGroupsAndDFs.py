@@ -7,6 +7,7 @@ Make df to use with genericModelClass
 @author: reesc1
 """
 import pandas as pd
+import setFolder as sf
 
 def filterSchools(SchoolsList, numMin=0, numMax=20, cats=[[]] * 20, printout=False):
     """ Takes in list of schools, returns a list of schools which is a subset
@@ -131,14 +132,14 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
     )
     df = cam.dropColsFromList(df, ['Stuck'])
     if len(write) >0:
-        df.to_csv(write)
+        df.to_csv(sf.addFolderPath(write))
     return  df
 
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv('df5AddedJoeColsForModelModifiedImputed.csv')
+inputDF = pd.read_csv(sf.addFolderPath( 'df5AddedJoeColsForModelModifiedImputed.csv'))
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'bbbbVgsbbbsdf5AddedJoeCols.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'stuck','all', inputDF, 'stuckForDF7.csv')
