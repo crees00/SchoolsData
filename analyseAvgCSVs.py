@@ -270,12 +270,12 @@ outFile='paramsearch3forDF7.csv'
 ###outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
 ###df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
 df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-#df = processCSV(outFile, write=True, addCols=True)
+df = processCSV(outFile, write=True, addCols=True)
 ###df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 ## ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')
 #paramHistograms(df, minProportion=0.01)
-newRunDoneList = makeNewDoneRunListFromOutFile(outFile)
+#newRunDoneList = makeNewDoneRunListFromOutFile(outFile)
         
-#paramScatterPlots(df, 'acc', subplots=True)
+paramScatterPlots(df, 'acc', subplots=True)
 #paramScatterPlots(df1, 'acc', subplots=True)
