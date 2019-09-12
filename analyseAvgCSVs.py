@@ -171,79 +171,6 @@ def processCSV(csv, write=False, addCols=True):
     
     return df
 
-def paramHistograms(df, minAcc=0.60, minProportion=-1):
-    ''' If a minProportion is set to e.g. 0.1 then accurateSubset for that
-    model will be the most accurate 10% of runs for that model.
-    If no minProportion set, uses minAcc set or minAcc default
-    '''
-    for model in ['NN','RF','SVM','KNN']:
-        print('\nModel:',model)
-        modelSubset = df[df[model]==1]
-        
-        if minProportion > 0:
-            minAcc=1
-        
-        accurateSubset = modelSubset[modelSubset['acc']>minAcc]
-        
-        while (len(accurateSubset)/len(modelSubset)) < minProportion:
-            minAcc -= 0.001
-            accurateSubset = modelSubset[modelSubset['acc']>minAcc]
-        print('minAcc:',minAcc)   
-        for param in ['p1','p2','p3','p4']:
-            print('\n',param,':')
-            accCounts = accurateSubset[param].value_counts(sort=False)
-            modCounts = modelSubset[param].value_counts(sort=False)
-            newCounts = pd.DataFrame([accCounts,modCounts],index=['acc','mod'])
-            newCounts = newCounts.transpose()
-            newCounts.fillna(0,inplace=True)
-            newCounts['Proportion'] = newCounts['acc']/newCounts['mod']
-            print(newCounts)
-            try:
-#                plt.hist(accurateSubset[param]/modelSubset[param], bins=100)
-                plt.scatter(newCounts.index, newCounts['Proportion'])
-#                plt.hist(, bins=100)
-                plt.show()
-            except ValueError:
-                print("matplotlib doesn't like strings")
-            except TypeError:
-                print("can't divide strings")
-
-            
-def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
-    for model in ['NN','RF','SVM','KNN']:
-        if model not in df.columns:
-            continue
-#        print('\nModel:',model)
-        if subplots:
-            plt.figure(figsize=(15,9))
-        for param in ['p1','p2','p3','p4']:
-            modelSubset = df[df[model]==1]
-            modelSubset = modelSubset[modelSubset['OS']==0]
-            modelSubset = modelSubset[modelSubset['RFE']==0]
-            accurateSubset = modelSubset[modelSubset['acc']>0.72]
-            labelDict = {'auc':'Area Under the ROC Curve', 'acc':'Accuracy'}
-            if (model == 'SVM') and (param == 'p3'):
-                modelSubset = modelSubset[modelSubset['p1']=='poly']
-            try:
-                if subplots:
-                    plt.subplot(2,2,int(param[1]))
-                else:
-                    plt.figure(figsize=(10,6))
-                plt.scatter(modelSubset[param],modelSubset[scoreToPlot], marker='x', s=15)
-                title = f"{longNames[model]} - {paramDict[model][param]}"
-                xlabel = f"{paramDict[model][param]}"
-                if subplots and (int(param[1])>2):
-                    plt.xlabel(xlabel)
-                else:
-                    plt.title(title)
-                plt.ylabel(labelDict[scoreToPlot])
-                plt.grid(b=True, which='major', color='black', alpha=0.2)
-                if not subplots:
-                    plt.show()
-            except ValueError:
-                print("matplotlib doesn't like strings")
-        if subplots:
-            plt.show()
             
 def makeNewDoneRunListFromOutFile(outFile):
     ''' Input .csv file which is combo of all csvs
@@ -271,8 +198,8 @@ listofcsvs = makeCSVlistFromFolderName('paramsearch3forDF7')
 outFile='paramsearch3forDF7.csv'
 ###outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
 ###df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
-df = combineIntermediateResultsCSVs(listofcsvs, outFile)
-df = processCSV(outFile, write=True, addCols=True)
+#df = combineIntermediateResultsCSVs(listofcsvs, outFile)
+#df = processCSV(outFile, write=True, addCols=True)
 ###df1 = processCSV('AVG26_8_119bbbbVgsbbbsLessCols.csv', write=False, addCols=True)
 ## ^ This one used for choosing parameters..mysteriously high results
 #df2 = processCSV('AVG26_8_757bbbbVgsbbbsAllCols.csv')

@@ -109,7 +109,7 @@ class ModelData:
         """ Inputs: x = training points in a df, y = labels col of df
         Returns dfs that are oversampled - os_data_x and os_data_y 
         plut the train/test split of the original data"""
-        os = SMOTE(random_state=0)
+        os = SMOTE()
         x_train, y_train = self.getxTrain(), self.getyTrain()
         #        print(f"Before oversampling, x_train has dims {x_train.shape}")
         columns = x_train.columns
@@ -330,7 +330,6 @@ class RandomForest(Model):
         clf = RandomForestClassifier(
             n_estimators=n_estimators,
             max_depth=max_depth,
-            random_state=0,
             criterion=criterion,
             bootstrap=bootstrap,
         )
