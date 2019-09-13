@@ -131,6 +131,11 @@ def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=
         modelSubset = df[df[model]==1]
         for crit, val in mins.items():
             modelSubset = modelSubset[modelSubset[crit]>val]
+            if len(modelSubset)==0:
+                print(model, crit, val,'No values left in df after setting minimums')
+                break
+        if len(modelSubset)==0:
+            continue
 #        modelSubset = modelSubset[modelSubset['OS']==0]
 #        modelSubset = modelSubset[modelSubset['RFE']==0]
         bestScore = modelSubset[score].max()
@@ -158,7 +163,7 @@ def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=
         plt.show()
     return xvals, bestRuns
 
-def makeSubplots(df, measureList, figsize=(10,6), sameRuns=True):
+def makeSubplots(df, measureList, figsize=(10,6), sameRuns=True, mins=mins):
     ''' Takes a list of measures and makes subplots, each one being a bestModelsBarPlot
     makes x order the same in all plots - first one sorted then the other plots follow'''
     plt.figure(figsize=figsize)
@@ -168,7 +173,9 @@ def makeSubplots(df, measureList, figsize=(10,6), sameRuns=True):
         i+=1
         plt.subplot(1,len(measureList),i)
         plt.title(longMeasureNames[measure])
-        xvals, bestRuns = bestModelsBarPlot(df,measure, show=False, xvals=xvals, sameRuns=sameRuns, bestRuns=bestRuns)
+        xvals, bestRuns = bestModelsBarPlot(df,measure, show=False, xvals=xvals, 
+                                            sameRuns=sameRuns, bestRuns=bestRuns,
+                                            mins=mins)
     print(xvals)
     
     
@@ -207,7 +214,7 @@ def RFEBarPlot(df, score='acc', mins={}, RFE=False, OS=False, subPlots=False, ba
         plt.xticks(ticks=xvals,labels=[longAxisNames[f"{'OS' if OS else 'RFE'}"][x] for x in xvals])
         if subPlots:
             plt.title(f"{longRunNames[model]}")
-            plt.ylim([0,0.8])
+            plt.ylim([0,ceil((max(df[score]))*10)/10])
         else:
             plt.title(f"{'Using oversampling' if OS else ('Applying different levels of RFE' if RFE else '')} for {longRunNames[model]}")
             plt.ylabel(longMeasureNames[score])
@@ -215,7 +222,7 @@ def RFEBarPlot(df, score='acc', mins={}, RFE=False, OS=False, subPlots=False, ba
         if not subPlots:
             plt.show()    
 
-def findParamsOfBestRuns(df, numBest=5, measure='auc', mins=mins):
+def findParamsOfBestRuns(df, numBest=5, measure='auc', mins={}):
     ''' make a dictionary (scores) with the parameters of the best 5 runs
     according to a certain parameter '''
     scores={}
@@ -232,8 +239,22 @@ def findParamsOfBestRuns(df, numBest=5, measure='auc', mins=mins):
         scores[model] = modDict
     return scores
     
+def plotPrecisionVsRecall(df, mins):
+    for crit, val in mins.items():
+        df = df[df[crit]>val]
+    if len(df)==0:
+        raise 'no points greater than the minimums'
+        
+
 # plt.style.available
-mins = {'acc':0.6, 'auc':0.6,'F1':0.25,'F0':0.25}
+mins = {'acc':0.6,
+        'auc':0.6,
+#        'F1':0.25,
+#        'F0':0.25,
+        'recall1':0.1,
+#        'recall0':0.1,
+        'precision1':0.1
+        }
 
 paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number of Features to Consider','Bootstrap used'],
              'NN': ['Solver','Number of Layers','Nodes per layer','Alpha'],
@@ -242,21 +263,24 @@ paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number o
              }
 longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
              'KNN':'k-Nearest Neighboours','LR':'Logistic Regression','GNB':'Gaussian Naive Bayes'}
-longMeasureNames = {'acc':'Accuracy','auc':'Area Under the ROC curve'}
+longMeasureNames = {'acc':'Accuracy','auc':'Area Under the ROC curve',
+                    'recall1':'Recall of class 1','recall0':'Recall of class 0',
+                    'precision1':'Precision for class 1','precision0':'Precision of class 0'}
 longAxisNames={'OS':{0:'OS', 1:'No OS'},
                'RFE':{0:'No\nRFE', 5:'5',10:'10',15:'15',
                       20:'20',25:'25'}}
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 
-df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
+#df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
+df = pd.read_csv(sf.addFolderPath('paramsearch1OldStuckAdded.csv'))
         
-measureList=['auc','acc']
+measureList=['auc','acc','recall1','recall0','precision1','precision0']
 #paramScatterPlots(df, 'acc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
-#makeSubplots(df, measureList)
+#makeSubplots(df, measureList, mins=mins, figsize=(15,7))
 
-#for score in measureList:
-#    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.5)
+for score in measureList:
+    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.5)
 
-scores = findParamsOfBestRuns(df, mins=mins)
+#scores = findParamsOfBestRuns(df, mins=mins)
