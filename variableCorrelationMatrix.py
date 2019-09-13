@@ -14,7 +14,8 @@ sns.set(style="white")
 
 # Generate a large random dataset
 rs = np.random.RandomState(33)
-d = pd.read_csv('bbbbVgsbbbs6.csv')
+#d = pd.read_csv('bbbbVgsbbbs6.csv')
+d=bigdf
 xCols = [x for x in (set(d.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18'})]
 
 # Compute the correlation matrix

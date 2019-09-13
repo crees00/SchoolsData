@@ -104,16 +104,22 @@ def makeDFofDiffsWithTrueValues(bigDF, write=''):
         accdf[col] = bigDF[col] - bigDF['TheTruth']
     if write !='':
         accdf.to_csv(sf.addFolderPath(write))
-    return accdf
 
-bestScore=0
-for col in accdf:
-    if col=='TheTruth':
-        continue
-    runScore = accdf[col].value_counts()[0]
-    if runScore>bestScore:
-        bestScore = runScore
-        bestRun = col
-        
+    bestScore=0
+    for col in accdf:
+        if col=='TheTruth':
+            continue
+        runScore = accdf[col].value_counts()[0]
+        if runScore>bestScore:
+            bestScore = runScore
+            bestRun = col
+    return
 #bigDF = makeDFofResults('comparePredsdf7.csv')
-accdf = makeDFofDiffsWithTrueValues(bigDF, 'accdfForDF7.csv')
+#accdf = makeDFofDiffsWithTrueValues(bigDF, 'accdfForDF7.csv')
+        
+#accdf = pd.read_csv(sf.addFolderPath('accdfForDF7.csv'), index_col=[0])
+#bigdf = pd.read_csv(sf.addFolderPath('comparePredsdf7.csv'), index_col=[0])
+
+runs = accdf.columns[:-1]
+
+accdf['numRight'] = accdf.apply(lambda row: sum(row ==0), axis=1)
