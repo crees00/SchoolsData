@@ -919,7 +919,7 @@ if __name__ == "__main__":
     import emailing
     import pickling
 #    doneRuns=[]
-    files = ['stuckForDF7.csv']*10#'bbbbVgsbbbsdf7.csv']#*1000
+    files = ['stuckForDF7.csv']*1000#'bbbbVgsbbbsdf7.csv']#*1000
     for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 #        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
         for modelType in colDict.keys():#['GNB','LR','KNN','SVM','NN','RF']:
@@ -961,7 +961,7 @@ if __name__ == "__main__":
 #                        KNN
                         ],
                 [5,10,20],
-                numParamCombos=80,
+                numParamCombos=5,
                 nFolds = 5
             )
             modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
