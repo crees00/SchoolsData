@@ -183,7 +183,7 @@ def RFEBarPlot(df, score='acc', mins={}, RFE=False, OS=False, subPlots=False, ba
     print('plotting',score)
     if subPlots:
         plt.figure(figsize=(15,7))
-        plt.suptitle(f"{longMeasureNames[score]} of best run when {'Oversampling is used' if OS else ('applying different levels of RFE' if RFE else '')}")
+        plt.suptitle(f"{longMeasureNames[score]} of best run when {'Oversampling is used' if OS else ('selecting different numbers of features using RFE' if RFE else '')}")
     for i,model in enumerate(longRunNames.keys()):     
         modelSubset = df[df[model]==1]
         for crit, val in mins.items():
@@ -215,7 +215,22 @@ def RFEBarPlot(df, score='acc', mins={}, RFE=False, OS=False, subPlots=False, ba
         if not subPlots:
             plt.show()    
 
-    
+def findParamsOfBestRuns(df, numBest=5, measure='auc', mins=mins):
+    ''' make a dictionary (scores) with the parameters of the best 5 runs
+    according to a certain parameter '''
+    scores={}
+    df = df.sort_values(measure, ascending=False)
+    for model in longRunNames.keys():     
+        modDict={name:[] for name in ['RFE', 'OS', 'p1', 'p2', 'p3', 'p4']}
+        modelSubset = df[df[model]==1]
+        modelSubset = modelSubset.iloc[:5,:]
+        for crit, val in mins.items():
+            modelSubset = modelSubset[modelSubset[crit]>val]
+        
+        for item in modDict.keys():
+            modDict[item] = list(set(modelSubset[item].dropna()))
+        scores[model] = modDict
+    return scores
     
 # plt.style.available
 mins = {'acc':0.6, 'auc':0.6,'F1':0.25,'F0':0.25}
@@ -240,4 +255,8 @@ measureList=['auc','acc']
 #paramScatterPlots(df, 'acc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
 #makeSubplots(df, measureList)
-RFEBarPlot(df, score='auc',RFE=True, subPlots=True, mins=mins, barwidth=0.8)
+
+#for score in measureList:
+#    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.5)
+
+scores = findParamsOfBestRuns(df, mins=mins)
