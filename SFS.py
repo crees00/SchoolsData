@@ -18,6 +18,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.linear_model import LogisticRegression
 import pickling
 import os
+import matplotlib.pyplot as plt
+from math import ceil
 csv =sf.addFolderPath('bbbbVgsbbbsdf7.csv')#:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
 df = pd.read_csv(csv)
 xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','GOR_Not Applicable'})]
@@ -251,6 +253,39 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
                 print(acc,feature)
         acc -= 1e-3
             
+def plotFromDict(outDict, figsize=(10,6)):
+    lastRunName='a'*20
+    for runName, listOfGroups in outDict.items():
+        print(runName)
+        if runName[:-14] != lastRunName[:-14]:
+            plt.figure(figsize=(10,6))
+        if 'Bfeatures' in runName:
+            label = 'Backward Selection'
+            colour='blue'
+        if 'Ffeatures' in runName:
+            label = 'Forward Selection'
+            colour='orange'
+        xvals, yvals = [],[]
+        for group in listOfGroups:
+            xvals.append(group[0])
+            yvals.append(group[1])
+        plt.plot(xvals,yvals, label=label, color=colour)
+        plt.axhline(max(yvals), linestyle = 'dashed', color=colour,
+                    linewidth=1)
+
+        
+        if runName[:-14] == lastRunName[:-14]:
+            plt.legend()#lines[0,2],['Backward Selection','Forward Selection'])
+            plt.xlabel('Number of features')
+            plt.ylabel('Accuracy')
+            plt.ylim([None,ceil((max(yvals))*100)/100])
+            plt.title(f"Sequential Feature Selection results for {longRunNames[runName.split('_')[0]]}")
+            plt.grid()
+            plt.show()
+        lastRunName=runName
+
+longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
+             'KNN':'k-Nearest Neighboours','LR':'Logistic Regression','GNB':'Gaussian Naive Bayes'}
 
 #listOfPickles = [
 #                'SVM_original_2_rbf_2_0.04_Bfeatures.pik',
@@ -263,11 +298,13 @@ def findFeatureAccuracy(dictOfPickleNamesAndOutLists, printOut=True):
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
 folderName = r"SFS2forDF7"
-listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
-##
-outDict = processListOfPickles(listOfPickles2, folderName)
-counts = findFeatureCounts(outDict)
-#chosenCols = chooseColsBasedOnCount(counts, 6)
-findFeatureAccuracy(outDict)
+#listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
+###
+#outDict = processListOfPickles(listOfPickles2, folderName)
+#counts = findFeatureCounts(outDict)
+##chosenCols = chooseColsBasedOnCount(counts, 6)
+#findFeatureAccuracy(outDict)
 #runDict = doSFS(runDict)
 #showBestFeaturesOfRunDict(runDict, printOut=True, save=False)
+
+plotFromDict(outDict)
