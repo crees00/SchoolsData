@@ -266,7 +266,7 @@ def plotGroupROC(name1stPart,  modelDict,name2ndPart='', figsize=(6,6)):
     from scipy import interp
     tprs=[]
     mean_fpr = np.linspace(0,1,100)
-    plt.figure(figsize=figsize)
+#    plt.figure(figsize=figsize)
     i=1
     for name, instance in modelDict.items():
         if (name1stPart == name[:len(name1stPart)]) and (name2ndPart in name):
@@ -291,11 +291,16 @@ def plotGroupROC(name1stPart,  modelDict,name2ndPart='', figsize=(6,6)):
     plt.ylim([0,1])
     plt.title(f"ROC curve for {longRunNames[name1stPart[:name1stPart.find('_')]]}")
     plt.legend(loc="lower right")
-    plt.show()
+#    plt.show()
     return
 
-def plotROCsFromListAndModelDict(shortRunNames, modelDict):
-    for name1stPart in shortRunNames:
+def plotROCsFromListAndModelDict(shortRunNames, modelDict, figsize=(10,16)):
+    plt.figure(figsize=figsize)
+  
+    for i, name1stPart in enumerate(shortRunNames):
+
+        i+=1
+        plt.subplot(3,2,i)
         plotGroupROC(name1stPart, modelDict)
 
 
