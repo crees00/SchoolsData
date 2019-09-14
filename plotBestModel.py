@@ -168,12 +168,17 @@ def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=
         plt.show()
     return xvals, bestRuns
 
-def makeSubplots(df, measureList, mins, figsize=(10,6), sameRuns=True, ymax=None):
+def makeSubplots(df, measureList, mins, figsize=(10,6), sameRuns=True, ymax=None,
+                 chosenMeasure=None):
     ''' Takes a list of measures and makes subplots, each one being a bestModelsBarPlot
     makes x order the same in all plots - first one sorted then the other plots follow'''
     plt.figure(figsize=figsize)
     xvals=None
     bestRuns=None
+    if chosenMeasure:
+        xvals, bestRuns = bestModelsBarPlot(df,chosenMeasure, show=False, xvals=xvals, 
+                                            sameRuns=sameRuns, bestRuns=bestRuns,
+                                            mins=mins, ymax=ymax)
     for i,measure in enumerate(measureList):
         i+=1
         plt.subplot(1,len(measureList),i)
@@ -290,7 +295,7 @@ df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
 measureList=['auc','acc','recall1','recall0','precision1','precision0']
 #paramScatterPlots(df, 'acc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
-makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1)
+makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1, chosenMeasure='precision1')
 #
 #for score in measureList:
 #    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
