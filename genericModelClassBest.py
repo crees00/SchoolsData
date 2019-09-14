@@ -839,6 +839,8 @@ def postProcess(modelDataDict, modelDict, pickleIt=False, emailIt=True, ROC=Fals
             print("\nEmail sending failed, carrying on..\n")
     return modelAvgDict, modelScoresDict
 
+
+
 def findFIsFromDict(modelDict, toPrint=True):
     '''Takes in a modelDict with the CV runs from a single run
     Prints features in reverse order of importance
@@ -873,26 +875,26 @@ def featureImportances(model, FIarray='nothing'):
 
 runParams = {
     RandomForest: {
-        "n_estimators":[34.0, 12.0, 46.0, 52.0, 22.0],#list(range(2,300,2))+ list(range(12,2000,20)),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
-        "max_depth":[8.0, 18.0, 12.0, 6.0],# list(range(1,30)) + list(range(4,19)),#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
-        "criterion": ['entropy','gini'],#["gini", "entropy"],
-        "bootstrap": [False, True]#[True, False],
+        "n_estimators":[12],#list(range(2,300,2))+ list(range(12,2000,20)),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
+        "max_depth":[6],# list(range(1,30)) + list(range(4,19)),#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
+        "criterion": ['entropy'],#["gini", "entropy"],
+        "bootstrap": [True]#[True, False],
     },
     SVM: {
-        "C": [0.8686868686868687, 1.4545454545454546,1.6888888888888889,1.5717171717171716],#list(np.logspace(-3,1)) + list(np.linspace(0.4,12,100)),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
+        "C": [1.4545454545454546],#list(np.logspace(-3,1)) + list(np.linspace(0.4,12,100)),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
         "kernel": ["rbf"],
         "degree":[2],
-        "gamma": [0.24420530945486502, 0.3727593720314938, 0.42919342601287785]#list(np.linspace(0.001,0.05,200)) + list(np.logspace(-3,0)),#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
+        "gamma": [0.24420530945486502]#list(np.linspace(0.001,0.05,200)) + list(np.logspace(-3,0)),#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
-        'numLayers' : [2,3,5],#[1,2,3,4,5,6,7],
-        'nodesPerLayer' :[6,8,10,11,12],# list(range(1,20)),
+        'numLayers' : [5],#[1,2,3,4,5,6,7],
+        'nodesPerLayer' :[12],# list(range(1,20)),
         'solver' : ['adam'],#,'lbfgs','sgd'], 
-        'alpha' :[0.06667000000000001,0.17586620689655172,1e-05,2.6826957952797268e-08,5.179474679231202e-06]# list(np.logspace(-8,-1))+list(np.linspace(0.00001,0.3,num=30))
+        'alpha' :[0.06667000000000001]# list(np.logspace(-8,-1))+list(np.linspace(0.00001,0.3,num=30))
     },
     KNN: {
-        'n_neighbors':[33,41,42],#range(1,50),#[1,2,3,4,6,8,12,15,20,25],
-        'algorithm':['brute','auto'],
+        'n_neighbors':[41],#range(1,50),#[1,2,3,4,6,8,12,15,20,25],
+        'algorithm':['auto'],
         'p':[1]
     } ,
     AdaBoost: {
@@ -915,58 +917,58 @@ colDict = {'SVM':{'cols':CS.SVMcols2, 'model':SVM},
 #           'AB':{'cols':CS.RFcols2, 'model':AdaBoost}
            }
 
-if __name__ == "__main__":
-    import emailing
-    import pickling
-#    doneRuns=[]
-    files = ['bbbbVgsbbbsdf7.csv']*10#['stuckForDF7.csv']*10#'bbbbVgsbbbsdf7.csv']#*1000
-    for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
-#        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
-        for modelType in colDict.keys():#['GNB','LR','KNN','SVM','NN','RF']:
-            pickling.save_dill(doneRuns, f"doneRuns_{len(doneRuns)}")
-#            modelDict={}
-            modelDataDict={}
-            df = pd.read_csv(sf.addFolderPath( fileName))
-            cols = colDict[modelType]['cols']
-#            cols = list(df.columns)
-#            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
-#            cols.append('PerformancePctRank')
-            xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18','GOR_Not Applicable'})]
-            x = df[xCols]
-            print(x.columns)
-            y = df["Class"]
-            try:
-                modelsAtStart = len(modelDict)
-            except NameError:
-                modelsAtStart = 0
-            # Generate data and model instances, run the models
-            modelDataDict, modelDict = runAGroup(
-                [
-                        True, 
-#                        False,
-                        False
-                 ],
-                [
-                        True,
-#                        False,
-                        False
-                        ],
-                [
-                        colDict[modelType]['model']
-#                        LogReg, 
-#                        SVM, 
-#                        RandomForest,
-#                        NN,
-#                        GaussianBayes,
-#                        KNN
-                        ],
-                [5,10,15,20,25],
-                numParamCombos=80,
-                nFolds = 5
-            )
-            modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
-#            findFIsFromDict(modelDict)
-            print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
+#if __name__ == "__main__":
+#    import emailing
+#    import pickling
+##    doneRuns=[]
+#    files = ['bbbbVgsbbbsdf7.csv']#['stuckForDF7.csv']*10#'bbbbVgsbbbsdf7.csv']#*1000
+#    for fileName in files:#['bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv','bbbbVgsbbbs6.csv']:#,'bbbbVgsbbbsAllCols.csv']:#,'bbbVgsbbsLessCols.csv','bbbVgbbLessCols.csv', 'bbbbVgbbbLessCols.csv']:
+##        for cols in [CS.KNNcols]:#[SFS1Cols,SFS2Cols,chosenCols1, lessCols, cols]:   
+#        for modelType in colDict.keys():#['GNB','LR','KNN','SVM','NN','RF']:
+#            pickling.save_dill(doneRuns, f"doneRuns_{len(doneRuns)}")
+##            modelDict={}
+#            modelDataDict={}
+#            df = pd.read_csv(sf.addFolderPath( fileName))
+#            cols = colDict[modelType]['cols']
+##            cols = list(df.columns)
+##            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
+##            cols.append('PerformancePctRank')
+#            xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18','GOR_Not Applicable'})]
+#            x = df[xCols]
+#            print(x.columns)
+#            y = df["Class"]
+#            try:
+#                modelsAtStart = len(modelDict)
+#            except NameError:
+#                modelsAtStart = 0
+#            # Generate data and model instances, run the models
+#            modelDataDict, modelDict = runAGroup(
+#                [
+#                        True, 
+##                        False,
+#                        False
+#                 ],
+#                [
+#                        True,
+##                        False,
+#                        False
+#                        ],
+#                [
+#                        colDict[modelType]['model']
+##                        LogReg, 
+##                        SVM, 
+##                        RandomForest,
+##                        NN,
+##                        GaussianBayes,
+##                        KNN
+#                        ],
+#                [5,10,15,20,25],
+#                numParamCombos=1,
+#                nFolds = 5
+#            )
+#            modelAvgDict, modelScoresDict = postProcess(modelDataDict, modelDict)
+##            findFIsFromDict(modelDict)
+#            print(f"finished genericModelClass - took {datetime.datetime.now() - start}")
 
 
 #    pass
