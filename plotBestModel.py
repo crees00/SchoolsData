@@ -113,7 +113,7 @@ def paramScatterPlots(df, scoreToPlot='acc', subplots=False):
         if subplots:
             plt.show()
 
-def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=True, bestRuns=None):
+def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=True, bestRuns=None, ymax=None):
     '''fed by makeSubplots or can be used on its own. 
     Plots a single bar plot
     sorts by value unless an ordering (xvals) is passed in
@@ -155,15 +155,20 @@ def bestModelsBarPlot(df, score='acc', mins={}, show=True, xvals=None, sameRuns=
         bestRuns = [scores[model]['runName'] for model in xvals]
 #    print(yvals)
     plt.bar(xvals, yvals)
-    plt.grid(axis='y')
-    plt.ylim([0,ceil((max(yvals))*10)/10])
+    if ymax:
+        plt.yticks([x/10 for x in range(10*ymax+1)])
+        
+        plt.ylim([0,ymax])
+    else:
+        plt.ylim([0,ceil((max(yvals))*10)/10])
+    plt.grid(axis='y',which='both', visible=True)
 #    print(scores)
     print(bestRuns)
     if show:
         plt.show()
     return xvals, bestRuns
 
-def makeSubplots(df, measureList, mins, figsize=(10,6), sameRuns=True):
+def makeSubplots(df, measureList, mins, figsize=(10,6), sameRuns=True, ymax=None):
     ''' Takes a list of measures and makes subplots, each one being a bestModelsBarPlot
     makes x order the same in all plots - first one sorted then the other plots follow'''
     plt.figure(figsize=figsize)
@@ -175,7 +180,7 @@ def makeSubplots(df, measureList, mins, figsize=(10,6), sameRuns=True):
         plt.title(longMeasureNames[measure])
         xvals, bestRuns = bestModelsBarPlot(df,measure, show=False, xvals=xvals, 
                                             sameRuns=sameRuns, bestRuns=bestRuns,
-                                            mins=mins)
+                                            mins=mins, ymax=ymax)
     print(xvals)
     
     
@@ -271,8 +276,8 @@ paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number o
 longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
              'KNN':'k-Nearest Neighboours','LR':'Logistic Regression','GNB':'Gaussian Naive Bayes'}
 longMeasureNames = {'acc':'Accuracy','auc':'Area Under the ROC curve',
-                    'recall1':'Recall of class 1','recall0':'Recall of class 0',
-                    'precision1':'Precision for class 1','precision0':'Precision of class 0'}
+                    'recall1':'Recall of Class=1','recall0':'Recall of Class=0',
+                    'precision1':'Precision for Class=1','precision0':'Precision of Class=0'}
 longAxisNames={'OS':{0:'No OS', 1:'OS'},
                'RFE':{30:'No\nRFE', 5:'5',10:'10',15:'15',
                       20:'20',25:'25'}}
@@ -282,12 +287,12 @@ for item in paramDict.keys():
 df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
 #df = pd.read_csv(sf.addFolderPath('paramsearch1OldStuckAdded.csv'))
         
-measureList=['auc','acc']#,'recall1','recall0','precision1','precision0']
+measureList=['auc','acc','recall1','recall0','precision1','precision0']
 #paramScatterPlots(df, 'acc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
-#makeSubplots(df, measureList, mins=mins, figsize=(15,7))
-
-for score in measureList:
-    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
+makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1)
+#
+#for score in measureList:
+#    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
 
 #scores = findParamsOfBestRuns(df, mins=mins)
