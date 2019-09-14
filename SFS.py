@@ -258,7 +258,7 @@ def plotFromDict(outDict, figsize=(10,6)):
     for runName, listOfGroups in outDict.items():
         print(runName)
         if runName[:-14] != lastRunName[:-14]:
-            plt.figure(figsize=(10,6))
+            plt.figure(figsize=figsize)
         if 'Bfeatures' in runName:
             label = 'Backward Selection'
             colour='blue'
@@ -278,12 +278,11 @@ def plotFromDict(outDict, figsize=(10,6)):
             plt.legend()#lines[0,2],['Backward Selection','Forward Selection'])
             plt.xlabel('Number of features')
             plt.ylabel('Accuracy')
-            plt.ylim([None,ceil((max(yvals))*100)/100])
+            plt.ylim([None,ceil((max(yvals))*50)/50])
             plt.title(f"Sequential Feature Selection results for {longRunNames[runName.split('_')[0]]}")
             plt.grid()
             plt.show()
         lastRunName=runName
-
 longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Machine',
              'KNN':'k-Nearest Neighboours','LR':'Logistic Regression','GNB':'Gaussian Naive Bayes'}
 
@@ -297,10 +296,10 @@ longRunNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector
 #                'RF_original_260_14_entropy_False_Bfeatures.pik',
 #                'RF_original_260_14_entropy_False_Ffeatures.pik']
 #
-folderName = r"SFS2forDF7"
+#folderName = r"SFS2forDF7"
 #listOfPickles2 = os.listdir(sf.addFolderPath(folderName))
-###
-#outDict = processListOfPickles(listOfPickles2, folderName)
+####
+#outDict = processListOfPickles(listOfPickles2, folderName, printOut=False)
 #counts = findFeatureCounts(outDict)
 ##chosenCols = chooseColsBasedOnCount(counts, 6)
 #findFeatureAccuracy(outDict)
