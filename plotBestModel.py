@@ -262,6 +262,43 @@ def plotPrecisionVsRecall(df, mins):
     if len(df)==0:
         raise 'no points greater than the minimums'
         
+def plotGroupROC(name1stPart,  modelDict,name2ndPart='', figsize=(6,6)):
+    from scipy import interp
+    tprs=[]
+    mean_fpr = np.linspace(0,1,100)
+    plt.figure(figsize=figsize)
+    i=1
+    for name, instance in modelDict.items():
+        if (name1stPart == name[:len(name1stPart)]) and (name2ndPart in name):
+            tpr = instance.getTPR()
+            fpr = instance.getFPR()
+            tprs.append(interp(mean_fpr, fpr, tpr))
+            tprs[-1][0] = 0
+            plt.plot(fpr, tpr, lw=1, alpha=0.5, label=f"Fold {i} of 5")
+            i+=1
+    plt.plot([0, 1], [0, 1], linestyle='--', alpha=.5, color='k')
+    mean_tpr = np.mean(tprs, axis=0)
+    mean_tpr[-1] = 1
+    plt.plot(mean_fpr, mean_tpr, color='k', label = 'Mean')
+    std_tpr = np.std(tprs, axis=0)
+    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+    plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2,
+                     label=r'$\pm$ 1 std. dev.')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.xlim([0,1])
+    plt.ylim([0,1])
+    plt.title(f"ROC curve for {longRunNames[name1stPart[:name1stPart.find('_')]]}")
+    plt.legend(loc="lower right")
+    plt.show()
+    return
+
+def plotROCsFromListAndModelDict(shortRunNames, modelDict):
+    for name1stPart in shortRunNames:
+        plotGroupROC(name1stPart, modelDict)
+
+
 
 # plt.style.available
 mins = {'acc':0.6,
@@ -272,6 +309,11 @@ mins = {'acc':0.6,
         'recall0':0.1,
         'precision1':0.1
         }
+
+bestRuns = ['KNN_original_41_auto_1','NN_original_5_12_adam_0.06667000000000001', 
+'SVM_RFE15_1.4545454545454546_rbf_2_0.244205309454865', 'RF_RFE15_12_6_entropy_True', 
+'LR_OS_RFE20', 'GNB_OS_RFE5']
+bestRunsShort = ['KNN_original','NN_original','SVM_RFE15', 'RF_RFE15','LR_OS_RFE20', 'GNB_OS_RFE5']
 
 paramDict = {'RF': ['Scoring Criterion','Number of Estimators','Maximum Number of Features to Consider','Bootstrap used'],
              'NN': ['Solver','Number of Layers','Nodes per layer','Alpha'],
@@ -295,9 +337,11 @@ df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
 measureList=['auc','acc','recall1','recall0','precision1','precision0']
 #paramScatterPlots(df, 'acc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
-makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1, chosenMeasure='precision1')
+#makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1, chosenMeasure='precision1')
 #
 #for score in measureList:
 #    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
 
 #scores = findParamsOfBestRuns(df, mins=mins)
+
+plotROCsFromListAndModelDict(bestRunsShort, modelDict)
