@@ -264,7 +264,8 @@ def plotPrecisionVsRecall(df, mins):
         
 def plotGroupROC(name1stPart,  modelDict,name2ndPart='', figsize=(6,6)):
     from scipy import interp
-    tprs=[]
+    tprs =  []
+    originalTPRs, originalFPRs = [], []
     mean_fpr = np.linspace(0,1,100)
 #    plt.figure(figsize=figsize)
     i=1
@@ -273,36 +274,65 @@ def plotGroupROC(name1stPart,  modelDict,name2ndPart='', figsize=(6,6)):
             tpr = instance.getTPR()
             fpr = instance.getFPR()
             tprs.append(interp(mean_fpr, fpr, tpr))
+            originalTPRs.append(tpr)
+            originalFPRs.append(fpr)
             tprs[-1][0] = 0
-            plt.plot(fpr, tpr, lw=1, alpha=0.5, label=f"Fold {i} of 5")
+#            plt.plot(fpr, tpr, lw=1, alpha=0.5, label=f"Fold {i} of 5")
             i+=1
+    title = f"ROC curve for {longRunNames[name1stPart[:name1stPart.find('_')]]}"
+    mean_tpr = actuallyDoTheROCplot(originalTPRs, originalFPRs, tprs, title=title)       
+    
+#    plt.show()
+    return mean_tpr, mean_fpr
+
+def actuallyDoTheROCplot( originalTPRs, originalFPRs,tprs=[], doMeans=True, title='',
+                         labels=[]):
+    mean_tpr=None
+    
+    for i in range(len(originalTPRs)):
+        if len(labels)>0:
+            label = labels[i]
+            alpha=1
+        else:    
+            label = f"Fold {i+1} of 5"
+            alpha=0.5
+        plt.plot(originalFPRs[i], originalTPRs[i],lw=1, alpha=alpha, label=label)
+    
+    if doMeans:
+        mean_fpr = np.linspace(0,1,100)
+        mean_tpr = np.mean(tprs, axis=0)
+        mean_tpr[-1] = 1
+        std_tpr = np.std(tprs, axis=0)
+        tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
+        tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
+        plt.plot(mean_fpr, mean_tpr, color='k', label = 'Mean')
+        plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2,
+                         label=r'$\pm$ 1 std. dev.')
+
     plt.plot([0, 1], [0, 1], linestyle='--', alpha=.5, color='k')
-    mean_tpr = np.mean(tprs, axis=0)
-    mean_tpr[-1] = 1
-    plt.plot(mean_fpr, mean_tpr, color='k', label = 'Mean')
-    std_tpr = np.std(tprs, axis=0)
-    tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
-    tprs_lower = np.maximum(mean_tpr - std_tpr, 0)
-    plt.fill_between(mean_fpr, tprs_lower, tprs_upper, color='grey', alpha=0.2,
-                     label=r'$\pm$ 1 std. dev.')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     plt.xlim([0,1])
     plt.ylim([0,1])
-    plt.title(f"ROC curve for {longRunNames[name1stPart[:name1stPart.find('_')]]}")
+    plt.title(title)
     plt.legend(loc="lower right")
-#    plt.show()
-    return
+    return mean_tpr
 
 def plotROCsFromListAndModelDict(shortRunNames, modelDict, figsize=(10,16)):
+    meanTPRs, meanFPRs, labels = [],[],[]
     plt.figure(figsize=figsize)
-  
+    
     for i, name1stPart in enumerate(shortRunNames):
 
         i+=1
         plt.subplot(3,2,i)
-        plotGroupROC(name1stPart, modelDict)
-
+        mean_tpr, mean_fpr = plotGroupROC(name1stPart, modelDict)
+        meanTPRs.append(mean_tpr)
+        meanFPRs.append(mean_fpr)
+        labels.append(name1stPart[:name1stPart.find('_')])
+    plt.figure(figsize=(6,6))
+    actuallyDoTheROCplot(meanTPRs, meanFPRs, doMeans=False, labels=labels,
+                         title='ROC curve for best run for each model type')
 
 
 # plt.style.available
