@@ -577,7 +577,9 @@ def oneFullRun(
     if len(dataName) == 0:
         dataName = "original"
     
-    kf = KFold(n_splits = nFolds, shuffle=True)
+    kf = KFold(n_splits = nFolds, 
+#               shuffle=False
+               )
     foldIndices = []
     for trainIndices, testIndices in kf.split(x):
         foldIndices.append((trainIndices, testIndices))
@@ -848,16 +850,22 @@ def findFIsFromDict(modelDict, toPrint=True):
     '''
     FIarray = 'justastring'
     for model in modelDict.values():
-        FIarray = featureImportances(model, FIarray)
-    indices = np.argsort(model.getFeatureImportances())[::-1]
-    FIarraySorted = FIarray.sort_values('Avg', ascending=False)
-    if toPrint:
-        print("Feature ranking:")
-        print(FIarraySorted['Avg'])
-#        for f in range(model.getData().getxTrain().shape[1]):
-#            print("%d. feature %d (%f)" % (f + 1, indices[f], model.getFeatureImportances()[indices[f]]))
-#            print(model.getData().getxCols()[indices[f]])
-    return FIarray
+        try:
+            FIarray = featureImportances(model, FIarray)
+        except:
+            pass
+    try:
+        indices = np.argsort(model.getFeatureImportances())[::-1]
+        FIarraySorted = FIarray.sort_values('Avg', ascending=False)
+        if toPrint:
+            print("Feature ranking:")
+            print(FIarraySorted['Avg'])
+    #        for f in range(model.getData().getxTrain().shape[1]):
+    #            print("%d. feature %d (%f)" % (f + 1, indices[f], model.getFeatureImportances()[indices[f]]))
+    #            print(model.getData().getxCols()[indices[f]])
+        return FIarray
+    except:
+        pass
 
 def featureImportances(model, FIarray='nothing'):
     newCol = pd.DataFrame(model.getFeatureImportances(), index=model.getData().getxCols(),
@@ -878,12 +886,12 @@ runParams = {
         "n_estimators":[12],#list(range(2,300,2))+ list(range(12,2000,20)),#[10, 30, 50, 70, 80, 90, 100, 110, 120, 140, 160, 180, 200,210, 220,230, 240, 250,260,270,280,500],
         "max_depth":[6],# list(range(1,30)) + list(range(4,19)),#[11,12,13,14,15,16],#[4,5,6,7,8,9,10,11,12,13,14,15,16],
         "criterion": ['entropy'],#["gini", "entropy"],
-        "bootstrap": [True]#[True, False],
+        "bootstrap": [False]#[True, False],
     },
     SVM: {
         "C": [1.4545454545454546],#list(np.logspace(-3,1)) + list(np.linspace(0.4,12,100)),#[1,1.5,1.6,1.7,1.8,1.9,2,2.1,2.2,2.3,2.4,2.5,2.6,2.8,3,3.2,3.4,3.6,4,5,6,8,10,15,20,30,50],
-        "kernel": ["poly"],
-        "degree":[1,2,3,4,5,6,7,8,9,10,11,12],
+        "kernel": ["rbf"],
+        "degree":[2],
         "gamma": [0.24420530945486502]#list(np.linspace(0.001,0.05,200)) + list(np.logspace(-3,0)),#[0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5,0.6,0.7,0.8]
     },
     NN: {
@@ -908,7 +916,8 @@ runParams = {
             }
 }
 
-colDict = {'SVM':{'cols':CS.SVMcols2, 'model':SVM},
+colDict = {
+           'SVM':{'cols':CS.SVMcols2, 'model':SVM},
            'NN' :{'cols':CS.NNcols2, 'model':NN},
            'KNN':{'cols':CS.KNNcols2, 'model':KNN},
            'RF' :{'cols':CS.RFcols2, 'model':RandomForest},
@@ -929,8 +938,8 @@ if __name__ == "__main__":
 #            modelDict={}
             modelDataDict={}
             df = pd.read_csv(sf.addFolderPath( fileName))
-            cols = colDict[modelType]['cols']
-#            cols = list(df.columns)
+#            cols = colDict[modelType]['cols']
+            cols = list(df.columns)
 #            xCols = [x for x in (set(df.columns) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1'})]
 #            cols.append('PerformancePctRank')
             xCols = [x for x in (set(cols) - {"URN", "Stuck","Class", "Unnamed: 0",'Unnamed: 0.1','PTRWM_EXP__18','GOR_Not Applicable'})]
