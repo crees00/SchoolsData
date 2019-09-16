@@ -273,6 +273,14 @@ class Model:
         print(self.cm)
         print("Accuracy of classifier on test set: {:.2f}".format(self.acc))
         print(self.cr)
+    def doProba(self, newThreshold):
+        probas = self.getProba()
+        pred1sBinary = probas > newThreshold
+        predsNew = np.where(probas>newThreshold, 1, 0)
+        ytest = self.getData().getyTest()
+        self.Newcm = confusion_matrix(ytest, predsNew)
+        self.Newcr = classification_report(ytest, predsNew)
+        return {'preds': predsNew, 'cm':self.Newcm, 'cr':self.Newcr}
 
 
 class LogReg(Model):
@@ -417,8 +425,11 @@ class NN(Model):
         self.fpr, self.tpr, self.thresholds = roc_curve(
             y_test, clf.predict_proba(x_test)[:, 1]
         )
+        self.predictProba = clf.predict_proba(x_test)[:,1]
         self.setScores()
         print(f"Model fitted: {self.getRunCode()}")
+    def getProba(self):
+        return self.predictProba
 
 class GaussianBayes(Model):
     def __init__(self, dataName, data, runParams={}):
@@ -487,8 +498,13 @@ class KNN(Model):
         self.fpr, self.tpr, self.thresholds = roc_curve(
             y_test, clf.predict_proba(x_test)[:,1]
         )
+        self.predictProba = clf.predict_proba(x_test)[:,1]
         self.setScores()
+        
         print(f"Model fitted: {self.getRunCode()}")
+    
+    def getProba(self):
+        return self.predictProba
 
 class AdaBoost(Model):
     def __init__(self, dataName, data, runParams=None):

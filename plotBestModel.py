@@ -247,7 +247,7 @@ def findParamsOfBestRuns(df, numBest=5, measure='auc', mins={}):
     for model in longRunNames.keys():     
         modDict={name:[] for name in ['RFE', 'OS', 'p1', 'p2', 'p3', 'p4']}
         modelSubset = df[df[model]==1]
-        modelSubset = modelSubset.iloc[:5,:]
+        modelSubset = modelSubset.iloc[:numBest,:]
         for crit, val in mins.items():
             modelSubset = modelSubset[modelSubset[crit]>val]
         
@@ -334,7 +334,18 @@ def plotROCsFromListAndModelDict(shortRunNames, modelDict, figsize=(10,16)):
     actuallyDoTheROCplot(meanTPRs, meanFPRs, doMeans=False, labels=labels,
                          title='ROC curve for best run for each model type')
 
-
+def plotPredsHistogram(df):
+    valcols = set(df.columns) - {'Unnamed: 0','AvgPred','TheTruth'}
+    
+    if 'AvgPred' not in df.columns:
+        print('adding AvgPred')
+        df['AvgPred'] = df[valcols].mean(axis=1)
+    valcols = set(df.columns) - {'Unnamed: 0','AvgPred','TheTruth'}
+    plt.hist(df['AvgPred'],bins=7)
+    plt.xlabel('Proportion of models classing school as Stuck')
+    plt.ylabel('Number of schools')
+    plt.title(f'Histogram of distribution of predictions between {len(valcols)} models')
+    return df
 # plt.style.available
 mins = {'acc':0.6,
         'auc':0.6,
@@ -379,4 +390,7 @@ measureList=['auc','acc','recall1','recall0','precision1','precision0']
 
 #scores = findParamsOfBestRuns(df, mins=mins)
 
-plotROCsFromListAndModelDict(bestRunsShort, modelDict)
+#plotROCsFromListAndModelDict(bestRunsShort, modelDict)
+
+#df=plotPredsHistogram(pd.read_csv(sf.addFolderPath('comparePredsdf7.csv')))
+df=plotPredsHistogram(pd.read_csv(sf.addFolderPath('comparePredsdf7Best6.csv')))

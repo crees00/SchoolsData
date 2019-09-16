@@ -114,12 +114,12 @@ def makeDFofDiffsWithTrueValues(bigDF, write=''):
             bestScore = runScore
             bestRun = col
     return
-#bigDF = makeDFofResults('comparePredsdf7.csv')
-#accdf = makeDFofDiffsWithTrueValues(bigDF, 'accdfForDF7.csv')
+bigDF = makeDFofResults('comparePredsdf7Best6.csv')
+accdf = makeDFofDiffsWithTrueValues(bigDF, 'accdfForDF7Best6.csv')
         
 #accdf = pd.read_csv(sf.addFolderPath('accdfForDF7.csv'), index_col=[0])
 #bigdf = pd.read_csv(sf.addFolderPath('comparePredsdf7.csv'), index_col=[0])
 
-runs = accdf.columns[:-1]
+#runs = accdf.columns[:-1]
 
-accdf['numRight'] = accdf.apply(lambda row: sum(row ==0), axis=1)
+#accdf['numRight'] = accdf.apply(lambda row: sum(row ==0), axis=1)
