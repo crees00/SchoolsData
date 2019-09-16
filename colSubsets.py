@@ -353,7 +353,6 @@ SVMcols2=['Total revenue balance (1) 2017-18',
 'Supply.Staff_2yrDiff',
 'Teaching.Staff_4yrDiff',
 'Ed.Support.Staff.2018',
-'GOR_Not Applicable',
 'GOR_Yorkshire and the Humber',
 'Energy.2018',
 'Back.Office_4yrDiff',
@@ -372,11 +371,28 @@ SVMcols2=['Total revenue balance (1) 2017-18',
 
 
 #
-#if __name__ == "__main__":
-##  groupDict = {'SFS1Cols':SFS1Cols,'SFS2Cols': SFS2Cols,'chosenCols1': chosenCols1,'lessCols': lessCols}
-
-#    for name1 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
-#        for name2 in ['SFS1Cols', 'SFS2Cols', 'chosenCols1', 'lessCols']:
+if __name__ == "__main__":
+    groupDict = {'SVMcols2':SVMcols2,'RFcols2':RFcols2,'GNBcols':GNBcols,'LRcols':LRcols,'NNcols2':NNcols2,'KNNcols2':KNNcols2}
+    featureCounts={}
+    import pandas as pd
+    featuresDF = pd.DataFrame()
+    allfeatures=set()
+    for name1 in ['SVMcols2','RFcols2','GNBcols','LRcols','NNcols2','KNNcols2']:
+        for feature in groupDict[name1]:
+            allfeatures = allfeatures | {feature}
+    allfeatures = list(allfeatures)
+    df = pd.Series({feature:0 for feature in allfeatures})
+    for name1 in ['SVMcols2',
+                  'RFcols2',
+#                  'GNBcols',
+                  'LRcols',
+                  'NNcols2',
+                  'KNNcols2']:
+        
+        for feature in groupDict[name1]:
+            df[feature] +=1
+    df = df.sort_values(ascending=False)
+#        for name2 in ['SVMcols2','RFcols2','GNBcols','LRcols','NNcols2','KNNcols2']:
 #            if name1==name2:
 #                continue
 #            group1 = groupDict[name1]
