@@ -12,7 +12,7 @@ import creatingAMonster as cam
 import pandas as pd
 import colNames as cn
 import numpy as np
-
+import setFolder as sf
 
 def makePickColsToUse(df, writeName=""):
     outDF = pd.DataFrame()
@@ -146,7 +146,7 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-df = pd.read_csv("df5AllColsPreImputed.csv")
+df = pd.read_csv(sf.addFolderPath( "df5AllColsPreImputed.csv"))
 df = makeFinanceCols(df)
 #outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
 # outDF.to_csv('pickColsToUse.csv')
@@ -157,14 +157,15 @@ dfForModel = cam.dropColsFromList(df, toDrop)
 # Encode categorical cols with one-hot encoding
 dfForModelModified = fixCategoricalCols(dfForModel)
 ## Standardise all of the cols
-dfForModelModified = normalise(
-    dfForModelModified,
-    set(dfForModelModified.columns) - {"URN", "Stuck"},
-    normaliseSDcol,
-)
+#dfForModelModified = normalise(
+#    dfForModelModified,
+#    set(dfForModelModified.columns) - {"URN", "Stuck"},
+#    normaliseSDcol,
+#)
 #
-dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df5AddedJoeColsForModelModifiedImputed.csv')
-makePickColsToUse(dfForModelModifiedImputed, "df5AddedJoeColsForModelModifiedImputedAnalysed.csv")
+dfForModelModified.to_csv(sf.addFolderPath( 'fromdf5AllColsPreImputed_NOTIMP_NOTNORM.csv'))
+#dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df5AddedJoeColsForModelModifiedImputed.csv')
+#makePickColsToUse(dfForModelModifiedImputed, "df5AddedJoeColsForModelModifiedImputedAnalysed.csv")
 
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")
 #makePickColsToUse(dfForModelModified, "dfForModelModifiedAnalysed.csv")

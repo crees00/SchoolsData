@@ -370,7 +370,7 @@ for item in paramDict.keys():
 #df = pd.read_csv(sf.addFolderPath('paramsearch1OldStuckAdded.csv'))
         
 measureList=['auc','acc','recall1','recall0','precision1','precision0']
-paramScatterPlots(df, 'auc', subplots=True)
+#paramScatterPlots(df, 'auc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
 #makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1, chosenMeasure='precision1')
 #
@@ -379,4 +379,4 @@ paramScatterPlots(df, 'auc', subplots=True)
 
 #scores = findParamsOfBestRuns(df, mins=mins)
 
-#plotROCsFromListAndModelDict(bestRunsShort, modelDict)
+plotROCsFromListAndModelDict(bestRunsShort, modelDict)

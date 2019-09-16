@@ -486,7 +486,8 @@ def runAll():
 #    finalPt, steps = makeMatrices(SchoolDict)
     openSchoolDict = findOpenSchools(SchoolDict)
     threeGenerations = findGrandParents(SchoolDict)
-    groupDict = grouping(openSchoolDict)
+#    groupDict = grouping(openSchoolDict)
+    groupDict={}
     return SchoolDict, openSchoolDict, groupDict
 
 if __name__ == "__main__":

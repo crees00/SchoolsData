@@ -138,8 +138,8 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv(sf.addFolderPath( 'df5AddedJoeColsForModelModifiedImputed.csv'))
+inputDF = pd.read_csv(sf.addFolderPath( 'fromdf5AllColsPreImputed_NOTIMP_NOTNORM.csv'))
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'stuck','all', inputDF, 'stuckForDF7.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'notNormedForFeaturePlots_bbbbVgsbbbs.csv')
