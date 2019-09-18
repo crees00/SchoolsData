@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 #sns.set()
 ################# ADD MORE FEATURES TO INPUT DATA ###############################
-dfIn = pd.read_csv(sf.addFolderPath("bbbbVgsbbbsAllCols.csv"))
+dfIn = pd.read_csv(sf.addFolderPath("AllDatanotNormedForFeaturePlots_bbbbVgsbbbs.csv"))
 dfIn.drop(["Unnamed: 0","Unnamed: 0.1"], inplace=True, axis=1)
 originalCols = dfIn.columns
 #print(originalCols)
@@ -143,7 +143,7 @@ def interpretClusters(dfInT, finalDF):
             ax.grid()
 ###################################################################################
 def plotClassesOnPCA(newDFwithPCs):
-    
+    print(newDFwithPCs['Class'].value_counts())
     newDFwithPCs = newDFwithPCs.join(other=dfIn.drop([747])[['Class','URN']])
     fig = plt.figure(figsize=(8, 8))
     ax = fig.add_subplot(1, 1, 1)
@@ -163,11 +163,18 @@ def plotClassesOnPCA(newDFwithPCs):
         s=2,
         c='c'
     )
-    ax.legend(['Stuck','Escaped Stuck'],loc='lower right', fontsize='large')
+    ax.scatter(
+        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 1"],
+        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 2"],
+        s=2,
+        c='grey'
+    )
+
+    ax.legend(['Stuck','Escaped Stuck','All other schools'],loc='lower right', fontsize='large')
     # ax.legend(targets)
 #    ax.grid()
 ################# RUN IT ######################################################################
-newDFwithPCs = doPCA(60)
+newDFwithPCs = doPCA(2)
 #finalDF = doClustering()
 #interpretClusters(dfIn, finalDF)
 plotClassesOnPCA(newDFwithPCs)

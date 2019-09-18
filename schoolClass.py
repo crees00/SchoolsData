@@ -112,7 +112,6 @@ class School:
 class Inspection:
     def __init__(self, inspNo, cat, URN, year):
         self.URN = URN
-        #        self.date = date
         self.cat = cat
         self.inspNo = inspNo
         self.year = year
@@ -162,28 +161,17 @@ def assignInspectionsToSchools(inspList):
     allInspNos = []
     dupInsps = []
     for insp in inspList:
-        checkFlag = False
-#        if insp.getURN() in [145939, 108223, 141145]:
-#            checkFlag = True
-#            print(insp)
         # check inspection no not added already
         if insp.getInspNo() in allInspNos:
-            if checkFlag == True:
-                print('insp already in allInspNos:')
-                print(insp)
             dupInsps.append(insp)
             continue
         # add inspection number to list of inspections
         allInspNos.append(insp.getInspNo())
         try:
             SchoolDict[insp.getURN()].addInspToSchool(insp)
-            if checkFlag == True:
-                print(f"{insp.getInspNo()} added to SchoolDict - now has inspections: {SchoolDict[insp.getURN()].getInspections()}")
         except KeyError:
             SchoolDict[insp.getURN()] = School(insp.getURN())
             SchoolDict[insp.getURN()].addInspToSchool(insp)
-            if checkFlag == True:
-                print(f"SchoolDict for URN{insp.getURN()} started/reset for inspNo{insp.getInspNo()} so now has inspections: {SchoolDict[insp.getURN()].getInspections()}")
             
     print("inspections assigned to schools")
     return SchoolDict, allInspNos, dupInsps
@@ -373,17 +361,30 @@ def plotGvsB(SchoolDict):
 
 
 def makeMatrices(SchoolDict):
-    finalPt = np.zeros((9, 6))  # bads, goods
-    steps = np.zeros((9, 6))
+    finalPt = np.zeros((10,10))  # bads, goods
+    steps = np.zeros((10,10))
+    maxgoods=0
+    maxbads=0
     for URN in SchoolDict:
+        if SchoolDict[URN].getStatus() == 'closed':
+            continue
         goods = SchoolDict[URN].getGoods()
         bads = SchoolDict[URN].getBads()
+        if len(goods)>maxgoods:
+            if URN != 135886:
+                maxgoods = len(goods)
+                goodURN = URN
+        if len(bads)>maxbads:
+            maxbads = len(bads)
+            badURN = URN
         if len(goods) == 0:
             goods, bads = [0], [0]
         finalPt[bads[-1], goods[-1]] += 1
         for i in range(len(goods)):
             steps[bads[i], goods[i]] += 1
         steps[0, 0] = len(SchoolDict)
+    print('goods:',maxgoods, goodURN)
+    print('bads:',maxbads, badURN)
     return finalPt, steps
 
 

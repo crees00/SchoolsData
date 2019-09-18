@@ -378,19 +378,19 @@ for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 
 #df = pd.read_csv(sf.addFolderPath('paramsearch3forDF7Added.csv'))
-#df = pd.read_csv(sf.addFolderPath('paramsearch1OldStuckAdded.csv'))
+df = pd.read_csv(sf.addFolderPath('paramSearch2forOldStuckAdded.csv'))
         
 measureList=['auc','acc','recall1','recall0','precision1','precision0']
 #paramScatterPlots(df, 'auc', subplots=True)
 #scores= bestModelsBarPlot(df, mins=mins)
 #makeSubplots(df, measureList, mins=mins, figsize=(15,7), ymax=1, chosenMeasure='precision1')
 #
-#for score in measureList:
-#    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
+for score in measureList:
+    RFEBarPlot(df, score=score,OS=True, subPlots=True, mins=mins, barwidth=0.3)
 
 #scores = findParamsOfBestRuns(df, mins=mins)
 
 #plotROCsFromListAndModelDict(bestRunsShort, modelDict)
 
 #df=plotPredsHistogram(pd.read_csv(sf.addFolderPath('comparePredsdf7.csv')))
-df=plotPredsHistogram(pd.read_csv(sf.addFolderPath('comparePredsdf7Best6.csv')))
+#df=plotPredsHistogram(pd.read_csv(sf.addFolderPath('comparePredsdf7Best6.csv')))

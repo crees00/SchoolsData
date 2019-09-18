@@ -146,8 +146,8 @@ toNormaliseWithStD = [
     "PSENELSE__18",
 ]
 
-df = pd.read_csv(sf.addFolderPath( "df5AllColsPreImputed.csv"))
-df = makeFinanceCols(df)
+df = pd.read_csv(sf.addFolderPath( "AllDatanotNormedForFeaturePlots_bbbbVgsbbbs.csv"))
+#df = makeFinanceCols(df)
 #outDF = makePickColsToUse(df, 'withJoeDataSummary.csv')
 # outDF.to_csv('pickColsToUse.csv')
 toKeep = cn.modelColsToKeep
@@ -155,7 +155,7 @@ toDrop = set(df.columns) - set(toKeep)
 # Just drop cols from df5 to get dfForModel
 dfForModel = cam.dropColsFromList(df, toDrop)
 # Encode categorical cols with one-hot encoding
-dfForModelModified = fixCategoricalCols(dfForModel)
+#dfForModelModified = fixCategoricalCols(dfForModel)
 ## Standardise all of the cols
 #dfForModelModified = normalise(
 #    dfForModelModified,
@@ -163,8 +163,8 @@ dfForModelModified = fixCategoricalCols(dfForModel)
 #    normaliseSDcol,
 #)
 #
-dfForModelModified.to_csv(sf.addFolderPath( 'fromdf5AllColsPreImputed_NOTIMP_NOTNORM.csv'))
-#dfForModelModifiedImputed = imputeAll(dfForModelModified, 'df5AddedJoeColsForModelModifiedImputed.csv')
+#dfForModelModified.to_csv(sf.addFolderPath( 'fromdf5AllColsPreImputed_NOTIMP_NOTNORM.csv'))
+dfForModelModifiedImputed = imputeAll(dfForModel, 'AllDatanotNormedForFeaturePlots_bbbbVgsbbbsImputed.csv')
 #makePickColsToUse(dfForModelModifiedImputed, "df5AddedJoeColsForModelModifiedImputedAnalysed.csv")
 
 # makePickColsToUse(dfForModel, "dfForModelAnalysed.csv")

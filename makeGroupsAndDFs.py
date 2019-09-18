@@ -126,10 +126,12 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
     posURNs, negURNs = dictOfURNGroups[cat1], dictOfURNGroups[cat2]
     allURNs = posURNs + negURNs
     URNsToDrop = set(df['URN']) - set(allURNs)
-    df = df[~df['URN'].isin(URNsToDrop)]
+#    df = df[~df['URN'].isin(URNsToDrop)]
     df["Class"] = df.apply(
-        lambda row: np.where((int(row["URN"]) in posURNs), 1, 0), axis=1
+        lambda row: np.where((int(row["URN"]) in posURNs), 1, 
+                             np.where(int(row["URN"]) in URNsToDrop,2,0)), axis=1
     )
+    print(df['Class'].value_counts())
     df = cam.dropColsFromList(df, ['Stuck'])
     if len(write) >0:
         df.to_csv(sf.addFolderPath(write))
@@ -138,8 +140,8 @@ def makeLabelledSubsets(dictOfURNGroups, cat1, cat2, df, write=''):
 dictOfURNs = makeURNListFromGroupDict(
     newGrouping(openSchoolDict, True)
 )
-inputDF = pd.read_csv(sf.addFolderPath( 'fromdf5AllColsPreImputed_NOTIMP_NOTNORM.csv'))
+inputDF = pd.read_csv(sf.addFolderPath( 'AllDatanotNormedForFeaturePlots_bbbbVgsbbbs.csv'))
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gbb',inputDF, 'bbbVgbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gbbb',inputDF, 'bbbbVgbbbLessCols.csv')
 #dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbb','gsbbs', inputDF, 'bbbVgsbbsLessCols.csv')
-dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'notNormedForFeaturePlots_bbbbVgsbbbs.csv')
+dfWithCats = makeLabelledSubsets(dictOfURNs, 'bbbb','gsbbbs', inputDF, 'AllDatanotNormedForFeaturePlots_bbbbVgsbbbs.csv')

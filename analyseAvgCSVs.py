@@ -193,10 +193,10 @@ longNames = {'RF':'Random Forest','NN':'Neural Network','SVM':'Support Vector Ma
 for item in paramDict.keys():
     paramDict[item] = {('p'+str(i)):paramDict[item][i-1] for i in range(1,5)}
 #RFdict = {('p'+str(i)):RFparams[i-1] for i in range(1,5)}
-listofcsvs = makeCSVlistFromFolderName('paramsearch3forDF7')
+listofcsvs = makeCSVlistFromFolderName('oldStuckBigParamSearch2')
 
 ##outFile = 'fullBashsep4ChosenCols1.csv' #this one for intermediate big paramsearch 
-outFile='paramsearch3forDF7.csv'
+outFile='paramsearch2forOldStuck.csv'
 ###outFile = 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'
 ###df = pd.read_csv(sf.addFolderPath( 'AVG26_8_119bbbbVgsbbbsLessColsAdded.csv'))
 df = combineIntermediateResultsCSVs(listofcsvs, outFile)
