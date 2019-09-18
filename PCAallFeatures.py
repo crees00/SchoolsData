@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 #sns.set()
 ################# ADD MORE FEATURES TO INPUT DATA ###############################
-dfIn = pd.read_csv(sf.addFolderPath("AllDatanotNormedForFeaturePlots_bbbbVgsbbbs.csv"))
+dfIn = pd.read_csv(sf.addFolderPath("AllDatanotNormedForFeaturePlots_bbbbVgsbbbsImputedWithClass.csv"))
 dfIn.drop(["Unnamed: 0","Unnamed: 0.1"], inplace=True, axis=1)
 originalCols = dfIn.columns
 #print(originalCols)
@@ -38,9 +38,10 @@ def doPCA(numPCs=6):
     print(np.cumsum(pca.explained_variance_ratio_), "<- cumsum of explained variance")
     
     plt.plot(np.cumsum(pca.explained_variance_ratio_))
-    plt.xlabel('number of components')
-    plt.ylabel('cumulative explained variance');
+    plt.xlabel('Number of principal components')
+    plt.ylabel('Cumulative explained variance');
     plt.grid()
+    plt.ylim([0,1.05])
     newDFwithPCs = pd.DataFrame(
         data=PCs,
         columns=["principal component " + str(x) for x in list(range(1, numPCs + 1))],
@@ -143,38 +144,39 @@ def interpretClusters(dfInT, finalDF):
             ax.grid()
 ###################################################################################
 def plotClassesOnPCA(newDFwithPCs):
-    print(newDFwithPCs['Class'].value_counts())
+#    print(newDFwithPCs['Class'].value_counts())
     newDFwithPCs = newDFwithPCs.join(other=dfIn.drop([747])[['Class','URN']])
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel("Principal Component 1", fontsize=15)
     ax.set_ylabel("Principal Component 2", fontsize=15)
-    ax.set_title("Comparison of the two classes using PCA\nUpdated definition of stuck", fontsize=20)
+    ax.set_title("Comparison of the classes of school using PCA\nUpdated definition of stuck", fontsize=20)
     ax.set_ylim([-7,15])
+    ax.set_xlim([-6,20])
+    ax.scatter(
+        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 1"],
+        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 2"],
+        s=1,
+        c='grey'
+    )
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==1].loc[:, "principal component 2"],
-        s=2,
-        c='r'
+        s=1,
+        c='blue'
     )
     ax.scatter(
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 1"],
         newDFwithPCs[newDFwithPCs['Class']==0].loc[:, "principal component 2"],
-        s=2,
-        c='c'
-    )
-    ax.scatter(
-        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 1"],
-        newDFwithPCs[newDFwithPCs['Class']==2].loc[:, "principal component 2"],
-        s=2,
-        c='grey'
+        s=1,
+        c='orange'
     )
 
-    ax.legend(['Stuck','Escaped Stuck','All other schools'],loc='lower right', fontsize='large')
+    ax.legend(['All other schools','Stuck','Escaped Stuck'],loc='lower right', fontsize='large')
     # ax.legend(targets)
 #    ax.grid()
 ################# RUN IT ######################################################################
-newDFwithPCs = doPCA(2)
+newDFwithPCs = doPCA(60)
 #finalDF = doClustering()
 #interpretClusters(dfIn, finalDF)
 plotClassesOnPCA(newDFwithPCs)
